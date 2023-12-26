@@ -1,0 +1,14 @@
+[package]
+name = "bpx-api-client"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+base64 = { workspace = true }
+bpx-api-types = { path = "../types" }
+ed25519-dalek = { workspace = true }
+reqwest = { workspace = true }
+rust_decimal = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
