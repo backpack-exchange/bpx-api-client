@@ -5,9 +5,10 @@ pub mod markets;
 pub mod order;
 pub mod trade;
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, Default)]
 #[serde(rename_all = "PascalCase")]
 pub enum Blockchain {
+    #[default]
     Solana,
     Ethereum,
     Polygon,

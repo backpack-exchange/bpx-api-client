@@ -38,9 +38,10 @@ pub struct LimitOrder {
     pub created_at: i64,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, Default)]
 #[serde(rename_all = "PascalCase")]
 pub enum OrderType {
+    #[default]
     Limit,
     Market,
 }
@@ -52,9 +53,10 @@ pub enum Order {
     Limit(LimitOrder),
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TimeInForce {
+    #[default]
     GTC,
     IOC,
     FOK,
@@ -80,14 +82,15 @@ pub enum OrderStatus {
     Triggered,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
 #[serde(rename_all = "PascalCase")]
 pub enum Side {
+    #[default]
     Bid,
     Ask,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ExecuteOrderPayload {
     pub client_id: Option<u32>,
@@ -103,7 +106,7 @@ pub struct ExecuteOrderPayload {
     pub trigger_price: Option<Decimal>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct CancelOrderPayload {
     pub symbol: String,
@@ -111,7 +114,7 @@ pub struct CancelOrderPayload {
     pub client_id: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct CancelOpenOrdersPayload {
     pub symbol: String,

@@ -50,7 +50,7 @@ pub struct DepositAddress {
     pub address: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct RequestWithdrawalPayload {
     pub address: String,
