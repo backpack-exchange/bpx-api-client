@@ -25,4 +25,7 @@ pub enum Error {
 
     #[error("Invalid secret key")]
     SecretKey,
+
+    #[error("Invalid request: {0}")]
+    InvalidRequest(String),
 }

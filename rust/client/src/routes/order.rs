@@ -1,7 +1,7 @@
-use bpx_api_types::order::{ExecuteOrderPayload, Order};
+use bpx_api_types::order::{CancelOpenOrdersPayload, ExecuteOrderPayload, Order};
 
 use super::BpxClient;
-use crate::error::Result;
+use crate::error::{Error, Result};
 
 impl BpxClient {
     pub async fn get_open_order(
@@ -10,22 +10,17 @@ impl BpxClient {
         order_id: Option<&str>,
         client_id: Option<u32>,
     ) -> Result<Order> {
-        let endpoint = format!("{}/api/v1/order", self.base_url);
-        let url = reqwest::Url::parse_with_params(
-            &endpoint,
-            &[
-                ("symbol", symbol.to_string()),
-                (
-                    "order_id",
-                    order_id.map(|id| id.to_string()).unwrap_or("".to_string()),
-                ),
-                (
-                    "client_id",
-                    client_id.map(|id| id.to_string()).unwrap_or("".to_string()),
-                ),
-            ],
-        )
-        .map_err(|e| crate::error::Error::UrlParseError(e.to_string()))?;
+        let mut url = format!("{}/api/v1/order?symbol={}", self.base_url, symbol);
+        if let Some(order_id) = order_id {
+            url.push_str(&format!("&orderId={}", order_id));
+        } else {
+            url.push_str(&format!(
+                "&clientId={}",
+                client_id.ok_or_else(|| Error::InvalidRequest(
+                    "either order_id or client_id is required".to_string()
+                ))?
+            ));
+        }
         self.get(url).await
     }
 
@@ -38,56 +33,34 @@ impl BpxClient {
         &self,
         symbol: &str,
         order_id: Option<&str>,
-        client_id: Option<&str>,
+        client_id: Option<u32>,
     ) -> Result<Order> {
-        let endpoint = format!("{}/api/v1/order", self.base_url);
-        let url = reqwest::Url::parse_with_params(
-            &endpoint,
-            &[
-                ("symbol", symbol.to_string()),
-                (
-                    "order_id",
-                    order_id.map(|id| id.to_string()).unwrap_or("".to_string()),
-                ),
-                (
-                    "client_id",
-                    client_id.map(|id| id.to_string()).unwrap_or("".to_string()),
-                ),
-            ],
-        )
-        .map_err(|e| crate::error::Error::UrlParseError(e.to_string()))?;
-        self.delete(url).await
+        let url = format!("{}/api/v1/order", self.base_url);
+        let payload = if let Some(order_id) = order_id {
+            serde_json::json!({
+                "symbol": symbol,
+                "orderId": order_id,
+            })
+        } else {
+            serde_json::json!({
+                "symbol": symbol,
+                "clientId": client_id,
+            })
+        };
+
+        self.delete(url, payload).await
     }
 
-    pub async fn get_open_orders(
-        &self,
-        symbol: Option<&str>,
-        subaccount_id: Option<u32>,
-    ) -> Result<Vec<Order>> {
-        let endpoint = format!("{}/api/v1/order", self.base_url);
-        let url = reqwest::Url::parse_with_params(
-            &endpoint,
-            &[
-                (
-                    "symbol",
-                    symbol.map(|s| s.to_string()).unwrap_or("".to_string()),
-                ),
-                (
-                    "subaccount_id",
-                    subaccount_id
-                        .map(|id| id.to_string())
-                        .unwrap_or("".to_string()),
-                ),
-            ],
-        )
-        .map_err(|e| crate::error::Error::UrlParseError(e.to_string()))?;
+    pub async fn get_open_orders(&self, symbol: Option<&str>) -> Result<Vec<Order>> {
+        let mut url = format!("{}/api/v1/orders", self.base_url);
+        if let Some(s) = symbol {
+            url.push_str(&format!("?symbol={s}"));
+        }
         self.get(url).await
     }
 
-    pub async fn cancel_open_orders(&self, symbol: &str) -> Result<Vec<Order>> {
-        let endpoint = format!("{}/api/v1/order", self.base_url);
-        let url = reqwest::Url::parse_with_params(&endpoint, &[("symbol", symbol)])
-            .map_err(|e| crate::error::Error::UrlParseError(e.to_string()))?;
-        self.delete(url).await
+    pub async fn cancel_open_orders(&self, payload: CancelOpenOrdersPayload) -> Result<Vec<Order>> {
+        let url = format!("{}/api/v1/orders", self.base_url);
+        self.delete(url, payload).await
     }
 }

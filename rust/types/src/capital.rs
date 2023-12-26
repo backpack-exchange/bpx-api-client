@@ -46,6 +46,12 @@ pub enum DepositStatus {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct DepositAddress {
+    pub address: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct RequestWithdrawalPayload {
     pub address: String,
     pub blockchain: Blockchain,

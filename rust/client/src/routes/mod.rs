@@ -11,7 +11,7 @@ pub mod markets;
 pub mod order;
 pub mod trades;
 
-const SIGNING_WINDOW: u32 = 3000;
+const SIGNING_WINDOW: u32 = 5000;
 
 #[derive(Debug, Clone)]
 pub struct BpxClient {
@@ -112,11 +112,6 @@ impl BpxClient {
         let signature: Signature = self.api_signer.sign(signee.as_bytes());
         let signature = STANDARD.encode(signature.to_bytes());
 
-        req.url_mut()
-            .query_pairs_mut()
-            .append_pair("timestamp", &timestamp.to_string())
-            .append_pair("window", &SIGNING_WINDOW.to_string());
-
         req.headers_mut()
             .insert("X-Timestamp", timestamp.to_string().parse()?);
         req.headers_mut()
@@ -137,12 +132,9 @@ impl BpxClient {
     {
         let mut req = self.client.get(url).build()?;
         self.sign(&mut req)?;
-        self.client
-            .execute(req)
-            .await?
-            .json()
-            .await
-            .map_err(Error::from)
+        let res = self.client.execute(req).await?;
+        res.error_for_status_ref()?;
+        res.json().await.map_err(Error::from)
     }
 
     pub async fn post<T, P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<T>
@@ -151,25 +143,19 @@ impl BpxClient {
     {
         let mut req = self.client.post(url).json(&payload).build()?;
         self.sign(&mut req)?;
-        self.client
-            .execute(req)
-            .await?
-            .json()
-            .await
-            .map_err(Error::from)
+        let res = self.client.execute(req).await?;
+        res.error_for_status_ref()?;
+        res.json().await.map_err(Error::from)
     }
 
-    pub async fn delete<T, U: IntoUrl>(&self, url: U) -> Result<T>
+    pub async fn delete<T, P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<T>
     where
         T: DeserializeOwned,
     {
-        let mut req = self.client.delete(url).build()?;
+        let mut req = self.client.delete(url).json(&payload).build()?;
         self.sign(&mut req)?;
-        self.client
-            .execute(req)
-            .await?
-            .json()
-            .await
-            .map_err(Error::from)
+        let res = self.client.execute(req).await?;
+        res.error_for_status_ref()?;
+        res.json().await.map_err(Error::from)
     }
 }

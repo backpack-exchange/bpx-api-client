@@ -5,18 +5,10 @@ use crate::error::Result;
 
 impl BpxClient {
     pub async fn get_recent_trades(&self, symbol: &str, limit: Option<i16>) -> Result<Vec<Trade>> {
-        let endpoint = format!("{}/api/v1/trades", self.base_url);
-        let url = reqwest::Url::parse_with_params(
-            &endpoint,
-            &[
-                ("symbol", symbol.to_string()),
-                (
-                    "limit",
-                    limit.map(|l| l.to_string()).unwrap_or("".to_string()),
-                ),
-            ],
-        )
-        .map_err(|e| crate::error::Error::UrlParseError(e.to_string()))?;
+        let mut url = format!("{}/api/v1/trades?symbol={}", self.base_url, symbol);
+        if let Some(limit) = limit {
+            url.push_str(&format!("&limit={}", limit));
+        }
         self.get(url).await
     }
 
@@ -26,22 +18,12 @@ impl BpxClient {
         limit: Option<i64>,
         offset: Option<i64>,
     ) -> Result<Vec<Trade>> {
-        let endpoint = format!("{}/api/v1/trades/history", self.base_url);
-        let url = reqwest::Url::parse_with_params(
-            &endpoint,
-            &[
-                ("symbol", symbol.to_string()),
-                (
-                    "limit",
-                    limit.map(|l| l.to_string()).unwrap_or("".to_string()),
-                ),
-                (
-                    "offset",
-                    offset.map(|o| o.to_string()).unwrap_or("".to_string()),
-                ),
-            ],
-        )
-        .map_err(|e| crate::error::Error::UrlParseError(e.to_string()))?;
+        let mut url = format!("{}/api/v1/trades/history?symbol={}", self.base_url, symbol);
+        for (k, v) in [("limit", limit), ("offset", offset)] {
+            if let Some(v) = v {
+                url.push_str(&format!("&{}={}", k, v));
+            }
+        }
         self.get(url).await
     }
 }

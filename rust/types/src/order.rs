@@ -102,3 +102,17 @@ pub struct ExecuteOrderPayload {
     pub time_in_force: Option<TimeInForce>,
     pub trigger_price: Option<Decimal>,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CancelOrderPayload {
+    pub symbol: String,
+    pub order_id: Option<String>,
+    pub client_id: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CancelOpenOrdersPayload {
+    pub symbol: String,
+}
