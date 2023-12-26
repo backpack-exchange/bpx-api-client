@@ -31,7 +31,7 @@ pub struct Market {
 pub struct MarketFilters {
     price: PriceFilters,
     quantity: QuantityFilters,
-    leverage: LeverageFilters,
+    leverage: Option<LeverageFilters>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
