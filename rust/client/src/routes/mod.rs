@@ -17,7 +17,7 @@ const SIGNING_WINDOW: u32 = 5000;
 pub struct BpxClient {
     api_signer: SigningKey,
     base_url: String,
-    client: reqwest::Client,
+    pub client: reqwest::Client,
 }
 
 impl std::ops::Deref for BpxClient {
