@@ -3,7 +3,7 @@ use std::collections::BTreeMap;
 use crate::error::{Error, Result};
 use base64::{engine::general_purpose::STANDARD, Engine};
 use ed25519_dalek::{Signature, Signer, SigningKey};
-use reqwest::{header::CONTENT_TYPE, IntoUrl, Method, Request};
+use reqwest::{header::CONTENT_TYPE, IntoUrl, Method, Request, StatusCode};
 use serde::{de::DeserializeOwned, Serialize};
 
 pub mod capital;
@@ -135,8 +135,14 @@ impl BpxClient {
         tracing::debug!("req: {:?}", req);
         self.sign(&mut req)?;
         let res = self.client.execute(req).await?;
-        res.error_for_status_ref()?;
-        res.json().await.map_err(Error::from)
+        match res.status() {
+            StatusCode::OK => res.json().await.map_err(Error::from),
+            _ => {
+                let body = res.text().await?;
+                tracing::error!("error response body: {}", body);
+                Err(Error::InvalidRequest(body))
+            }
+        }
     }
 
     pub async fn post<T, P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<T>
@@ -147,8 +153,14 @@ impl BpxClient {
         tracing::debug!("req: {:?}", req);
         self.sign(&mut req)?;
         let res = self.client.execute(req).await?;
-        res.error_for_status_ref()?;
-        res.json().await.map_err(Error::from)
+        match res.status() {
+            StatusCode::OK => res.json().await.map_err(Error::from),
+            _ => {
+                let body = res.text().await?;
+                tracing::error!("error response body: {}", body);
+                Err(Error::InvalidRequest(body))
+            }
+        }
     }
 
     pub async fn delete<T, P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<T>
@@ -158,7 +170,13 @@ impl BpxClient {
         let mut req = self.client.delete(url).json(&payload).build()?;
         self.sign(&mut req)?;
         let res = self.client.execute(req).await?;
-        res.error_for_status_ref()?;
-        res.json().await.map_err(Error::from)
+        match res.status() {
+            StatusCode::OK => res.json().await.map_err(Error::from),
+            _ => {
+                let body = res.text().await?;
+                tracing::error!("error response body: {}", body);
+                Err(Error::InvalidRequest(body))
+            }
+        }
     }
 }
