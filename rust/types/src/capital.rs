@@ -55,9 +55,11 @@ pub struct DepositAddress {
 pub struct RequestWithdrawalPayload {
     pub address: String,
     pub blockchain: Blockchain,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub client_id: Option<String>,
     pub quantity: Decimal,
     pub symbol: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub two_factor_token: Option<String>,
 }
 
@@ -66,14 +68,18 @@ pub struct RequestWithdrawalPayload {
 pub struct Withdrawal {
     pub id: i32,
     pub blockchain: Blockchain,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub client_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub identifier: Option<String>,
     pub quantity: Decimal,
     pub fee: Decimal,
     pub symbol: String,
     pub status: WithdrawalStatus,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub subaccount_id: Option<i32>,
     pub to_address: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub transaction_hash: Option<String>,
     pub created_at: chrono::NaiveDateTime,
 }

@@ -1,4 +1,6 @@
-use bpx_api_types::order::{CancelOpenOrdersPayload, ExecuteOrderPayload, Order};
+use bpx_api_types::order::{
+    CancelOpenOrdersPayload, CancelOrderPayload, ExecuteOrderPayload, Order,
+};
 
 use super::BpxClient;
 use crate::error::{Error, Result};
@@ -36,16 +38,10 @@ impl BpxClient {
         client_id: Option<u32>,
     ) -> Result<Order> {
         let url = format!("{}/api/v1/order", self.base_url);
-        let payload = if let Some(order_id) = order_id {
-            serde_json::json!({
-                "symbol": symbol,
-                "orderId": order_id,
-            })
-        } else {
-            serde_json::json!({
-                "symbol": symbol,
-                "clientId": client_id,
-            })
+        let payload = CancelOrderPayload {
+            symbol: symbol.to_string(),
+            order_id: order_id.map(|s| s.to_string()),
+            client_id,
         };
 
         self.delete(url, payload).await

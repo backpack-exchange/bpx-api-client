@@ -92,16 +92,24 @@ pub enum Side {
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ExecuteOrderPayload {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub client_id: Option<u32>,
     pub order_type: OrderType,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub post_only: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub price: Option<Decimal>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub quantity: Option<Decimal>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub quote_quantity: Option<Decimal>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub self_trade_prevention: Option<SelfTradePrevention>,
     pub side: Side,
     pub symbol: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub time_in_force: Option<TimeInForce>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub trigger_price: Option<Decimal>,
 }
 
@@ -109,8 +117,10 @@ pub struct ExecuteOrderPayload {
 #[serde(rename_all = "camelCase")]
 pub struct CancelOrderPayload {
     pub symbol: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub order_id: Option<String>,
-    pub client_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub client_id: Option<u32>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
