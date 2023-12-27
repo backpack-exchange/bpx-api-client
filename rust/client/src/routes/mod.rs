@@ -139,7 +139,6 @@ impl BpxClient {
             StatusCode::OK => res.json().await.map_err(Error::from),
             _ => {
                 let body = res.text().await?;
-                tracing::error!("error response body: {}", body);
                 Err(Error::InvalidRequest(body))
             }
         }
@@ -157,7 +156,6 @@ impl BpxClient {
             StatusCode::OK => res.json().await.map_err(Error::from),
             _ => {
                 let body = res.text().await?;
-                tracing::error!("error response body: {}", body);
                 Err(Error::InvalidRequest(body))
             }
         }
@@ -174,7 +172,6 @@ impl BpxClient {
             StatusCode::OK => res.json().await.map_err(Error::from),
             _ => {
                 let body = res.text().await?;
-                tracing::error!("error response body: {}", body);
                 Err(Error::InvalidRequest(body))
             }
         }
