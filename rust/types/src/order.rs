@@ -54,7 +54,6 @@ pub enum Order {
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum TimeInForce {
     #[default]
     GTC,
