@@ -108,6 +108,7 @@ impl BpxClient {
             signee.push_str(&format!("&{k}={v}"));
         }
         signee.push_str(&format!("&timestamp={timestamp}&window={SIGNING_WINDOW}"));
+        tracing::debug!("signee: {}", signee);
 
         let signature: Signature = self.api_signer.sign(signee.as_bytes());
         let signature = STANDARD.encode(signature.to_bytes());
@@ -131,6 +132,7 @@ impl BpxClient {
         T: DeserializeOwned,
     {
         let mut req = self.client.get(url).build()?;
+        tracing::debug!("req: {:?}", req);
         self.sign(&mut req)?;
         let res = self.client.execute(req).await?;
         res.error_for_status_ref()?;
@@ -142,6 +144,7 @@ impl BpxClient {
         T: DeserializeOwned,
     {
         let mut req = self.client.post(url).json(&payload).build()?;
+        tracing::debug!("req: {:?}", req);
         self.sign(&mut req)?;
         let res = self.client.execute(req).await?;
         res.error_for_status_ref()?;
