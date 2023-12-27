@@ -2,8 +2,8 @@ use bpx_api_types::order::{
     CancelOpenOrdersPayload, CancelOrderPayload, ExecuteOrderPayload, Order,
 };
 
-use super::BpxClient;
 use crate::error::{Error, Result};
+use crate::BpxClient;
 
 impl BpxClient {
     pub async fn get_open_order(

@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use bpx_api_types::markets::{Kline, Market, OrderBookDepth, Ticker, Token};
 
-use super::BpxClient;
 use crate::error::Result;
+use crate::BpxClient;
 
 impl BpxClient {
     pub async fn get_assets(&self) -> Result<HashMap<String, Vec<Token>>> {

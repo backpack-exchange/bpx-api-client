@@ -1,7 +1,7 @@
 use bpx_api_types::trade::Trade;
 
-use super::BpxClient;
 use crate::error::Result;
+use crate::BpxClient;
 
 impl BpxClient {
     pub async fn get_recent_trades(&self, symbol: &str, limit: Option<i16>) -> Result<Vec<Trade>> {

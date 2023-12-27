@@ -6,7 +6,7 @@ use bpx_api_types::{
     Blockchain,
 };
 
-use super::BpxClient;
+use crate::BpxClient;
 
 impl BpxClient {
     pub async fn get_balances(&self) -> Result<HashMap<String, Balance>> {
