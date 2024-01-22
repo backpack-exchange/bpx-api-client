@@ -5,6 +5,8 @@ use reqwest::{header::CONTENT_TYPE, IntoUrl, Method, Request, StatusCode};
 use serde::{de::DeserializeOwned, Serialize};
 use std::collections::BTreeMap;
 
+pub use bpx_api_types as types;
+
 pub mod capital;
 pub mod error;
 pub mod markets;
