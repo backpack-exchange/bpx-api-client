@@ -1,5 +1,6 @@
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
+use strum::{Display, EnumString};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -38,7 +39,10 @@ pub struct LimitOrder {
     pub created_at: i64,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, Default)]
+#[derive(
+    Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash,
+)]
+#[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "PascalCase")]
 pub enum OrderType {
     #[default]
@@ -53,7 +57,11 @@ pub enum Order {
     Limit(LimitOrder),
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[derive(
+    Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash,
+)]
+#[strum(serialize_all = "UPPERCASE")]
+#[serde(rename_all = "UPPERCASE")]
 pub enum TimeInForce {
     #[default]
     GTC,
@@ -61,27 +69,38 @@ pub enum TimeInForce {
     FOK,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(
+    Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash,
+)]
+#[strum(serialize_all = "PascalCase")]
 #[serde(rename_all = "PascalCase")]
 pub enum SelfTradePrevention {
+    #[default]
     RejectTaker,
     RejectMaker,
     RejectBoth,
     Allow,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(
+    Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash,
+)]
+#[strum(serialize_all = "PascalCase")]
 #[serde(rename_all = "PascalCase")]
 pub enum OrderStatus {
     Cancelled,
     Expired,
     Filled,
+    #[default]
     New,
     PartiallyFilled,
     Triggered,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[derive(
+    Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash,
+)]
+#[strum(serialize_all = "PascalCase")]
 #[serde(rename_all = "PascalCase")]
 pub enum Side {
     #[default]

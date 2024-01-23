@@ -1,11 +1,26 @@
 use serde::{Deserialize, Serialize};
+use strum::{Display, EnumIter, EnumString};
 
 pub mod capital;
 pub mod markets;
 pub mod order;
 pub mod trade;
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, Default)]
+#[derive(
+    Debug,
+    Display,
+    Clone,
+    Copy,
+    Serialize,
+    Deserialize,
+    Default,
+    EnumString,
+    PartialEq,
+    Eq,
+    Hash,
+    EnumIter,
+)]
+#[strum(serialize_all = "snake_case")]
 #[serde(rename_all = "PascalCase")]
 pub enum Blockchain {
     #[default]
@@ -13,15 +28,4 @@ pub enum Blockchain {
     Ethereum,
     Polygon,
     Bitcoin,
-}
-
-impl std::fmt::Display for Blockchain {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Blockchain::Solana => write!(f, "Solana"),
-            Blockchain::Ethereum => write!(f, "Ethereum"),
-            Blockchain::Polygon => write!(f, "Polygon"),
-            Blockchain::Bitcoin => write!(f, "Bitcoin"),
-        }
-    }
 }

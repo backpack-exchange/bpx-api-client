@@ -1,5 +1,6 @@
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
+use strum::{Display, EnumString};
 
 use crate::Blockchain;
 
@@ -27,7 +28,8 @@ pub struct Deposit {
     pub created_at: chrono::NaiveDateTime,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, EnumString, PartialEq, Eq, Hash)]
+#[strum(serialize_all = "camelCase")]
 #[serde(rename_all = "camelCase")]
 pub enum DepositSource {
     Administrator,
@@ -37,7 +39,8 @@ pub enum DepositSource {
     Nuvei,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, EnumString, PartialEq, Eq, Hash)]
+#[strum(serialize_all = "camelCase")]
 #[serde(rename_all = "camelCase")]
 pub enum DepositStatus {
     Pending,
@@ -84,7 +87,8 @@ pub struct Withdrawal {
     pub created_at: chrono::NaiveDateTime,
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, EnumString, PartialEq, Eq, Hash)]
+#[strum(serialize_all = "camelCase")]
 #[serde(rename_all = "camelCase")]
 pub enum WithdrawalStatus {
     Pending,
