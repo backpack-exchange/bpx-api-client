@@ -1,7 +1,10 @@
 [package]
 name = "bpx-api-types"
+authors = ["Backpack <security@backpack.exchange>"]
+license = "Apache-2.0"
 version = "0.1.0"
 edition = "2021"
+description = "Backpack Exchange types"
 
 [dependencies]
 chrono = { workspace = true }
