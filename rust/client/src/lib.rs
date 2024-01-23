@@ -1,5 +1,5 @@
 use base64::{engine::general_purpose::STANDARD, Engine};
-use ed25519_dalek::{Signature, Signer, SigningKey};
+use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
 pub use error::{Error, Result};
 use reqwest::{header::CONTENT_TYPE, IntoUrl, Method, Request, StatusCode};
 use serde::{de::DeserializeOwned, Serialize};
@@ -17,7 +17,8 @@ const SIGNING_WINDOW: u32 = 5000;
 
 #[derive(Debug, Clone)]
 pub struct BpxClient {
-    api_signer: SigningKey,
+    pub verifier: VerifyingKey,
+    signer: SigningKey,
     base_url: String,
     pub client: reqwest::Client,
 }
@@ -58,10 +59,12 @@ impl BpxClient {
             .try_into()
             .map_err(|_| Error::SecretKey)?;
 
-        let api_signer = SigningKey::from_bytes(&api_secret);
+        let signer = SigningKey::from_bytes(&api_secret);
+        let verifier = signer.verifying_key();
 
         Ok(BpxClient {
-            api_signer,
+            verifier,
+            signer,
             base_url,
             client,
         })
@@ -112,7 +115,7 @@ impl BpxClient {
         signee.push_str(&format!("&timestamp={timestamp}&window={SIGNING_WINDOW}"));
         tracing::debug!("signee: {}", signee);
 
-        let signature: Signature = self.api_signer.sign(signee.as_bytes());
+        let signature: Signature = self.signer.sign(signee.as_bytes());
         let signature = STANDARD.encode(signature.to_bytes());
 
         req.headers_mut()
