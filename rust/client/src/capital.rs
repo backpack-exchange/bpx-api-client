@@ -11,7 +11,8 @@ use crate::BpxClient;
 impl BpxClient {
     pub async fn get_balances(&self) -> Result<HashMap<String, Balance>> {
         let url = format!("{}/api/v1/capital", self.base_url);
-        self.get(url).await
+        let res = self.get(url).await?;
+        res.json().await.map_err(Into::into)
     }
 
     pub async fn get_deposits(
@@ -25,7 +26,8 @@ impl BpxClient {
                 url.push_str(&format!("&{}={}", k, v));
             }
         }
-        self.get(url).await
+        let res = self.get(url).await?;
+        res.json().await.map_err(Into::into)
     }
 
     pub async fn get_deposit_address(&self, blockchain: Blockchain) -> Result<DepositAddress> {
@@ -33,7 +35,8 @@ impl BpxClient {
             "{}/wapi/v1/capital/deposit/address?blockchain={}",
             self.base_url, blockchain
         );
-        self.get(url).await
+        let res = self.get(url).await?;
+        res.json().await.map_err(Into::into)
     }
 
     pub async fn get_withdrawals(
@@ -47,11 +50,12 @@ impl BpxClient {
                 url.push_str(&format!("{}={}&", k, v));
             }
         }
-        self.get(url).await
+        let res = self.get(url).await?;
+        res.json().await.map_err(Into::into)
     }
 
     pub async fn request_withdrawal(&self, payload: RequestWithdrawalPayload) -> Result<()> {
         let endpoint = format!("{}/wapi/v1/capital/withdrawals", self.base_url);
-        self.post(endpoint, payload).await
+        self.post(endpoint, payload).await.map(|_| ())
     }
 }

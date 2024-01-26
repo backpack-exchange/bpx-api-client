@@ -8,22 +8,26 @@ use crate::BpxClient;
 impl BpxClient {
     pub async fn get_assets(&self) -> Result<HashMap<String, Vec<Token>>> {
         let url = format!("{}/api/v1/assets", self.base_url);
-        self.get(url).await
+        let res = self.get(url).await?;
+        res.json().await.map_err(Into::into)
     }
 
     pub async fn get_markets(&self) -> Result<Vec<Market>> {
         let url = format!("{}/api/v1/markets", self.base_url);
-        self.get(url).await
+        let res = self.get(url).await?;
+        res.json().await.map_err(Into::into)
     }
 
     pub async fn get_ticker(&self, symbol: &str) -> Result<Vec<Ticker>> {
         let url = format!("{}/api/v1/ticker&symbol={}", self.base_url, symbol);
-        self.get(url).await
+        let res = self.get(url).await?;
+        res.json().await.map_err(Into::into)
     }
 
     pub async fn get_order_book_depth(&self, symbol: &str) -> Result<OrderBookDepth> {
         let url = format!("{}/api/v1/depth&symbol={}", self.base_url, symbol);
-        self.get(url).await
+        let res = self.get(url).await?;
+        res.json().await.map_err(Into::into)
     }
 
     pub async fn get_k_lines(
@@ -42,6 +46,7 @@ impl BpxClient {
                 url.push_str(&format!("&{}={}", k, v));
             }
         }
-        self.get(url).await
+        let res = self.get(url).await?;
+        res.json().await.map_err(Into::into)
     }
 }

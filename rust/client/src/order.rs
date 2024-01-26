@@ -23,12 +23,14 @@ impl BpxClient {
                 ))?
             ));
         }
-        self.get(url).await
+        let res = self.get(url).await?;
+        res.json().await.map_err(Into::into)
     }
 
     pub async fn execute_order(&self, payload: ExecuteOrderPayload) -> Result<Order> {
         let endpoint = format!("{}/api/v1/order", self.base_url);
-        self.post(endpoint, payload).await
+        let res = self.post(endpoint, payload).await?;
+        res.json().await.map_err(Into::into)
     }
 
     pub async fn cancel_order(
@@ -44,7 +46,8 @@ impl BpxClient {
             client_id,
         };
 
-        self.delete(url, payload).await
+        let res = self.delete(url, payload).await?;
+        res.json().await.map_err(Into::into)
     }
 
     pub async fn get_open_orders(&self, symbol: Option<&str>) -> Result<Vec<Order>> {
@@ -52,11 +55,13 @@ impl BpxClient {
         if let Some(s) = symbol {
             url.push_str(&format!("?symbol={s}"));
         }
-        self.get(url).await
+        let res = self.get(url).await?;
+        res.json().await.map_err(Into::into)
     }
 
     pub async fn cancel_open_orders(&self, payload: CancelOpenOrdersPayload) -> Result<Vec<Order>> {
         let url = format!("{}/api/v1/orders", self.base_url);
-        self.delete(url, payload).await
+        let res = self.delete(url, payload).await?;
+        res.json().await.map_err(Into::into)
     }
 }

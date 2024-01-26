@@ -1,8 +1,8 @@
 use base64::{engine::general_purpose::STANDARD, Engine};
 use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
 pub use error::{Error, Result};
-use reqwest::{header::CONTENT_TYPE, IntoUrl, Method, Request, StatusCode};
-use serde::{de::DeserializeOwned, Serialize};
+use reqwest::{header::CONTENT_TYPE, IntoUrl, Method, Request, Response};
+use serde::Serialize;
 use std::collections::BTreeMap;
 
 pub use bpx_api_types as types;
@@ -132,53 +132,24 @@ impl BpxClient {
         Ok(())
     }
 
-    pub async fn get<T, U: IntoUrl>(&self, url: U) -> Result<T>
-    where
-        T: DeserializeOwned,
-    {
+    pub async fn get<U: IntoUrl>(&self, url: U) -> Result<Response> {
         let mut req = self.client.get(url).build()?;
         tracing::debug!("req: {:?}", req);
         self.sign(&mut req)?;
-        let res = self.client.execute(req).await?;
-        match res.status() {
-            StatusCode::OK => res.json().await.map_err(Error::from),
-            _ => {
-                let body = res.text().await?;
-                Err(Error::InvalidRequest(body))
-            }
-        }
+        self.client.execute(req).await.map_err(Error::from)
     }
 
-    pub async fn post<T, P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<T>
-    where
-        T: DeserializeOwned,
-    {
+    pub async fn post<P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<Response> {
         let mut req = self.client.post(url).json(&payload).build()?;
         tracing::debug!("req: {:?}", req);
         self.sign(&mut req)?;
-        let res = self.client.execute(req).await?;
-        match res.status() {
-            StatusCode::OK => res.json().await.map_err(Error::from),
-            _ => {
-                let body = res.text().await?;
-                Err(Error::InvalidRequest(body))
-            }
-        }
+        self.client.execute(req).await.map_err(Error::from)
     }
 
-    pub async fn delete<T, P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<T>
-    where
-        T: DeserializeOwned,
-    {
+    pub async fn delete<P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<Response> {
         let mut req = self.client.delete(url).json(&payload).build()?;
+        tracing::debug!("req: {:?}", req);
         self.sign(&mut req)?;
-        let res = self.client.execute(req).await?;
-        match res.status() {
-            StatusCode::OK => res.json().await.map_err(Error::from),
-            _ => {
-                let body = res.text().await?;
-                Err(Error::InvalidRequest(body))
-            }
-        }
+        self.client.execute(req).await.map_err(Error::from)
     }
 }
