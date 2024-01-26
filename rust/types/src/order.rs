@@ -42,7 +42,7 @@ pub struct LimitOrder {
 #[derive(
     Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash,
 )]
-#[strum(serialize_all = "snake_case")]
+#[strum(serialize_all = "PascalCase")]
 #[serde(rename_all = "PascalCase")]
 pub enum OrderType {
     #[default]

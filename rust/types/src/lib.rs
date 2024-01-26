@@ -20,7 +20,7 @@ pub mod trade;
     Hash,
     EnumIter,
 )]
-#[strum(serialize_all = "snake_case")]
+#[strum(serialize_all = "PascalCase")]
 #[serde(rename_all = "PascalCase")]
 pub enum Blockchain {
     #[default]
