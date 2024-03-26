@@ -136,20 +136,32 @@ impl BpxClient {
         let mut req = self.client.get(url).build()?;
         tracing::debug!("req: {:?}", req);
         self.sign(&mut req)?;
-        self.client.execute(req).await.map_err(Error::from)
+        self.client
+            .execute(req)
+            .await
+            .and_then(|r| r.error_for_status())
+            .map_err(Error::from)
     }
 
     pub async fn post<P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<Response> {
         let mut req = self.client.post(url).json(&payload).build()?;
         tracing::debug!("req: {:?}", req);
         self.sign(&mut req)?;
-        self.client.execute(req).await.map_err(Error::from)
+        self.client
+            .execute(req)
+            .await
+            .and_then(|r| r.error_for_status())
+            .map_err(Error::from)
     }
 
     pub async fn delete<P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<Response> {
         let mut req = self.client.delete(url).json(&payload).build()?;
         tracing::debug!("req: {:?}", req);
         self.sign(&mut req)?;
-        self.client.execute(req).await.map_err(Error::from)
+        self.client
+            .execute(req)
+            .await
+            .and_then(|r| r.error_for_status())
+            .map_err(Error::from)
     }
 }
