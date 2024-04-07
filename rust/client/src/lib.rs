@@ -1,7 +1,7 @@
 use base64::{engine::general_purpose::STANDARD, Engine};
 use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
 pub use error::{Error, Result};
-use reqwest::{header::CONTENT_TYPE, IntoUrl, Method, Request, Response};
+use reqwest::{header::CONTENT_TYPE, IntoUrl, Method, Request, Response, StatusCode};
 use serde::Serialize;
 use std::collections::BTreeMap;
 
@@ -135,8 +135,11 @@ impl BpxClient {
     async fn process_response(res: Response) -> Result<Response> {
         if let Err(e) = res.error_for_status_ref() {
             let err_text = res.text().await?;
-            tracing::error!(message = err_text, "Error response from server");
-            return Err(error::Error::Reqwest(e));
+            let err = Error::BpxApiError {
+                status_code: e.status().unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+                message: err_text,
+            };
+            return Err(err);
         }
         Ok(res)
     }
