@@ -5,6 +5,7 @@ pub mod capital;
 pub mod markets;
 pub mod order;
 pub mod trade;
+pub mod user;
 
 #[derive(
     Debug,

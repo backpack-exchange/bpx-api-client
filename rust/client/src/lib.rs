@@ -12,6 +12,7 @@ pub mod error;
 pub mod markets;
 pub mod order;
 pub mod trades;
+pub mod user;
 
 const SIGNING_WINDOW: u32 = 5000;
 
@@ -79,6 +80,7 @@ impl BpxClient {
             }
             "/wapi/v1/capital/withdrawals" if req.method() == Method::GET => "withdrawalQueryAll",
             "/wapi/v1/capital/withdrawals" if req.method() == Method::POST => "withdraw",
+            "/wapi/v1/user/2fa" if req.method() == Method::POST => "issueTwoFactorToken",
             "/api/v1/order" if req.method() == Method::GET => "orderQuery",
             "/api/v1/order" if req.method() == Method::POST => "orderExecute",
             "/api/v1/order" if req.method() == Method::DELETE => "orderCancel",
