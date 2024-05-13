@@ -45,8 +45,23 @@ impl AsRef<reqwest::Client> for BpxClient {
 }
 
 impl BpxClient {
-    pub fn init(base_url: String, api_key: &str, api_secret: &str) -> Result<Self> {
-        let mut headers = reqwest::header::HeaderMap::new();
+    /// Initialize a new client with the given base URL, API key, and API secret.
+    ///
+    /// # Arguments
+    /// * `base_url` - The base URL of the API.
+    /// * `api_key` - The API key.
+    /// * `api_secret` - The API secret.
+    /// * `headers` - Additional headers to include in the request.
+    ///
+    /// # Returns
+    /// A new client instance.
+    pub fn init(
+        base_url: String,
+        api_key: &str,
+        api_secret: &str,
+        headers: Option<reqwest::header::HeaderMap>,
+    ) -> Result<Self> {
+        let mut headers = headers.unwrap_or_default();
         headers.insert("X-API-Key", api_key.parse()?);
         headers.insert(CONTENT_TYPE, "application/json; charset=utf-8".parse()?);
 
