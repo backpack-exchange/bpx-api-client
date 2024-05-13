@@ -6,6 +6,7 @@ use serde::Serialize;
 use std::collections::BTreeMap;
 
 pub use bpx_api_types as types;
+pub use reqwest;
 
 pub mod capital;
 pub mod error;
