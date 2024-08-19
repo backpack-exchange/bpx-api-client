@@ -1,17 +1,16 @@
 [package]
-name = "bpx-api-client"
+name = "bpx_api_client"
 authors = ["Backpack <security@backpack.exchange>"]
 license = "Apache-2.0"
-version = "0.2.2"
+version = "0.3.0"
 edition = "2021"
 description = "Rust client for Backpack Exchange"
 
 [dependencies]
 base64 = { workspace = true }
-bpx-api-types = { version = "0.1.2", path = "../types" }
+bpx_api_types = { version = "0.2.0", path = "../types" }
 ed25519-dalek = { workspace = true }
 reqwest = { workspace = true }
-rust_decimal = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
