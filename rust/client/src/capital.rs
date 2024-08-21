@@ -2,10 +2,7 @@ use crate::error::Result;
 use std::collections::HashMap;
 
 use bpx_api_types::{
-    capital::{
-        Balance, Deposit, DepositAddress, DrainSubaccountPayload, RequestWithdrawalPayload,
-        Withdrawal,
-    },
+    capital::{Balance, Deposit, DepositAddress, RequestWithdrawalPayload, Withdrawal},
     Blockchain,
 };
 
@@ -59,14 +56,6 @@ impl BpxClient {
 
     pub async fn request_withdrawal(&self, payload: RequestWithdrawalPayload) -> Result<()> {
         let endpoint = format!("{}/wapi/v1/capital/withdrawals", self.base_url);
-        self.post(endpoint, payload).await.map(|_| ())
-    }
-
-    pub async fn drain_subaccount(&self, payload: DrainSubaccountPayload) -> Result<()> {
-        let endpoint = format!(
-            "{}/wapi/v1/capital/withdrawals/drainSubaccount",
-            self.base_url
-        );
         self.post(endpoint, payload).await.map(|_| ())
     }
 }

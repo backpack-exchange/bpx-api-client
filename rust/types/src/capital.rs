@@ -96,9 +96,3 @@ pub enum WithdrawalStatus {
     Verifying,
     Void,
 }
-
-#[derive(Debug, Clone, Serialize, Deserialize, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct DrainSubaccountPayload {
-    pub subaccount_id: i32,
-}

@@ -29,4 +29,5 @@ pub enum Blockchain {
     Ethereum,
     Polygon,
     Bitcoin,
+    Internal,
 }
