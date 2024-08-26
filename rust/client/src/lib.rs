@@ -50,7 +50,6 @@ impl BpxClient {
     ///
     /// # Arguments
     /// * `base_url` - The base URL of the API.
-    /// * `api_key` - The API key.
     /// * `api_secret` - The API secret.
     /// * `headers` - Additional headers to include in the request.
     ///
@@ -58,26 +57,25 @@ impl BpxClient {
     /// A new client instance.
     pub fn init(
         base_url: String,
-        api_key: &str,
         api_secret: &str,
         headers: Option<reqwest::header::HeaderMap>,
     ) -> Result<Self> {
+        let signer = STANDARD
+            .decode(api_secret)?
+            .try_into()
+            .map(|s| SigningKey::from_bytes(&s))
+            .map_err(|_| Error::SecretKey)?;
+
+        let verifier = signer.verifying_key();
+
         let mut headers = headers.unwrap_or_default();
-        headers.insert("X-API-Key", api_key.parse()?);
+        headers.insert("X-API-Key", STANDARD.encode(verifier).parse()?);
         headers.insert(CONTENT_TYPE, "application/json; charset=utf-8".parse()?);
 
         let client = reqwest::Client::builder()
             .user_agent("bpx-rust-client")
             .default_headers(headers)
             .build()?;
-
-        let api_secret = STANDARD
-            .decode(api_secret)?
-            .try_into()
-            .map_err(|_| Error::SecretKey)?;
-
-        let signer = SigningKey::from_bytes(&api_secret);
-        let verifier = signer.verifying_key();
 
         Ok(BpxClient {
             verifier,
