@@ -19,13 +19,13 @@ impl BpxClient {
     }
 
     pub async fn get_ticker(&self, symbol: &str) -> Result<Vec<Ticker>> {
-        let url = format!("{}/api/v1/ticker&symbol={}", self.base_url, symbol);
+        let url = format!("{}/api/v1/ticker?symbol={}", self.base_url, symbol);
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
     }
 
     pub async fn get_order_book_depth(&self, symbol: &str) -> Result<OrderBookDepth> {
-        let url = format!("{}/api/v1/depth&symbol={}", self.base_url, symbol);
+        let url = format!("{}/api/v1/depth?symbol={}", self.base_url, symbol);
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
     }
