@@ -1,7 +1,7 @@
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
-use crate::order::{OrderStatus, Side};
+use crate::order::OrderStatus;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -22,14 +22,24 @@ pub struct QuotePayload {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RequestForQuote {
-    pub rfq_id: String,
-    pub client_id: Option<u32>,
-    pub symbol: String,
-    pub side: Side,
-    pub quantity: Decimal,
+    #[serde(rename = "R")]
+    pub rfq_id: u64,
+    #[serde(rename = "T")]
     pub submission_time: i64,
+    #[serde(rename = "w")]
     pub expiry_time: i64,
+    #[serde(rename = "s")]
+    pub symbol: String,
+    #[serde(rename = "q")]
+    pub quantity: Decimal,
+    #[serde(rename = "X")]
     pub status: OrderStatus,
+    #[serde(rename = "e")]
+    pub event_type: String,
+    #[serde(rename = "W")]
+    pub received_time: i64,
+    #[serde(rename = "E")]
+    pub event_time: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

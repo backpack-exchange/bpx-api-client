@@ -5,5 +5,4 @@ default:
 #  Run the example subscribing to the RFQ WebSocket
 rfq:
     SECRET=... \
-    STREAM=account.rfqUpdate \
-    cargo -q run
+    cargo -q run --bin rfq

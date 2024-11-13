@@ -33,7 +33,10 @@ use base64::{engine::general_purpose::STANDARD, Engine};
 use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
 use reqwest::{header::CONTENT_TYPE, IntoUrl, Method, Request, Response, StatusCode};
 use routes::{
-    capital::{API_CAPITAL, API_DEPOSITS, API_DEPOSIT_ADDRESS, API_WITHDRAWALS}, order::{API_ORDER, API_ORDERS}, rfq::{API_RFQ, API_RFQ_QUOTE}, user::API_USER_2FA
+    capital::{API_CAPITAL, API_DEPOSITS, API_DEPOSIT_ADDRESS, API_WITHDRAWALS},
+    order::{API_ORDER, API_ORDERS},
+    rfq::{API_RFQ, API_RFQ_QUOTE},
+    user::API_USER_2FA,
 };
 use serde::Serialize;
 use std::{
@@ -116,12 +119,7 @@ impl BpxClient {
 
     /// Initializes a new client with WebSocket support.
     #[cfg(feature = "ws")]
-    pub fn init_with_ws(
-        base_url: String,
-        ws_url: String,
-        secret: &str,
-        headers: Option<BpxHeaders>,
-    ) -> Result<Self> {
+    pub fn init_with_ws(base_url: String, ws_url: String, secret: &str, headers: Option<BpxHeaders>) -> Result<Self> {
         Self::init_internal(base_url, Some(ws_url), secret, headers)
     }
 
