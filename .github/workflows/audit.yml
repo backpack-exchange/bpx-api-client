@@ -1,4 +1,5 @@
 name: Audit
+
 on:
   push:
     paths:
@@ -6,11 +7,14 @@ on:
       - "**/Cargo.lock"
   schedule:
     - cron: "0 0 * * *"
+
 jobs:
   audit:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - uses: actions-rs/audit-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - run: cargo audit
+        working-directory: rust
+        env:
+          CARGO_TERM_COLOR: always
+          RUSTFLAGS: "-Dwarnings"
