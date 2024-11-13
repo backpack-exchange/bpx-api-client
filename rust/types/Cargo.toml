@@ -2,7 +2,7 @@
 name = "bpx-api-types"
 license = "Apache-2.0"
 edition = "2021"
-description = "Backpack Exchange types"
+description = "Backpack Exchange API types"
 repository = "https://github.com/backpack-exchange/bpx-api-client"
 
 [dependencies]

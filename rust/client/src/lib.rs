@@ -27,20 +27,26 @@
 //!         Err(err) => eprintln!("Error: {:?}", err),
 //!     }
 //! }
+//! ```
 
 use base64::{engine::general_purpose::STANDARD, Engine};
 use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
 use reqwest::{header::CONTENT_TYPE, IntoUrl, Method, Request, Response, StatusCode};
 use routes::{
-    capital::{API_CAPITAL, API_DEPOSITS, API_DEPOSIT_ADDRESS, API_WITHDRAWALS},
-    order::{API_ORDER, API_ORDERS},
-    user::API_USER_2FA,
+    capital::{API_CAPITAL, API_DEPOSITS, API_DEPOSIT_ADDRESS, API_WITHDRAWALS}, order::{API_ORDER, API_ORDERS}, rfq::{API_RFQ, API_RFQ_QUOTE}, user::API_USER_2FA
 };
 use serde::Serialize;
-use std::collections::BTreeMap;
+use std::{
+    collections::BTreeMap,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 pub mod error;
+
 mod routes;
+
+#[cfg(feature = "ws")]
+mod ws;
 
 /// Re-export of the Backpack Exchange API types.
 pub use bpx_api_types as types;
@@ -51,13 +57,19 @@ pub use error::{Error, Result};
 const API_USER_AGENT: &str = "bpx-rust-client";
 const API_KEY_HEADER: &str = "X-API-Key";
 
-const SIGNING_WINDOW: u32 = 5000;
+const DEFAULT_WINDOW: u32 = 5000;
 
 const SIGNATURE_HEADER: &str = "X-Signature";
 const TIMESTAMP_HEADER: &str = "X-Timestamp";
 const WINDOW_HEADER: &str = "X-Window";
 
 const JSON_CONTENT: &str = "application/json; charset=utf-8";
+
+/// The official base URL for the Backpack Exchange REST API.
+pub const BACKPACK_API_BASE_URL: &str = "https://api.backpack.exchange";
+
+/// The official WebSocket URL for real-time data from the Backpack Exchange.
+pub const BACKPACK_WS_URL: &str = "wss://ws.backpack.exchange";
 
 /// Type alias for custom HTTP headers passed to `BpxClient` during initialization.
 pub type BpxHeaders = reqwest::header::HeaderMap;
@@ -68,6 +80,7 @@ pub struct BpxClient {
     signer: SigningKey,
     verifier: VerifyingKey,
     base_url: String,
+    ws_url: Option<String>,
     client: reqwest::Client,
 }
 
@@ -97,9 +110,30 @@ impl BpxClient {
     ///
     /// This sets up the signing and verification keys, and creates a `reqwest` client
     /// with default headers including the API key and content type.
-    pub fn init(base_url: String, api_secret: &str, headers: Option<BpxHeaders>) -> Result<Self> {
+    pub fn init(base_url: String, secret: &str, headers: Option<BpxHeaders>) -> Result<Self> {
+        Self::init_internal(base_url, None, secret, headers)
+    }
+
+    /// Initializes a new client with WebSocket support.
+    #[cfg(feature = "ws")]
+    pub fn init_with_ws(
+        base_url: String,
+        ws_url: String,
+        secret: &str,
+        headers: Option<BpxHeaders>,
+    ) -> Result<Self> {
+        Self::init_internal(base_url, Some(ws_url), secret, headers)
+    }
+
+    /// Internal helper function for client initialization.
+    fn init_internal(
+        base_url: String,
+        ws_url: Option<String>,
+        secret: &str,
+        headers: Option<BpxHeaders>,
+    ) -> Result<Self> {
         let signer = STANDARD
-            .decode(api_secret)?
+            .decode(secret)?
             .try_into()
             .map(|s| SigningKey::from_bytes(&s))
             .map_err(|_| Error::SecretKey)?;
@@ -119,6 +153,7 @@ impl BpxClient {
             signer,
             verifier,
             base_url,
+            ws_url,
             client,
         })
     }
@@ -171,15 +206,15 @@ impl BpxClient {
         Self::process_response(res).await
     }
 
-        /// Returns a reference to the `VerifyingKey` used for request verification.
-        pub fn verifier(&self) -> &VerifyingKey {
-            &self.verifier
-        }
-    
-        /// Returns a reference to the underlying HTTP client.
-        pub fn client(&self) -> &reqwest::Client {
-            &self.client
-        }
+    /// Returns a reference to the `VerifyingKey` used for request verification.
+    pub fn verifier(&self) -> &VerifyingKey {
+        &self.verifier
+    }
+
+    /// Returns a reference to the underlying HTTP client.
+    pub fn client(&self) -> &reqwest::Client {
+        &self.client
+    }
 }
 
 // Private functions.
@@ -202,6 +237,8 @@ impl BpxClient {
             API_ORDER if req.method() == Method::DELETE => "orderCancel",
             API_ORDERS if req.method() == Method::GET => "orderQueryAll",
             API_ORDERS if req.method() == Method::DELETE => "orderCancelAll",
+            API_RFQ if req.method() == Method::POST => "rfqSubmit",
+            API_RFQ_QUOTE if req.method() == Method::POST => "quoteSubmit",
             _ => return Ok(()), // Other endpoints don't require signing.
         };
 
@@ -218,9 +255,7 @@ impl BpxClient {
             BTreeMap::new()
         };
 
-        let timestamp = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)?
-            .as_millis();
+        let timestamp = now_millis();
 
         let mut signee = format!("instruction={instruction}");
         for (k, v) in query_params {
@@ -229,7 +264,7 @@ impl BpxClient {
         for (k, v) in body_params {
             signee.push_str(&format!("&{k}={v}"));
         }
-        signee.push_str(&format!("&timestamp={timestamp}&window={SIGNING_WINDOW}"));
+        signee.push_str(&format!("&timestamp={timestamp}&window={DEFAULT_WINDOW}"));
         tracing::debug!("signee: {}", signee);
 
         let signature: Signature = self.signer.sign(signee.as_bytes());
@@ -239,7 +274,7 @@ impl BpxClient {
         req.headers_mut()
             .insert(TIMESTAMP_HEADER, timestamp.to_string().parse()?);
         req.headers_mut()
-            .insert(WINDOW_HEADER, SIGNING_WINDOW.to_string().parse()?);
+            .insert(WINDOW_HEADER, DEFAULT_WINDOW.to_string().parse()?);
 
         if matches!(req.method(), &Method::POST | &Method::DELETE) {
             req.headers_mut().insert(CONTENT_TYPE, JSON_CONTENT.parse()?);
@@ -247,4 +282,12 @@ impl BpxClient {
 
         Ok(())
     }
+}
+
+/// Returns the current time in milliseconds since UNIX epoch.
+fn now_millis() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("Time went backwards")
+        .as_millis() as u64
 }

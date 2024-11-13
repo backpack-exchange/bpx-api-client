@@ -1,0 +1,14 @@
+[package]
+name = "bpx-api-example"
+license = "Apache-2.0"
+edition = "2021"
+description = "Backpack Exchange API example"
+repository = "https://github.com/backpack-exchange/bpx-api-client"
+
+[dependencies]
+bpx-api-client = { path = "../client" }
+bpx-api-types = { path = "../types" }
+
+anyhow = { workspace = true }
+tokio = { workspace = true }
+tokio-tungstenite = { workspace = true }

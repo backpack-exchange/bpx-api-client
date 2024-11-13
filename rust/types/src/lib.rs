@@ -9,6 +9,7 @@ use strum::{Display, EnumIter, EnumString};
 pub mod capital;
 pub mod markets;
 pub mod order;
+pub mod rfq;
 pub mod trade;
 pub mod user;
 
