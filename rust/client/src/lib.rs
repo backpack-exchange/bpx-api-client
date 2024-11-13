@@ -22,7 +22,7 @@
 //!     let client = BpxClient::init(base_url, secret, headers)
 //!         .expect("Failed to initialize Backpack API client");
 //!
-//!     match client.get_open_orders(Some("SOL_USDC".to_string())).await {
+//!     match client.get_open_orders(Some("SOL_USDC")).await {
 //!         Ok(orders) => println!("Open Orders: {:?}", orders),
 //!         Err(err) => eprintln!("Error: {:?}", err),
 //!     }
