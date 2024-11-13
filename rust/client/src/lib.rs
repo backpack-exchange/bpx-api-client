@@ -29,7 +29,7 @@
 //! }
 
 use base64::{engine::general_purpose::STANDARD, Engine};
-use ed25519_dalek::{Signature, Signer, SigningKey};
+use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
 use reqwest::{header::CONTENT_TYPE, IntoUrl, Method, Request, Response, StatusCode};
 use routes::{
     capital::{API_CAPITAL, API_DEPOSITS, API_DEPOSIT_ADDRESS, API_WITHDRAWALS},
@@ -66,8 +66,9 @@ pub type BpxHeaders = reqwest::header::HeaderMap;
 #[derive(Debug, Clone)]
 pub struct BpxClient {
     signer: SigningKey,
+    verifier: VerifyingKey,
     base_url: String,
-    pub client: reqwest::Client,
+    client: reqwest::Client,
 }
 
 impl std::ops::Deref for BpxClient {
@@ -116,6 +117,7 @@ impl BpxClient {
 
         Ok(BpxClient {
             signer,
+            verifier,
             base_url,
             client,
         })
@@ -168,6 +170,16 @@ impl BpxClient {
         let res = self.client.execute(req).await?;
         Self::process_response(res).await
     }
+
+        /// Returns a reference to the `VerifyingKey` used for request verification.
+        pub fn verifier(&self) -> &VerifyingKey {
+            &self.verifier
+        }
+    
+        /// Returns a reference to the underlying HTTP client.
+        pub fn client(&self) -> &reqwest::Client {
+            &self.client
+        }
 }
 
 // Private functions.
