@@ -1,4 +1,4 @@
-# Backpack Exchange API Crate
+# Backpack Exchange API
 
 <img src="img/backpack.png" width="150px" alt="Backpack" />
 
