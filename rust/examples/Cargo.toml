@@ -1,8 +1,8 @@
 [package]
-name = "bpx-api-example"
+name = "bpx-api-examples"
 license = "Apache-2.0"
 edition = "2021"
-description = "Backpack Exchange API example"
+description = "Backpack Exchange API examples"
 repository = "https://github.com/backpack-exchange/bpx-api-client"
 
 [dependencies]

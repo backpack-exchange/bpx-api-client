@@ -1,6 +1,6 @@
-# Backpack Exchange API Example
+# Backpack Exchange API Examples
 
-This repository demonstrates how to interact with Backpack Exchange’s private WebSocket API using `bpx_api_client`.
+This repository demonstrates how to interact with Backpack Exchange’s APIs.
 
 ## Configuration
 
@@ -11,7 +11,7 @@ Set the following environment variables:
 - `SECRET` (required): Your API secret key.
 - `STREAM` (required): The WebSocket stream to connect to.
 
-## Running the Example
+## Running the RFQ Example
 
 To subscribe to the `account.rfqUpdate` private stream, run:
 
