@@ -1,11 +1,9 @@
 [package]
 name = "bpx-api-types"
-authors = ["Backpack <security@backpack.exchange>"]
 license = "Apache-2.0"
-version = "0.2.0"
 edition = "2021"
 description = "Backpack Exchange types"
-repository = "https://github.com/backpack-exchange/bpx-api-client/tree/master/rust/types"
+repository = "https://github.com/backpack-exchange/bpx-api-client"
 
 [dependencies]
 chrono = { workspace = true }
