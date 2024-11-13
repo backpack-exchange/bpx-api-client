@@ -7,13 +7,11 @@ check:
     cargo check
     cargo +nightly fmt --all -- --check
     cargo clippy --all-targets --all-features
-    taplo format --check
 
 # automatically fix check warnings
 fix:
     cargo +nightly fmt --all
     cargo clippy --allow-dirty --allow-staged --fix
-    taplo format
 
 # execute the tests
 test:

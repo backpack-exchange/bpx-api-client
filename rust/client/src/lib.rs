@@ -29,7 +29,7 @@
 //! }
 
 use base64::{engine::general_purpose::STANDARD, Engine};
-use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
+use ed25519_dalek::{Signature, Signer, SigningKey};
 use reqwest::{header::CONTENT_TYPE, IntoUrl, Method, Request, Response, StatusCode};
 use routes::{
     capital::{API_CAPITAL, API_DEPOSITS, API_DEPOSIT_ADDRESS, API_WITHDRAWALS},
@@ -39,11 +39,14 @@ use routes::{
 use serde::Serialize;
 use std::collections::BTreeMap;
 
-pub use bpx_api_types as types;
-pub use error::{Error, Result};
-
 pub mod error;
-pub mod routes;
+mod routes;
+
+/// Re-export of the Backpack Exchange API types.
+pub use bpx_api_types as types;
+
+/// Re-export of the custom `Error` type and `Result` alias for error handling.
+pub use error::{Error, Result};
 
 const API_USER_AGENT: &str = "bpx-rust-client";
 const API_KEY_HEADER: &str = "X-API-Key";
@@ -56,10 +59,12 @@ const WINDOW_HEADER: &str = "X-Window";
 
 const JSON_CONTENT: &str = "application/json; charset=utf-8";
 
+/// Type alias for custom HTTP headers passed to `BpxClient` during initialization.
+pub type BpxHeaders = reqwest::header::HeaderMap;
+
 /// A client for interacting with the Backpack Exchange API.
 #[derive(Debug, Clone)]
 pub struct BpxClient {
-    pub verifier: VerifyingKey,
     signer: SigningKey,
     base_url: String,
     pub client: reqwest::Client,
@@ -85,12 +90,13 @@ impl AsRef<reqwest::Client> for BpxClient {
     }
 }
 
+// Public functions.
 impl BpxClient {
     /// Initializes a new client with the given base URL, API secret, and optional headers.
     ///
     /// This sets up the signing and verification keys, and creates a `reqwest` client
     /// with default headers including the API key and content type.
-    pub fn init(base_url: String, api_secret: &str, headers: Option<reqwest::header::HeaderMap>) -> Result<Self> {
+    pub fn init(base_url: String, api_secret: &str, headers: Option<BpxHeaders>) -> Result<Self> {
         let signer = STANDARD
             .decode(api_secret)?
             .try_into()
@@ -109,13 +115,63 @@ impl BpxClient {
             .build()?;
 
         Ok(BpxClient {
-            verifier,
             signer,
             base_url,
             client,
         })
     }
 
+    /// Creates a new, empty `BpxHeaders` instance.
+    pub fn create_headers() -> BpxHeaders {
+        reqwest::header::HeaderMap::new()
+    }
+
+    /// Processes the response to check for HTTP errors and extracts
+    /// the response content.
+    ///
+    /// Returns a custom error if the status code is non-2xx.
+    async fn process_response(res: Response) -> Result<Response> {
+        if let Err(e) = res.error_for_status_ref() {
+            let err_text = res.text().await?;
+            let err = Error::BpxApiError {
+                status_code: e.status().unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+                message: err_text,
+            };
+            return Err(err);
+        }
+        Ok(res)
+    }
+
+    /// Sends a GET request to the specified URL and signs it before execution.
+    pub async fn get<U: IntoUrl>(&self, url: U) -> Result<Response> {
+        let mut req = self.client.get(url).build()?;
+        tracing::debug!("req: {:?}", req);
+        self.sign(&mut req)?;
+        let res = self.client.execute(req).await?;
+        Self::process_response(res).await
+    }
+
+    /// Sends a POST request with a JSON payload to the specified URL and signs it.
+    pub async fn post<P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<Response> {
+        let mut req = self.client.post(url).json(&payload).build()?;
+        tracing::debug!("req: {:?}", req);
+        self.sign(&mut req)?;
+        let res = self.client.execute(req).await?;
+        Self::process_response(res).await
+    }
+
+    /// Sends a DELETE request with a JSON payload to the specified URL and signs it.
+    pub async fn delete<P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<Response> {
+        let mut req = self.client.delete(url).json(&payload).build()?;
+        tracing::debug!("req: {:?}", req);
+        self.sign(&mut req)?;
+        let res = self.client.execute(req).await?;
+        Self::process_response(res).await
+    }
+}
+
+// Private functions.
+impl BpxClient {
     /// Signs a request by generating a signature from the request details
     /// and appending necessary headers for authentication.
     ///
@@ -178,46 +234,5 @@ impl BpxClient {
         }
 
         Ok(())
-    }
-
-    /// Processes the response to check for HTTP errors and extracts
-    /// the response content. Returns a custom error if the status code is non-2xx.
-    async fn process_response(res: Response) -> Result<Response> {
-        if let Err(e) = res.error_for_status_ref() {
-            let err_text = res.text().await?;
-            let err = Error::BpxApiError {
-                status_code: e.status().unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
-                message: err_text,
-            };
-            return Err(err);
-        }
-        Ok(res)
-    }
-
-    /// Sends a GET request to the specified URL and signs it before execution.
-    pub async fn get<U: IntoUrl>(&self, url: U) -> Result<Response> {
-        let mut req = self.client.get(url).build()?;
-        tracing::debug!("req: {:?}", req);
-        self.sign(&mut req)?;
-        let res = self.client.execute(req).await?;
-        Self::process_response(res).await
-    }
-
-    /// Sends a POST request with a JSON payload to the specified URL and signs it.
-    pub async fn post<P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<Response> {
-        let mut req = self.client.post(url).json(&payload).build()?;
-        tracing::debug!("req: {:?}", req);
-        self.sign(&mut req)?;
-        let res = self.client.execute(req).await?;
-        Self::process_response(res).await
-    }
-
-    /// Sends a DELETE request with a JSON payload to the specified URL and signs it.
-    pub async fn delete<P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<Response> {
-        let mut req = self.client.delete(url).json(&payload).build()?;
-        tracing::debug!("req: {:?}", req);
-        self.sign(&mut req)?;
-        let res = self.client.execute(req).await?;
-        Self::process_response(res).await
     }
 }
