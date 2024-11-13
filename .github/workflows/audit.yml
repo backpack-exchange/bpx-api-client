@@ -1,0 +1,20 @@
+name: audit
+
+on:
+  push:
+    paths:
+      - "**/Cargo.toml"
+      - "**/Cargo.lock"
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: cargo audit
+        working-directory: rust
+        env:
+          CARGO_TERM_COLOR: always
+          RUSTFLAGS: "-Dwarnings"
