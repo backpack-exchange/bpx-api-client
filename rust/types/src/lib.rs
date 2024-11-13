@@ -1,3 +1,8 @@
+//! Types module for the Backpack Exchange API.
+//!
+//! This module contains various types used across the Backpack Exchange API,
+//! including enums and structs for capital, markets, orders, trades, and user data.
+
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumIter, EnumString};
 
