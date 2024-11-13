@@ -15,7 +15,16 @@ pub mod order;
 pub mod trades;
 pub mod user;
 
+const API_USER_AGENT: &str = "bpx-rust-client";
+const API_KEY_HEADER: &str = "X-API-Key";
+
 const SIGNING_WINDOW: u32 = 5000;
+
+const SIGNATURE_HEADER: &str = "X-Signature";
+const TIMESTAMP_HEADER: &str = "X-Timestamp";
+const WINDOW_HEADER: &str = "X-Window";
+
+const JSON_CONTENT: &str = "application/json; charset=utf-8";
 
 #[derive(Debug, Clone)]
 pub struct BpxClient {
@@ -65,11 +74,11 @@ impl BpxClient {
         let verifier = signer.verifying_key();
 
         let mut headers = headers.unwrap_or_default();
-        headers.insert("X-API-Key", STANDARD.encode(verifier).parse()?);
-        headers.insert(CONTENT_TYPE, "application/json; charset=utf-8".parse()?);
+        headers.insert(API_KEY_HEADER, STANDARD.encode(verifier).parse()?);
+        headers.insert(CONTENT_TYPE, JSON_CONTENT.parse()?);
 
         let client = reqwest::Client::builder()
-            .user_agent("bpx-rust-client")
+            .user_agent(API_USER_AGENT)
             .default_headers(headers)
             .build()?;
 
@@ -118,7 +127,6 @@ impl BpxClient {
         for (k, v) in query_params {
             signee.push_str(&format!("&{k}={v}"));
         }
-
         for (k, v) in body_params {
             signee.push_str(&format!("&{k}={v}"));
         }
@@ -128,14 +136,12 @@ impl BpxClient {
         let signature: Signature = self.signer.sign(signee.as_bytes());
         let signature = STANDARD.encode(signature.to_bytes());
 
-        req.headers_mut().insert("X-Timestamp", timestamp.to_string().parse()?);
-        req.headers_mut()
-            .insert("X-Window", SIGNING_WINDOW.to_string().parse()?);
-        req.headers_mut().insert("X-Signature", signature.parse()?);
+        req.headers_mut().insert(SIGNATURE_HEADER, signature.parse()?);
+        req.headers_mut().insert(TIMESTAMP_HEADER, timestamp.to_string().parse()?);
+        req.headers_mut().insert(WINDOW_HEADER, SIGNING_WINDOW.to_string().parse()?);
 
         if matches!(req.method(), &Method::POST | &Method::DELETE) {
-            req.headers_mut()
-                .insert(CONTENT_TYPE, "application/json; charset=utf-8".parse()?);
+            req.headers_mut().insert(CONTENT_TYPE, JSON_CONTENT.parse()?);
         }
 
         Ok(())
