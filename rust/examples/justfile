@@ -1,0 +1,8 @@
+# Print available options
+default:
+    @just --list --unsorted
+
+#  Run the example subscribing to the RFQ WebSocket
+rfq:
+    SECRET=... \
+    cargo -q run --bin rfq

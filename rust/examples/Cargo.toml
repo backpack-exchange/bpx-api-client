@@ -1,0 +1,19 @@
+[package]
+name = "bpx-api-examples"
+version = "0.1.0"
+license = "Apache-2.0"
+edition = "2021"
+description = "Backpack Exchange API examples"
+repository = "https://github.com/backpack-exchange/bpx-api-client"
+
+[dependencies]
+bpx-api-client = { path = "../client" }
+bpx-api-types = { path = "../types" }
+
+anyhow = { workspace = true }
+tokio = { workspace = true }
+tokio-tungstenite = { workspace = true }
+
+[[bin]]
+name = "rfq"
+path = "src/bin/rfq.rs"
