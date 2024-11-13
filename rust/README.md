@@ -1,7 +1,7 @@
 [![Build Badge]][build] [![Crates Badge]][crates] [![Docs Badge]][docs] [![License Badge]][license]
 
-[Build Badge]: https://github.com/fran0x/bpx-api-client/blob/master/.github/workflows/rust.yml/badge.svg
-[build]: https://github.com/fran0x/bpx-api-client/actions/workflows/rust.yml
+[Build Badge]: https://github.com/fran0x/bpx-api-client/blob/master/.github/workflows/rust/badge.svg
+[build]: https://github.com/fran0x/bpx-api-client/actions
 
 [Crates Badge]: https://img.shields.io/crates/v/bpx_api_client.svg
 [crates]: https://crates.io/crates/bpx_api_client
