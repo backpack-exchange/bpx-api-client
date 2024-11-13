@@ -1,6 +1,6 @@
 [![Build Badge]][build] [![Crates Badge]][crates] [![Docs Badge]][docs] [![License Badge]][license]
 
-[Build Badge]: https://github.com/fran0x/bpx-api-client/blob/master/.github/workflows/rust/badge.svg
+[Build Badge]: https://github.com/fran0x/bpx-api-client/actions/workflows/rust.yml/badge.svg
 [build]: https://github.com/fran0x/bpx-api-client/actions
 
 [Crates Badge]: https://img.shields.io/crates/v/bpx_api_client.svg
@@ -10,7 +10,7 @@
 [docs]: https://docs.rs/bpx_api_client
 
 [License Badge]: https://img.shields.io/badge/License-Apache_2.0-blue.svg
-[license]: LICENSE
+[license]: ../LICENSE
 
 # Backpack Exchange API Crate
 
