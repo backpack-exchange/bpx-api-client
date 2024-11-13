@@ -15,11 +15,7 @@ impl BpxClient {
         res.json().await.map_err(Into::into)
     }
 
-    pub async fn get_deposits(
-        &self,
-        limit: Option<i64>,
-        offset: Option<i64>,
-    ) -> Result<Vec<Deposit>> {
+    pub async fn get_deposits(&self, limit: Option<i64>, offset: Option<i64>) -> Result<Vec<Deposit>> {
         let mut url = format!("{}/wapi/v1/capital/deposits", self.base_url);
         for (k, v) in [("limit", limit), ("offset", offset)] {
             if let Some(v) = v {
@@ -39,11 +35,7 @@ impl BpxClient {
         res.json().await.map_err(Into::into)
     }
 
-    pub async fn get_withdrawals(
-        &self,
-        limit: Option<i64>,
-        offset: Option<i64>,
-    ) -> Result<Vec<Withdrawal>> {
+    pub async fn get_withdrawals(&self, limit: Option<i64>, offset: Option<i64>) -> Result<Vec<Withdrawal>> {
         let mut url = format!("{}/wapi/v1/capital/withdrawals", self.base_url);
         for (k, v) in [("limit", limit), ("offset", offset)] {
             if let Some(v) = v {

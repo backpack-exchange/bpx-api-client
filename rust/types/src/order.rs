@@ -39,9 +39,7 @@ pub struct LimitOrder {
     pub created_at: i64,
 }
 
-#[derive(
-    Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash,
-)]
+#[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash)]
 #[strum(serialize_all = "PascalCase")]
 #[serde(rename_all = "PascalCase")]
 pub enum OrderType {
@@ -57,9 +55,7 @@ pub enum Order {
     Limit(LimitOrder),
 }
 
-#[derive(
-    Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash,
-)]
+#[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash)]
 #[strum(serialize_all = "UPPERCASE")]
 #[serde(rename_all = "UPPERCASE")]
 pub enum TimeInForce {
@@ -69,9 +65,7 @@ pub enum TimeInForce {
     FOK,
 }
 
-#[derive(
-    Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash,
-)]
+#[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash)]
 #[strum(serialize_all = "PascalCase")]
 #[serde(rename_all = "PascalCase")]
 pub enum SelfTradePrevention {
@@ -82,9 +76,7 @@ pub enum SelfTradePrevention {
     Allow,
 }
 
-#[derive(
-    Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash,
-)]
+#[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash)]
 #[strum(serialize_all = "PascalCase")]
 #[serde(rename_all = "PascalCase")]
 pub enum OrderStatus {
@@ -97,9 +89,7 @@ pub enum OrderStatus {
     Triggered,
 }
 
-#[derive(
-    Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash,
-)]
+#[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash)]
 #[strum(serialize_all = "PascalCase")]
 #[serde(rename_all = "PascalCase")]
 pub enum Side {

@@ -55,11 +55,7 @@ impl BpxClient {
     ///
     /// # Returns
     /// A new client instance.
-    pub fn init(
-        base_url: String,
-        api_secret: &str,
-        headers: Option<reqwest::header::HeaderMap>,
-    ) -> Result<Self> {
+    pub fn init(base_url: String, api_secret: &str, headers: Option<reqwest::header::HeaderMap>) -> Result<Self> {
         let signer = STANDARD
             .decode(api_secret)?
             .try_into()
@@ -89,9 +85,7 @@ impl BpxClient {
         let instruction = match req.url().path() {
             "/api/v1/capital" if req.method() == Method::GET => "balanceQuery",
             "/wapi/v1/capital/deposits" if req.method() == Method::GET => "depositQueryAll",
-            "/wapi/v1/capital/deposit/address" if req.method() == Method::GET => {
-                "depositAddressQuery"
-            }
+            "/wapi/v1/capital/deposit/address" if req.method() == Method::GET => "depositAddressQuery",
             "/wapi/v1/capital/withdrawals" if req.method() == Method::GET => "withdrawalQueryAll",
             "/wapi/v1/capital/withdrawals" if req.method() == Method::POST => "withdraw",
             "/wapi/v1/user/2fa" if req.method() == Method::POST => "issueTwoFactorToken",
@@ -134,8 +128,7 @@ impl BpxClient {
         let signature: Signature = self.signer.sign(signee.as_bytes());
         let signature = STANDARD.encode(signature.to_bytes());
 
-        req.headers_mut()
-            .insert("X-Timestamp", timestamp.to_string().parse()?);
+        req.headers_mut().insert("X-Timestamp", timestamp.to_string().parse()?);
         req.headers_mut()
             .insert("X-Window", SIGNING_WINDOW.to_string().parse()?);
         req.headers_mut().insert("X-Signature", signature.parse()?);

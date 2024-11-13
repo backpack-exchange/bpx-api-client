@@ -1,5 +1,4 @@
 [workspace]
-edition = "2021"
 members = ["client", "types"]
 resolver = "2"
 
@@ -11,7 +10,10 @@ repository = "https://github.com/backpack-exchange/bpx-api-client"
 base64 = "0.22.1"
 chrono = { version = "0.4.38", features = ["serde"] }
 ed25519-dalek = "2.1.1"
-reqwest = { version = "0.12.5", default-features = false, features = ["json", "rustls-tls"] }
+reqwest = { version = "0.12.5", default-features = false, features = [
+  "json",
+  "rustls-tls",
+] }
 rust_decimal = "1.35.0"
 serde = { version = "1.0.208", features = ["derive"] }
 serde_json = "1.0.125"

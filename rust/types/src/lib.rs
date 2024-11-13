@@ -7,20 +7,7 @@ pub mod order;
 pub mod trade;
 pub mod user;
 
-#[derive(
-    Debug,
-    Display,
-    Clone,
-    Copy,
-    Serialize,
-    Deserialize,
-    Default,
-    EnumString,
-    PartialEq,
-    Eq,
-    Hash,
-    EnumIter,
-)]
+#[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash, EnumIter)]
 #[strum(serialize_all = "PascalCase")]
 #[serde(rename_all = "PascalCase")]
 pub enum Blockchain {
