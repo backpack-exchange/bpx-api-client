@@ -3,9 +3,12 @@ use bpx_api_types::order::{CancelOpenOrdersPayload, CancelOrderPayload, ExecuteO
 use crate::error::{Error, Result};
 use crate::BpxClient;
 
+pub const API_ORDER: &str = "/api/v1/order";
+pub const API_ORDERS: &str = "/api/v1/orders";
+
 impl BpxClient {
     pub async fn get_open_order(&self, symbol: &str, order_id: Option<&str>, client_id: Option<u32>) -> Result<Order> {
-        let mut url = format!("{}/api/v1/order?symbol={}", self.base_url, symbol);
+        let mut url = format!("{}{}?symbol={}", self.base_url, API_ORDER, symbol);
         if let Some(order_id) = order_id {
             url.push_str(&format!("&orderId={}", order_id));
         } else {
@@ -20,13 +23,13 @@ impl BpxClient {
     }
 
     pub async fn execute_order(&self, payload: ExecuteOrderPayload) -> Result<Order> {
-        let endpoint = format!("{}/api/v1/order", self.base_url);
+        let endpoint = format!("{}{}", self.base_url, API_ORDER);
         let res = self.post(endpoint, payload).await?;
         res.json().await.map_err(Into::into)
     }
 
     pub async fn cancel_order(&self, symbol: &str, order_id: Option<&str>, client_id: Option<u32>) -> Result<Order> {
-        let url = format!("{}/api/v1/order", self.base_url);
+        let url = format!("{}{}", self.base_url, API_ORDER);
         let payload = CancelOrderPayload {
             symbol: symbol.to_string(),
             order_id: order_id.map(|s| s.to_string()),
@@ -38,7 +41,7 @@ impl BpxClient {
     }
 
     pub async fn get_open_orders(&self, symbol: Option<&str>) -> Result<Vec<Order>> {
-        let mut url = format!("{}/api/v1/orders", self.base_url);
+        let mut url = format!("{}{}", self.base_url, API_ORDERS);
         if let Some(s) = symbol {
             url.push_str(&format!("?symbol={s}"));
         }
@@ -47,7 +50,7 @@ impl BpxClient {
     }
 
     pub async fn cancel_open_orders(&self, payload: CancelOpenOrdersPayload) -> Result<Vec<Order>> {
-        let url = format!("{}/api/v1/orders", self.base_url);
+        let url = format!("{}{}", self.base_url, API_ORDERS);
         let res = self.delete(url, payload).await?;
         res.json().await.map_err(Into::into)
     }

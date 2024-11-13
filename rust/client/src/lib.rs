@@ -1,19 +1,49 @@
+//! Backpack Exchange API Client
+//!
+//! This module provides the `BpxClient` for interacting with the Backpack Exchange API.
+//! It includes functionality for authenticated and public endpoints,
+//! along with utilities for error handling, request signing, and response processing.
+//!
+//! ## Features
+//! - Request signing and authentication using ED25519 signatures.
+//! - Supports both REST and WebSocket endpoints.
+//! - Includes modules for managing capital, orders, trades, and user data.
+//!
+//! ## Example
+//! ```no_run
+//! use bpx_api_client::BpxClient;
+//!
+//! #[tokio::main]
+//! async fn main() {
+//!     let base_url = "https://api.backpack.exchange/".to_string();
+//!     let secret = "your_api_secret_here";
+//!     let headers = None;
+//!
+//!     let client = BpxClient::init(base_url, secret, headers)
+//!         .expect("Failed to initialize Backpack API client");
+//!
+//!     match client.get_open_orders(Some("SOL_USDC".to_string())).await {
+//!         Ok(orders) => println!("Open Orders: {:?}", orders),
+//!         Err(err) => eprintln!("Error: {:?}", err),
+//!     }
+//! }
+
 use base64::{engine::general_purpose::STANDARD, Engine};
 use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
-pub use error::{Error, Result};
 use reqwest::{header::CONTENT_TYPE, IntoUrl, Method, Request, Response, StatusCode};
+use routes::{
+    capital::{API_CAPITAL, API_DEPOSITS, API_DEPOSIT_ADDRESS, API_WITHDRAWALS},
+    order::{API_ORDER, API_ORDERS},
+    user::API_USER_2FA,
+};
 use serde::Serialize;
 use std::collections::BTreeMap;
 
 pub use bpx_api_types as types;
-pub use reqwest;
+pub use error::{Error, Result};
 
-pub mod capital;
 pub mod error;
-pub mod markets;
-pub mod order;
-pub mod trades;
-pub mod user;
+pub mod routes;
 
 const API_USER_AGENT: &str = "bpx-rust-client";
 const API_KEY_HEADER: &str = "X-API-Key";
@@ -26,6 +56,7 @@ const WINDOW_HEADER: &str = "X-Window";
 
 const JSON_CONTENT: &str = "application/json; charset=utf-8";
 
+/// A client for interacting with the Backpack Exchange API.
 #[derive(Debug, Clone)]
 pub struct BpxClient {
     pub verifier: VerifyingKey,
@@ -55,15 +86,10 @@ impl AsRef<reqwest::Client> for BpxClient {
 }
 
 impl BpxClient {
-    /// Initialize a new client with the given base URL, API key, and API secret.
+    /// Initializes a new client with the given base URL, API secret, and optional headers.
     ///
-    /// # Arguments
-    /// * `base_url` - The base URL of the API.
-    /// * `api_secret` - The API secret.
-    /// * `headers` - Additional headers to include in the request.
-    ///
-    /// # Returns
-    /// A new client instance.
+    /// This sets up the signing and verification keys, and creates a `reqwest` client
+    /// with default headers including the API key and content type.
     pub fn init(base_url: String, api_secret: &str, headers: Option<reqwest::header::HeaderMap>) -> Result<Self> {
         let signer = STANDARD
             .decode(api_secret)?
@@ -90,25 +116,26 @@ impl BpxClient {
         })
     }
 
+    /// Signs a request by generating a signature from the request details
+    /// and appending necessary headers for authentication.
+    ///
+    /// # Arguments
+    /// * `req` - The mutable reference to the request to be signed.
     fn sign(&self, req: &mut Request) -> Result<()> {
         let instruction = match req.url().path() {
-            "/api/v1/capital" if req.method() == Method::GET => "balanceQuery",
-            "/wapi/v1/capital/deposits" if req.method() == Method::GET => "depositQueryAll",
-            "/wapi/v1/capital/deposit/address" if req.method() == Method::GET => "depositAddressQuery",
-            "/wapi/v1/capital/withdrawals" if req.method() == Method::GET => "withdrawalQueryAll",
-            "/wapi/v1/capital/withdrawals" if req.method() == Method::POST => "withdraw",
-            "/wapi/v1/user/2fa" if req.method() == Method::POST => "issueTwoFactorToken",
-            "/api/v1/order" if req.method() == Method::GET => "orderQuery",
-            "/api/v1/order" if req.method() == Method::POST => "orderExecute",
-            "/api/v1/order" if req.method() == Method::DELETE => "orderCancel",
-            "/api/v1/orders" if req.method() == Method::GET => "orderQueryAll",
-            "/api/v1/orders" if req.method() == Method::DELETE => "orderCancelAll",
-            _ => return Ok(()), // other endpoints don't require signing
+            API_CAPITAL if req.method() == Method::GET => "balanceQuery",
+            API_DEPOSITS if req.method() == Method::GET => "depositQueryAll",
+            API_DEPOSIT_ADDRESS if req.method() == Method::GET => "depositAddressQuery",
+            API_WITHDRAWALS if req.method() == Method::GET => "withdrawalQueryAll",
+            API_WITHDRAWALS if req.method() == Method::POST => "withdraw",
+            API_USER_2FA if req.method() == Method::POST => "issueTwoFactorToken",
+            API_ORDER if req.method() == Method::GET => "orderQuery",
+            API_ORDER if req.method() == Method::POST => "orderExecute",
+            API_ORDER if req.method() == Method::DELETE => "orderCancel",
+            API_ORDERS if req.method() == Method::GET => "orderQueryAll",
+            API_ORDERS if req.method() == Method::DELETE => "orderCancelAll",
+            _ => return Ok(()), // Other endpoints don't require signing.
         };
-
-        let timestamp = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)?
-            .as_millis();
 
         let query_params = req
             .url()
@@ -122,6 +149,10 @@ impl BpxClient {
         } else {
             BTreeMap::new()
         };
+
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)?
+            .as_millis();
 
         let mut signee = format!("instruction={instruction}");
         for (k, v) in query_params {
@@ -137,8 +168,10 @@ impl BpxClient {
         let signature = STANDARD.encode(signature.to_bytes());
 
         req.headers_mut().insert(SIGNATURE_HEADER, signature.parse()?);
-        req.headers_mut().insert(TIMESTAMP_HEADER, timestamp.to_string().parse()?);
-        req.headers_mut().insert(WINDOW_HEADER, SIGNING_WINDOW.to_string().parse()?);
+        req.headers_mut()
+            .insert(TIMESTAMP_HEADER, timestamp.to_string().parse()?);
+        req.headers_mut()
+            .insert(WINDOW_HEADER, SIGNING_WINDOW.to_string().parse()?);
 
         if matches!(req.method(), &Method::POST | &Method::DELETE) {
             req.headers_mut().insert(CONTENT_TYPE, JSON_CONTENT.parse()?);
@@ -147,6 +180,8 @@ impl BpxClient {
         Ok(())
     }
 
+    /// Processes the response to check for HTTP errors and extracts
+    /// the response content. Returns a custom error if the status code is non-2xx.
     async fn process_response(res: Response) -> Result<Response> {
         if let Err(e) = res.error_for_status_ref() {
             let err_text = res.text().await?;
@@ -159,6 +194,7 @@ impl BpxClient {
         Ok(res)
     }
 
+    /// Sends a GET request to the specified URL and signs it before execution.
     pub async fn get<U: IntoUrl>(&self, url: U) -> Result<Response> {
         let mut req = self.client.get(url).build()?;
         tracing::debug!("req: {:?}", req);
@@ -167,6 +203,7 @@ impl BpxClient {
         Self::process_response(res).await
     }
 
+    /// Sends a POST request with a JSON payload to the specified URL and signs it.
     pub async fn post<P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<Response> {
         let mut req = self.client.post(url).json(&payload).build()?;
         tracing::debug!("req: {:?}", req);
@@ -175,6 +212,7 @@ impl BpxClient {
         Self::process_response(res).await
     }
 
+    /// Sends a DELETE request with a JSON payload to the specified URL and signs it.
     pub async fn delete<P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<Response> {
         let mut req = self.client.delete(url).json(&payload).build()?;
         tracing::debug!("req: {:?}", req);
