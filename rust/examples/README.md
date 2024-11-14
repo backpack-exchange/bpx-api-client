@@ -12,4 +12,5 @@ Set the following environment variables:
 
 ## Running the Examples
 
+- To retrieve all the open orders, run: `just orders`
 - To subscribe to the RFQ private stream, run: `just rfq`

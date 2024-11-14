@@ -7,12 +7,16 @@ description = "Backpack Exchange API examples"
 repository = "https://github.com/backpack-exchange/bpx-api-client"
 
 [dependencies]
-bpx-api-client = { path = "../client" }
+bpx-api-client = { path = "../client", features = ["ws"] }
 bpx-api-types = { path = "../types" }
 
 anyhow = { workspace = true }
 tokio = { workspace = true }
 tokio-tungstenite = { workspace = true }
+
+[[bin]]
+name = "orders"
+path = "src/bin/orders.rs"
 
 [[bin]]
 name = "rfq"

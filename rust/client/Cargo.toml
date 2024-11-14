@@ -22,5 +22,5 @@ tokio-tungstenite = { workspace = true, optional = true }
 futures-util = { workspace = true, optional = true }
 
 [features]
-default = ["ws"]
+default = []
 ws = ["tokio", "tokio-tungstenite", "futures-util"]

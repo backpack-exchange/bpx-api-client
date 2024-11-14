@@ -11,11 +11,11 @@
 //!
 //! ## Example
 //! ```no_run
-//! use bpx_api_client::BpxClient;
+//! use bpx_api_client::{BACKPACK_API_BASE_URL, BpxClient};
 //!
 //! #[tokio::main]
 //! async fn main() {
-//!     let base_url = "https://api.backpack.exchange/".to_string();
+//!     let base_url = BACKPACK_API_BASE_URL.to_string();
 //!     let secret = "your_api_secret_here";
 //!     let headers = None;
 //!
