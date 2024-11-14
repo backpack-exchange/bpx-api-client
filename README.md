@@ -13,7 +13,7 @@ This repository hosts the Backpack Exchange API clients. Currently, the client i
 ## Contributing
 
 We welcome contributions from the community!  
-Feel free to open bug reports, suggest new features, or submit pull requests to improve the matching engine and related components.
+Feel free to open bug reports, suggest new features, or submit pull requests to improve the client and related components.
 
 ## License
 
