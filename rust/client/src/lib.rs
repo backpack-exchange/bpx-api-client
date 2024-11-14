@@ -24,7 +24,7 @@
 //!
 //!     match client.get_open_orders(Some("SOL_USDC")).await {
 //!         Ok(orders) => println!("Open Orders: {:?}", orders),
-//!         Err(err) => eprintln!("Error: {:?}", err),
+//!         Err(err) => tracing::error!("Error: {:?}", err),
 //!     }
 //! }
 //! ```

@@ -36,7 +36,7 @@ impl BpxClient {
             .await
             .expect("Error subscribing to WebSocket");
 
-        println!("Subscribed to {stream} stream...");
+        tracing::debug!("Subscribed to {stream} stream...");
 
         while let Some(message) = ws_stream.next().await {
             match message {
@@ -46,7 +46,7 @@ impl BpxClient {
                             if let Some(payload) = value.get("data") {
                                 if let Ok(data) = serde_json::from_value::<T>(payload.clone()) {
                                     if tx.send(data).await.is_err() {
-                                        eprintln!("Failed to send message through the channel");
+                                        tracing::error!("Failed to send message through the channel");
                                     }
                                 }
                             }
@@ -55,7 +55,7 @@ impl BpxClient {
                     Message::Close(_) => break,
                     _ => {}
                 },
-                Err(error) => eprintln!("WebSocket error: {}", error),
+                Err(error) => tracing::error!("WebSocket error: {}", error),
             }
         }
     }

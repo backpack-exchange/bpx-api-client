@@ -14,7 +14,7 @@ pub struct RequestForQuotePayload {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QuotePayload {
-    pub rfq_id: u64,
+    pub rfq_id: String,
     pub bid_price: Decimal,
     pub ask_price: Decimal,
 }
