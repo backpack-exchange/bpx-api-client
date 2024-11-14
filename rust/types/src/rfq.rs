@@ -20,26 +20,70 @@ pub struct QuotePayload {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct RequestForQuote {
-    #[serde(rename = "R")]
-    pub rfq_id: u64,
-    #[serde(rename = "T")]
-    pub submission_time: i64,
-    #[serde(rename = "w")]
-    pub expiry_time: i64,
-    #[serde(rename = "s")]
-    pub symbol: String,
-    #[serde(rename = "q")]
-    pub quantity: Decimal,
-    #[serde(rename = "X")]
-    pub status: OrderStatus,
-    #[serde(rename = "e")]
-    pub event_type: String,
-    #[serde(rename = "W")]
-    pub received_time: i64,
-    #[serde(rename = "E")]
-    pub event_time: i64,
+pub struct RequestForQuoteStream {
+    pub stream: String,
+    pub data: RequestForQuote,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "e", rename_all = "camelCase")] // Discriminates based on "e" field
+pub enum RequestForQuote {
+    RfqActive {
+        #[serde(rename = "R")]
+        rfq_id: u64,
+        #[serde(rename = "T")]
+        submission_time: i64,
+        #[serde(rename = "w")]
+        expiry_time: i64,
+        #[serde(rename = "s")]
+        symbol: String,
+        #[serde(rename = "q")]
+        quantity: Decimal,
+        #[serde(rename = "X")]
+        status: OrderStatus,
+        #[serde(rename = "W")]
+        received_time: i64,
+        #[serde(rename = "E")]
+        event_time: i64,
+    },
+    QuoteAccepted {
+        #[serde(rename = "R")]
+        rfq_id: u64,
+        #[serde(rename = "Q")]
+        quote_id: u64,
+        #[serde(rename = "T")]
+        submission_time: i64,
+        #[serde(rename = "X")]
+        status: OrderStatus,
+        #[serde(rename = "E")]
+        event_time: i64,
+    },
+    QuoteCancelled {
+        #[serde(rename = "R")]
+        rfq_id: u64,
+        #[serde(rename = "Q")]
+        quote_id: u64,
+        #[serde(rename = "X")]
+        status: OrderStatus,
+        #[serde(rename = "E")]
+        event_time: i64,
+    },
+    RfqFilled {
+        #[serde(rename = "R")]
+        rfq_id: u64,
+        #[serde(rename = "Q")]
+        quote_id: u64,
+        #[serde(rename = "T")]
+        submission_time: i64,
+        #[serde(rename = "X")]
+        status: OrderStatus,
+        #[serde(rename = "E")]
+        event_time: i64,
+        #[serde(rename = "S")]
+        side: String,
+        #[serde(rename = "p")]
+        price: Decimal,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
