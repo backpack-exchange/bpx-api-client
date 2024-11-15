@@ -8,6 +8,7 @@ use crate::BpxClient;
 const API_ASSETS: &str = "/api/v1/assets";
 const API_MARKETS: &str = "/api/v1/markets";
 const API_TICKER: &str = "/api/v1/ticker";
+const API_TICKERS: &str = "/api/v1/tickers";
 const API_DEPTH: &str = "/api/v1/depth";
 const API_KLINES: &str = "/api/v1/klines";
 
@@ -27,8 +28,15 @@ impl BpxClient {
     }
 
     /// Fetches the ticker information for a given symbol.
-    pub async fn get_ticker(&self, symbol: &str) -> Result<Vec<Ticker>> {
+    pub async fn get_ticker(&self, symbol: &str) -> Result<Ticker> {
         let url = format!("{}{}&symbol={}", self.base_url, API_TICKER, symbol);
+        let res = self.get(url).await?;
+        res.json().await.map_err(Into::into)
+    }
+
+    /// Fetches the ticker information for all symbols.
+    pub async fn get_tickers(&self) -> Result<Vec<Ticker>> {
+        let url = format!("{}{}", self.base_url, API_TICKERS);
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
     }
