@@ -5,6 +5,7 @@ pub mod capital;
 pub mod markets;
 pub mod order;
 pub mod trade;
+pub mod user;
 
 #[derive(
     Debug,
@@ -28,4 +29,5 @@ pub enum Blockchain {
     Ethereum,
     Polygon,
     Bitcoin,
+    Internal,
 }

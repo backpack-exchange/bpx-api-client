@@ -17,7 +17,7 @@ impl BpxClient {
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
     }
-
+  
     pub async fn get_ticker(&self, symbol: &str) -> Result<Ticker> {
         let url = format!("{}/api/v1/ticker?symbol={}", self.base_url, symbol);
         let res = self.get(url).await?;

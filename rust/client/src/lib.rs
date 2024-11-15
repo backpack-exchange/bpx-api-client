@@ -1,17 +1,19 @@
 use base64::{engine::general_purpose::STANDARD, Engine};
 use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
 pub use error::{Error, Result};
-use reqwest::{header::CONTENT_TYPE, IntoUrl, Method, Request, Response};
+use reqwest::{header::CONTENT_TYPE, IntoUrl, Method, Request, Response, StatusCode};
 use serde::Serialize;
 use std::collections::BTreeMap;
 
 pub use bpx_api_types as types;
+pub use reqwest;
 
 pub mod capital;
 pub mod error;
 pub mod markets;
 pub mod order;
 pub mod trades;
+pub mod user;
 
 const SIGNING_WINDOW: u32 = 5000;
 
@@ -44,23 +46,36 @@ impl AsRef<reqwest::Client> for BpxClient {
 }
 
 impl BpxClient {
-    pub fn init(base_url: String, api_key: &str, api_secret: &str) -> Result<Self> {
-        let mut headers = reqwest::header::HeaderMap::new();
-        headers.insert("X-API-Key", api_key.parse()?);
+    /// Initialize a new client with the given base URL, API key, and API secret.
+    ///
+    /// # Arguments
+    /// * `base_url` - The base URL of the API.
+    /// * `api_secret` - The API secret.
+    /// * `headers` - Additional headers to include in the request.
+    ///
+    /// # Returns
+    /// A new client instance.
+    pub fn init(
+        base_url: String,
+        api_secret: &str,
+        headers: Option<reqwest::header::HeaderMap>,
+    ) -> Result<Self> {
+        let signer = STANDARD
+            .decode(api_secret)?
+            .try_into()
+            .map(|s| SigningKey::from_bytes(&s))
+            .map_err(|_| Error::SecretKey)?;
+
+        let verifier = signer.verifying_key();
+
+        let mut headers = headers.unwrap_or_default();
+        headers.insert("X-API-Key", STANDARD.encode(verifier).parse()?);
         headers.insert(CONTENT_TYPE, "application/json; charset=utf-8".parse()?);
 
         let client = reqwest::Client::builder()
             .user_agent("bpx-rust-client")
             .default_headers(headers)
             .build()?;
-
-        let api_secret = STANDARD
-            .decode(api_secret)?
-            .try_into()
-            .map_err(|_| Error::SecretKey)?;
-
-        let signer = SigningKey::from_bytes(&api_secret);
-        let verifier = signer.verifying_key();
 
         Ok(BpxClient {
             verifier,
@@ -79,6 +94,7 @@ impl BpxClient {
             }
             "/wapi/v1/capital/withdrawals" if req.method() == Method::GET => "withdrawalQueryAll",
             "/wapi/v1/capital/withdrawals" if req.method() == Method::POST => "withdraw",
+            "/wapi/v1/user/2fa" if req.method() == Method::POST => "issueTwoFactorToken",
             "/api/v1/order" if req.method() == Method::GET => "orderQuery",
             "/api/v1/order" if req.method() == Method::POST => "orderExecute",
             "/api/v1/order" if req.method() == Method::DELETE => "orderCancel",
@@ -132,24 +148,39 @@ impl BpxClient {
         Ok(())
     }
 
+    async fn process_response(res: Response) -> Result<Response> {
+        if let Err(e) = res.error_for_status_ref() {
+            let err_text = res.text().await?;
+            let err = Error::BpxApiError {
+                status_code: e.status().unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
+                message: err_text,
+            };
+            return Err(err);
+        }
+        Ok(res)
+    }
+
     pub async fn get<U: IntoUrl>(&self, url: U) -> Result<Response> {
         let mut req = self.client.get(url).build()?;
         tracing::debug!("req: {:?}", req);
         self.sign(&mut req)?;
-        self.client.execute(req).await.map_err(Error::from)
+        let res = self.client.execute(req).await?;
+        Self::process_response(res).await
     }
 
     pub async fn post<P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<Response> {
         let mut req = self.client.post(url).json(&payload).build()?;
         tracing::debug!("req: {:?}", req);
         self.sign(&mut req)?;
-        self.client.execute(req).await.map_err(Error::from)
+        let res = self.client.execute(req).await?;
+        Self::process_response(res).await
     }
 
     pub async fn delete<P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<Response> {
         let mut req = self.client.delete(url).json(&payload).build()?;
         tracing::debug!("req: {:?}", req);
         self.sign(&mut req)?;
-        self.client.execute(req).await.map_err(Error::from)
+        let res = self.client.execute(req).await?;
+        Self::process_response(res).await
     }
 }

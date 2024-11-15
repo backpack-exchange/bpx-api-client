@@ -28,4 +28,10 @@ pub enum Error {
 
     #[error("Invalid request: {0}")]
     InvalidRequest(String),
+
+    #[error("Backpack API error: {status_code}: {message}")]
+    BpxApiError {
+        status_code: reqwest::StatusCode,
+        message: String,
+    },
 }
