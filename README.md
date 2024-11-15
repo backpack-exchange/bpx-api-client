@@ -4,7 +4,7 @@
 
 Access the official API documentation here: [https://docs.backpack.exchange/](https://docs.backpack.exchange/).
 
-This repository hosts the Backpack Exchange API clients. Currently, the client is only available in [Rust](./rust).
+This repository contains API clients for Backpack Exchange. Currently, only a `Rust` client is available. For more details, see the [Rust Client README](./rust/client/README.md).
 
 <img src="img/book_example.png" width="270px" alt="Order Book example" />
 

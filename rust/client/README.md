@@ -102,5 +102,3 @@ To see the available commands, run:
 just
 ```
 
-## Crate Usage
-
