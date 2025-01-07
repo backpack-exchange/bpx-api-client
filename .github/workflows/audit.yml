@@ -1,4 +1,4 @@
-name: audit
+name: Audit
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
       - "**/Cargo.lock"
   schedule:
     - cron: "0 0 * * *"
+  workflow_dispatch:
 
 jobs:
   audit:

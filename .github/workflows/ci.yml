@@ -39,4 +39,3 @@ jobs:
       - name: Run tests
         run: cargo test
         working-directory: rust
-
