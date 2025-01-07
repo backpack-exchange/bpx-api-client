@@ -1,4 +1,4 @@
-name: rust
+name: CI
 
 on:
   push:
@@ -9,30 +9,35 @@ on:
     branches:
       - master
 
-env:
-  CARGO_TERM_COLOR: always
-  RUSTFLAGS: "-Dwarnings"
-
 jobs:
   test:
     name: Test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        id: cache-dependencies
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install stable toolchain
+        uses: dtolnay/rust-toolchain@v1
         with:
-          path: |
-            rust/.cargo/registry
-            rust/.cargo/git
-            rust/target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('rust/Cargo.lock') }}
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
           toolchain: stable
-          override: true
-      - run: cargo test
+          components: rustfmt, clippy
+
+      - name: Setup cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: rust
+
+      - name: Check format
+        run: cargo fmt --all --check
+        working-directory: rust
+
+      - name: Clippy
+        run: cargo clippy --all-features -- -D warnings
+        working-directory: rust
+
+      - name: Run tests
+        run: cargo test
         working-directory: rust
 
   fmt:
@@ -46,17 +51,4 @@ jobs:
           override: true
           components: rustfmt
       - run: cargo fmt --all -- --check
-        working-directory: rust
-
-  clippy:
-    name: Clippy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-          components: clippy
-      - run: cargo clippy --all-targets --all-features
         working-directory: rust
