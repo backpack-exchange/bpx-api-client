@@ -57,8 +57,9 @@ impl BpxClient {
     }
 
     /// Submits a withdrawal request for the specified payload.
-    pub async fn request_withdrawal(&self, payload: RequestWithdrawalPayload) -> Result<()> {
+    pub async fn request_withdrawal(&self, payload: RequestWithdrawalPayload) -> Result<Withdrawal> {
         let endpoint = format!("{}{}", self.base_url, API_WITHDRAWALS);
-        self.post(endpoint, payload).await.map(|_| ())
+        let res = self.post(endpoint, payload).await?;
+        res.json().await.map_err(Into::into)
     }
 }
