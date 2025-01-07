@@ -10,11 +10,16 @@ on:
 
 jobs:
   audit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v1
-      - run: cargo audit
-        working-directory: rust
-        env:
-          CARGO_TERM_COLOR: always
-          RUSTFLAGS: "-Dwarnings"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install cargo-audit
+        uses: baptiste0928/cargo-install@v3
+        with:
+          crate: cargo-audit
+          locked: true
+
+      - name: Audit
+        run: cargo audit
