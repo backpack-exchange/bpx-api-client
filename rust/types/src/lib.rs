@@ -23,4 +23,5 @@ pub enum Blockchain {
     Polygon,
     Bitcoin,
     Internal,
+    EqualsMoney,
 }
