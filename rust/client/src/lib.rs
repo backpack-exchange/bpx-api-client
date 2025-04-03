@@ -39,7 +39,9 @@ use routes::{
     user::API_USER_2FA,
 };
 use serde::Serialize;
+use serde_json::Value;
 use std::{
+    borrow::Cow,
     collections::BTreeMap,
     time::{SystemTime, UNIX_EPOCH},
 };
@@ -179,27 +181,24 @@ impl BpxClient {
 
     /// Sends a GET request to the specified URL and signs it before execution.
     pub async fn get<U: IntoUrl>(&self, url: U) -> Result<Response> {
-        let mut req = self.client.get(url).build()?;
+        let req = self.build_and_maybe_sign_request::<(), _>(url, Method::GET, None)?;
         tracing::debug!("req: {:?}", req);
-        self.sign(&mut req)?;
         let res = self.client.execute(req).await?;
         Self::process_response(res).await
     }
 
     /// Sends a POST request with a JSON payload to the specified URL and signs it.
     pub async fn post<P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<Response> {
-        let mut req = self.client.post(url).json(&payload).build()?;
+        let req = self.build_and_maybe_sign_request(url, Method::POST, Some(&payload))?;
         tracing::debug!("req: {:?}", req);
-        self.sign(&mut req)?;
         let res = self.client.execute(req).await?;
         Self::process_response(res).await
     }
 
     /// Sends a DELETE request with a JSON payload to the specified URL and signs it.
     pub async fn delete<P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<Response> {
-        let mut req = self.client.delete(url).json(&payload).build()?;
+        let req = self.build_and_maybe_sign_request(url, Method::DELETE, Some(&payload))?;
         tracing::debug!("req: {:?}", req);
-        self.sign(&mut req)?;
         let res = self.client.execute(req).await?;
         Self::process_response(res).await
     }
@@ -222,44 +221,58 @@ impl BpxClient {
     ///
     /// # Arguments
     /// * `req` - The mutable reference to the request to be signed.
-    fn sign(&self, req: &mut Request) -> Result<()> {
-        let instruction = match req.url().path() {
-            API_CAPITAL if req.method() == Method::GET => "balanceQuery",
-            API_DEPOSITS if req.method() == Method::GET => "depositQueryAll",
-            API_DEPOSIT_ADDRESS if req.method() == Method::GET => "depositAddressQuery",
-            API_WITHDRAWALS if req.method() == Method::GET => "withdrawalQueryAll",
-            API_WITHDRAWALS if req.method() == Method::POST => "withdraw",
-            API_USER_2FA if req.method() == Method::POST => "issueTwoFactorToken",
-            API_ORDER if req.method() == Method::GET => "orderQuery",
-            API_ORDER if req.method() == Method::POST => "orderExecute",
-            API_ORDER if req.method() == Method::DELETE => "orderCancel",
-            API_ORDERS if req.method() == Method::GET => "orderQueryAll",
-            API_ORDERS if req.method() == Method::DELETE => "orderCancelAll",
-            API_RFQ if req.method() == Method::POST => "rfqSubmit",
-            API_RFQ_QUOTE if req.method() == Method::POST => "quoteSubmit",
-            _ => return Ok(()), // Other endpoints don't require signing.
+    fn build_and_maybe_sign_request<P: Serialize, U: IntoUrl>(
+        &self,
+        url: U,
+        method: Method,
+        payload: Option<&P>,
+    ) -> Result<Request> {
+        let url = url.into_url()?;
+        let instruction = match url.path() {
+            API_CAPITAL if method == Method::GET => "balanceQuery",
+            API_DEPOSITS if method == Method::GET => "depositQueryAll",
+            API_DEPOSIT_ADDRESS if method == Method::GET => "depositAddressQuery",
+            API_WITHDRAWALS if method == Method::GET => "withdrawalQueryAll",
+            API_WITHDRAWALS if method == Method::POST => "withdraw",
+            API_USER_2FA if method == Method::POST => "issueTwoFactorToken",
+            API_ORDER if method == Method::GET => "orderQuery",
+            API_ORDER if method == Method::POST => "orderExecute",
+            API_ORDER if method == Method::DELETE => "orderCancel",
+            API_ORDERS if method == Method::GET => "orderQueryAll",
+            API_ORDERS if method == Method::DELETE => "orderCancelAll",
+            API_RFQ if method == Method::POST => "rfqSubmit",
+            API_RFQ_QUOTE if method == Method::POST => "quoteSubmit",
+            _ => {
+                let req = self.client().request(method, url);
+                if let Some(payload) = payload {
+                    return Ok(req.json(payload).build()?);
+                } else {
+                    return Ok(req.build()?);
+                }
+            }
         };
 
-        let query_params = req
-            .url()
-            .query_pairs()
-            .map(|(x, y)| (x.into_owned(), y.into_owned()))
-            .collect::<BTreeMap<String, String>>();
-
-        let body_params = if let Some(b) = req.body() {
-            let s = std::str::from_utf8(b.as_bytes().unwrap_or_default())?;
-            serde_json::from_str::<BTreeMap<String, String>>(s)?
+        let query_params = url.query_pairs().collect::<BTreeMap<Cow<'_, str>, Cow<'_, str>>>();
+        let body_params = if let Some(payload) = payload {
+            let s = serde_json::to_value(payload)?;
+            match s {
+                Value::Object(map) => map
+                    .into_iter()
+                    .map(|(k, v)| (k, v.to_string()))
+                    .collect::<BTreeMap<_, _>>(),
+                _ => return Err(Error::InvalidRequest("payload must be a JSON object".to_string())),
+            }
         } else {
             BTreeMap::new()
         };
 
         let timestamp = now_millis();
-
         let mut signee = format!("instruction={instruction}");
         for (k, v) in query_params {
             signee.push_str(&format!("&{k}={v}"));
         }
         for (k, v) in body_params {
+            let v = v.trim_start_matches('"').trim_end_matches('"');
             signee.push_str(&format!("&{k}={v}"));
         }
         signee.push_str(&format!("&timestamp={timestamp}&window={DEFAULT_WINDOW}"));
@@ -268,17 +281,20 @@ impl BpxClient {
         let signature: Signature = self.signer.sign(signee.as_bytes());
         let signature = STANDARD.encode(signature.to_bytes());
 
+        let mut req = self.client().request(method, url);
+        if let Some(payload) = payload {
+            req = req.json(payload);
+        }
+        let mut req = req.build()?;
         req.headers_mut().insert(SIGNATURE_HEADER, signature.parse()?);
         req.headers_mut()
             .insert(TIMESTAMP_HEADER, timestamp.to_string().parse()?);
         req.headers_mut()
             .insert(WINDOW_HEADER, DEFAULT_WINDOW.to_string().parse()?);
-
         if matches!(req.method(), &Method::POST | &Method::DELETE) {
             req.headers_mut().insert(CONTENT_TYPE, JSON_CONTENT.parse()?);
         }
-
-        Ok(())
+        Ok(req)
     }
 }
 
