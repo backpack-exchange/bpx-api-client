@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use strum::{Display, EnumIter, EnumString};
 
 pub mod capital;
+pub mod futures;
 pub mod markets;
 pub mod order;
 pub mod rfq;
