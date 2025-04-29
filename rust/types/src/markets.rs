@@ -14,7 +14,7 @@ pub struct Ticker {
     pub high: Decimal,
     pub low: Decimal,
     pub volume: Decimal,
-    pub trades: i64,
+    pub trades: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
