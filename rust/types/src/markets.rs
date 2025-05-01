@@ -78,6 +78,42 @@ pub struct OrderBookDepth {
     pub last_update_id: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")] // Discriminates based on "e" field
+pub struct OrderBookDepthUpdate {
+    /// Event timestamp in microseconds
+    #[serde(rename = "e")]
+    event_type: String,
+
+    /// Event timestamp in microseconds
+    #[serde(rename = "E")]
+    event_time: i64,
+
+    /// Symbol
+    #[serde(rename = "s")]
+    symbol: String,
+
+    /// Engine timestamp in microseconds
+    #[serde(rename = "T")]
+    timestamp: i64,
+
+    /// First update ID in event
+    #[serde(rename = "U")]
+    first_update_id: u64,
+
+    /// Last update ID in event
+    #[serde(rename = "u")]
+    last_update_id: u64,
+
+    /// Asks
+    #[serde(rename = "a")]
+    asks: Vec<(Decimal, Decimal)>,
+
+    /// Bids
+    #[serde(rename = "b")]
+    bids: Vec<(Decimal, Decimal)>,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Kline {
