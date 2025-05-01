@@ -79,9 +79,9 @@ pub struct OrderBookDepth {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")] // Discriminates based on "e" field
+#[serde(rename_all = "camelCase")]
 pub struct OrderBookDepthUpdate {
-    /// Event timestamp in microseconds
+    /// Event type
     #[serde(rename = "e")]
     event_type: String,
 
