@@ -17,6 +17,42 @@ pub struct Ticker {
     pub trades: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TickerUpdate {
+    /// Event type
+    #[serde(rename = "e")]
+    event_type: String,
+
+    /// Event timestamp in microseconds
+    #[serde(rename = "E")]
+    event_time: i64,
+
+    /// Symbol
+    #[serde(rename = "s")]
+    symbol: String,
+
+    #[serde(rename = "a")]
+    ask_price: String,
+
+    #[serde(rename = "A")]
+    ask_quantity: String,
+
+    #[serde(rename = "b")]
+    bid_price: String,
+
+    #[serde(rename = "B")]
+    bid_quantity: String,
+
+    /// Update ID of event
+    #[serde(rename = "u")]
+    update_id: u64,
+
+    /// Engine timestamp in microseconds
+    #[serde(rename = "T")]
+    timestamp: u64,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Market {
