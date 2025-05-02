@@ -162,3 +162,11 @@ pub struct Kline {
     pub volume: Decimal,
     pub trades: u64,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FundingRate {
+    pub symbol: String,
+    pub interval_end_timestamp: String,
+    pub funding_rate: String,
+}
