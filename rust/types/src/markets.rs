@@ -22,35 +22,35 @@ pub struct Ticker {
 pub struct TickerUpdate {
     /// Event type
     #[serde(rename = "e")]
-    event_type: String,
+    pub event_type: String,
 
     /// Event timestamp in microseconds
     #[serde(rename = "E")]
-    event_time: i64,
+    pub event_time: i64,
 
     /// Symbol
     #[serde(rename = "s")]
-    symbol: String,
+    pub symbol: String,
 
     #[serde(rename = "a")]
-    ask_price: String,
+    pub ask_price: String,
 
     #[serde(rename = "A")]
-    ask_quantity: String,
+    pub ask_quantity: String,
 
     #[serde(rename = "b")]
-    bid_price: String,
+    pub bid_price: String,
 
     #[serde(rename = "B")]
-    bid_quantity: String,
+    pub bid_quantity: String,
 
     /// Update ID of event
     #[serde(rename = "u")]
-    update_id: u64,
+    pub update_id: u64,
 
     /// Engine timestamp in microseconds
     #[serde(rename = "T")]
-    timestamp: u64,
+    pub timestamp: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
