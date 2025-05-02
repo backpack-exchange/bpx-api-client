@@ -168,5 +168,5 @@ pub struct Kline {
 pub struct FundingRate {
     pub symbol: String,
     pub interval_end_timestamp: String,
-    pub funding_rate: String,
+    pub funding_rate: Decimal,
 }
