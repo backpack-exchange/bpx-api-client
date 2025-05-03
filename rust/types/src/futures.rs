@@ -1,18 +1,20 @@
 use serde::{Deserialize, Serialize};
 
+use crate::margin::MarginFunction;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Position {
-    // pub imf_function: TBD,
-    // pub mmf_function: TBD,
     pub break_even_price: String,
     pub cumulative_funding_payment: String,
     pub cumulative_interest: String,
     pub entry_price: String,
     pub est_liquidation_price: String,
     pub imf: String,
+    pub imf_function: MarginFunction,
     pub mark_price: String,
     pub mmf: String,
+    pub mmf_function: MarginFunction,
     pub net_cost: String,
     pub net_exposure_notional: String,
     pub net_exposure_quantity: String,
