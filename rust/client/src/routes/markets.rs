@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use bpx_api_types::markets::{FundingRate, Kline, Market, OrderBookDepth, Ticker, Token};
+use bpx_api_types::markets::{FundingRate, Kline, MarkPrice, Market, OrderBookDepth, Ticker, Token};
 
 use crate::error::Result;
 use crate::BpxClient;
@@ -12,6 +12,7 @@ const API_TICKERS: &str = "/api/v1/tickers";
 const API_DEPTH: &str = "/api/v1/depth";
 const API_KLINES: &str = "/api/v1/klines";
 const API_FUNDING: &str = "/api/v1/fundingRates";
+const API_MARK_PRICES: &str = "/api/v1/markPrices";
 
 impl BpxClient {
     /// Fetches available assets and their associated tokens.
@@ -24,6 +25,13 @@ impl BpxClient {
     /// Retrieves a list of available markets.
     pub async fn get_markets(&self) -> Result<Vec<Market>> {
         let url = format!("{}{}", self.base_url, API_MARKETS);
+        let res = self.get(url).await?;
+        res.json().await.map_err(Into::into)
+    }
+
+    /// Retrieves mark price, index price and the funding rate for the current interval for all symbols, or the symbol specified.
+    pub async fn get_all_mark_prices(&self) -> Result<Vec<MarkPrice>> {
+        let url = format!("{}{}", self.base_url, API_MARK_PRICES);
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
     }

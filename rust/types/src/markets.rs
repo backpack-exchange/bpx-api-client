@@ -170,3 +170,13 @@ pub struct FundingRate {
     pub interval_end_timestamp: String,
     pub funding_rate: Decimal,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MarkPrice {
+    pub symbol: String,
+    pub funding_rate: Decimal,
+    pub index_price: Decimal,
+    pub mark_price: Decimal,
+    pub next_funding_timestamp: u64,
+}
