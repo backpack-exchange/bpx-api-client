@@ -4,7 +4,7 @@ use crate::margin::MarginFunction;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Position {
+pub struct FuturePosition {
     pub break_even_price: String,
     pub cumulative_funding_payment: String,
     pub cumulative_interest: String,
