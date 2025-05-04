@@ -102,6 +102,14 @@ pub enum Side {
 #[serde(rename_all = "camelCase")]
 pub struct ExecuteOrderPayload {
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub auto_lend: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub auto_lend_redeem: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub auto_borrow: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub auto_borrow_repay: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub client_id: Option<u32>,
     pub order_type: OrderType,
     #[serde(skip_serializing_if = "Option::is_none")]
