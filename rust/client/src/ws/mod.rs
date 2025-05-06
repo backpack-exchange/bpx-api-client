@@ -44,7 +44,7 @@ impl BpxClient {
                     Message::Text(text) => {
                         if let Ok(value) = serde_json::from_str::<Value>(&text) {
                             if let Some(payload) = value.get("data") {
-                                if let Ok(data) = serde_json::from_value::<T>(payload.clone()) {
+                                if let Ok(data) = T::deserialize(payload) {
                                     if tx.send(data).await.is_err() {
                                         tracing::error!("Failed to send message through the channel");
                                     }
