@@ -5,6 +5,13 @@ use crate::Blockchain;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct Asset {
+    symbol: String,
+    tokens: Vec<Token>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Ticker {
     pub symbol: String,
     pub first_price: Decimal,
@@ -100,7 +107,7 @@ pub struct Token {
     pub blockchain: Blockchain,
     pub deposit_enabled: bool,
     pub minimum_deposit: Decimal,
-    pub withdrawal_enabled: bool,
+    pub withdraw_enabled: bool,
     pub minimum_withdrawal: Decimal,
     pub maximum_withdrawal: Option<Decimal>,
     pub withdrawal_fee: Decimal,
