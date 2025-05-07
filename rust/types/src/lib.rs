@@ -27,4 +27,13 @@ pub enum Blockchain {
     Bitcoin,
     Internal,
     EqualsMoney,
+    Cardano,
+    Hyperliquid,
+    Story,
+    Bsc,
+    Dogecoin,
+    Sui,
+    XRP,
+    Litecoin,
+    Berachain,
 }
