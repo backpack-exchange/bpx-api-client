@@ -6,7 +6,10 @@
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumIter, EnumString};
 
+pub mod borrow_lend;
 pub mod capital;
+pub mod futures;
+pub mod margin;
 pub mod markets;
 pub mod order;
 pub mod rfq;
@@ -24,4 +27,13 @@ pub enum Blockchain {
     Bitcoin,
     Internal,
     EqualsMoney,
+    Cardano,
+    Hyperliquid,
+    Story,
+    Bsc,
+    Dogecoin,
+    Sui,
+    XRP,
+    Litecoin,
+    Berachain,
 }

@@ -12,6 +12,12 @@ pub struct Balance {
     pub staked: Decimal,
 }
 
+impl Balance {
+    pub fn total(&self) -> Decimal {
+        self.available + self.locked + self.staked
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Deposit {
