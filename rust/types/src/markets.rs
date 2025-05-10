@@ -40,16 +40,16 @@ pub struct TickerUpdate {
     pub symbol: String,
 
     #[serde(rename = "a")]
-    pub ask_price: String,
+    pub ask_price: Decimal,
 
     #[serde(rename = "A")]
-    pub ask_quantity: String,
+    pub ask_quantity: Decimal,
 
     #[serde(rename = "b")]
-    pub bid_price: String,
+    pub bid_price: Decimal,
 
     #[serde(rename = "B")]
-    pub bid_quantity: String,
+    pub bid_quantity: Decimal,
 
     /// Update ID of event
     #[serde(rename = "u")]
