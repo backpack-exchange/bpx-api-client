@@ -5,6 +5,13 @@ use crate::Blockchain;
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct Asset {
+    symbol: String,
+    tokens: Vec<Token>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Ticker {
     pub symbol: String,
     pub first_price: Decimal,
@@ -15,6 +22,42 @@ pub struct Ticker {
     pub low: Decimal,
     pub volume: Decimal,
     pub trades: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TickerUpdate {
+    /// Event type
+    #[serde(rename = "e")]
+    pub event_type: String,
+
+    /// Event timestamp in microseconds
+    #[serde(rename = "E")]
+    pub event_time: i64,
+
+    /// Symbol
+    #[serde(rename = "s")]
+    pub symbol: String,
+
+    #[serde(rename = "a")]
+    pub ask_price: Decimal,
+
+    #[serde(rename = "A")]
+    pub ask_quantity: Decimal,
+
+    #[serde(rename = "b")]
+    pub bid_price: Decimal,
+
+    #[serde(rename = "B")]
+    pub bid_quantity: Decimal,
+
+    /// Update ID of event
+    #[serde(rename = "u")]
+    pub update_id: u64,
+
+    /// Engine timestamp in microseconds
+    #[serde(rename = "T")]
+    pub timestamp: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -64,7 +107,7 @@ pub struct Token {
     pub blockchain: Blockchain,
     pub deposit_enabled: bool,
     pub minimum_deposit: Decimal,
-    pub withdrawal_enabled: bool,
+    pub withdraw_enabled: bool,
     pub minimum_withdrawal: Decimal,
     pub maximum_withdrawal: Option<Decimal>,
     pub withdrawal_fee: Decimal,
@@ -78,6 +121,42 @@ pub struct OrderBookDepth {
     pub last_update_id: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrderBookDepthUpdate {
+    /// Event type
+    #[serde(rename = "e")]
+    event_type: String,
+
+    /// Event timestamp in microseconds
+    #[serde(rename = "E")]
+    event_time: i64,
+
+    /// Symbol
+    #[serde(rename = "s")]
+    symbol: String,
+
+    /// Engine timestamp in microseconds
+    #[serde(rename = "T")]
+    timestamp: i64,
+
+    /// First update ID in event
+    #[serde(rename = "U")]
+    first_update_id: u64,
+
+    /// Last update ID in event
+    #[serde(rename = "u")]
+    last_update_id: u64,
+
+    /// Asks
+    #[serde(rename = "a")]
+    asks: Vec<(Decimal, Decimal)>,
+
+    /// Bids
+    #[serde(rename = "b")]
+    bids: Vec<(Decimal, Decimal)>,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Kline {
@@ -89,4 +168,22 @@ pub struct Kline {
     pub end: Option<String>,
     pub volume: Decimal,
     pub trades: u64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FundingRate {
+    pub symbol: String,
+    pub interval_end_timestamp: String,
+    pub funding_rate: Decimal,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MarkPrice {
+    pub symbol: String,
+    pub funding_rate: Decimal,
+    pub index_price: Decimal,
+    pub mark_price: Decimal,
+    pub next_funding_timestamp: u64,
 }
