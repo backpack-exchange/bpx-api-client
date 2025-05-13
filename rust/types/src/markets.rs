@@ -126,35 +126,35 @@ pub struct OrderBookDepth {
 pub struct OrderBookDepthUpdate {
     /// Event type
     #[serde(rename = "e")]
-    event_type: String,
+    pub event_type: String,
 
     /// Event timestamp in microseconds
     #[serde(rename = "E")]
-    event_time: i64,
+    pub event_time: i64,
 
     /// Symbol
     #[serde(rename = "s")]
-    symbol: String,
+    pub symbol: String,
 
     /// Engine timestamp in microseconds
     #[serde(rename = "T")]
-    timestamp: i64,
+    pub timestamp: i64,
 
     /// First update ID in event
     #[serde(rename = "U")]
-    first_update_id: u64,
+    pub first_update_id: u64,
 
     /// Last update ID in event
     #[serde(rename = "u")]
-    last_update_id: u64,
+    pub last_update_id: u64,
 
     /// Asks
     #[serde(rename = "a")]
-    asks: Vec<(Decimal, Decimal)>,
+    pub asks: Vec<(Decimal, Decimal)>,
 
     /// Bids
     #[serde(rename = "b")]
-    bids: Vec<(Decimal, Decimal)>,
+    pub bids: Vec<(Decimal, Decimal)>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
