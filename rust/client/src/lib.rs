@@ -34,7 +34,7 @@ use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
 use reqwest::{header::CONTENT_TYPE, IntoUrl, Method, Request, Response, StatusCode};
 use routes::{
     borrow_lend::API_BORROW_LEND_POSITIONS,
-    capital::{API_CAPITAL, API_DEPOSITS, API_DEPOSIT_ADDRESS, API_WITHDRAWALS},
+    capital::{API_CAPITAL, API_COLLATERAL, API_DEPOSITS, API_DEPOSIT_ADDRESS, API_WITHDRAWALS},
     futures::API_FUTURES_POSITION,
     order::{API_ORDER, API_ORDERS},
     rfq::{API_RFQ, API_RFQ_QUOTE},
@@ -246,6 +246,7 @@ impl BpxClient {
             API_RFQ_QUOTE if method == Method::POST => "quoteSubmit",
             API_FUTURES_POSITION if method == Method::GET => "positionQuery",
             API_BORROW_LEND_POSITIONS if method == Method::GET => "borrowLendPositionQuery",
+            API_COLLATERAL if method == Method::GET => "collateralQuery",
             _ => {
                 let req = self.client().request(method, url);
                 if let Some(payload) = payload {
