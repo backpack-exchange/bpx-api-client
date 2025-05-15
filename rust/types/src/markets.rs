@@ -70,14 +70,14 @@ pub struct Market {
 }
 
 impl Market {
-    /// returns the decimal places this market supports on the price
-    /// if you provide a more precise price you will get an error
+    /// Returns the decimal places this market supports on the price.
+    /// We error if a price with more decimal places is provided.
     /// `Price decimal too long`
     pub fn price_decimal_places(&self) -> u32 {
         self.filters.price.tick_size.scale()
     }
 
-    /// returns the decimal places this market supports on the quantity
+    /// Returns the decimal places this market supports on the quantity.
     /// if you provide a more precise quantity you will get an error
     /// `Quantity decimal too long`
     pub fn quantity_decimal_places(&self) -> u32 {
