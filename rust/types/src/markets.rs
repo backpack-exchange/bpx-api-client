@@ -69,6 +69,22 @@ pub struct Market {
     pub filters: MarketFilters,
 }
 
+impl Market {
+    /// Returns the decimal places this market supports on the price.
+    /// We error if a price with more decimal places is provided.
+    /// `Price decimal too long`
+    pub fn price_decimal_places(&self) -> u32 {
+        self.filters.price.tick_size.scale()
+    }
+
+    /// Returns the decimal places this market supports on the quantity.
+    /// if you provide a more precise quantity you will get an error
+    /// `Quantity decimal too long`
+    pub fn quantity_decimal_places(&self) -> u32 {
+        self.filters.quantity.step_size.scale()
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MarketFilters {
@@ -126,35 +142,35 @@ pub struct OrderBookDepth {
 pub struct OrderBookDepthUpdate {
     /// Event type
     #[serde(rename = "e")]
-    event_type: String,
+    pub event_type: String,
 
     /// Event timestamp in microseconds
     #[serde(rename = "E")]
-    event_time: i64,
+    pub event_time: i64,
 
     /// Symbol
     #[serde(rename = "s")]
-    symbol: String,
+    pub symbol: String,
 
     /// Engine timestamp in microseconds
     #[serde(rename = "T")]
-    timestamp: i64,
+    pub timestamp: i64,
 
     /// First update ID in event
     #[serde(rename = "U")]
-    first_update_id: u64,
+    pub first_update_id: u64,
 
     /// Last update ID in event
     #[serde(rename = "u")]
-    last_update_id: u64,
+    pub last_update_id: u64,
 
     /// Asks
     #[serde(rename = "a")]
-    asks: Vec<(Decimal, Decimal)>,
+    pub asks: Vec<(Decimal, Decimal)>,
 
     /// Bids
     #[serde(rename = "b")]
-    bids: Vec<(Decimal, Decimal)>,
+    pub bids: Vec<(Decimal, Decimal)>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -186,4 +202,46 @@ pub struct MarkPrice {
     pub index_price: Decimal,
     pub mark_price: Decimal,
     pub next_funding_timestamp: u64,
+}
+
+#[cfg(test)]
+mod test {
+    use rust_decimal_macros::dec;
+
+    use crate::markets::{Market, QuantityFilters};
+
+    use super::PriceFilters;
+
+    fn get_test_market() -> Market {
+        Market {
+            symbol: "TEST_MARKET".to_string(),
+            base_symbol: "TEST".to_string(),
+            quote_symbol: "MARKET".to_string(),
+            filters: super::MarketFilters {
+                price: PriceFilters {
+                    min_price: dec!(0.0001),
+                    max_price: None,
+                    tick_size: dec!(0.0001),
+                },
+                quantity: QuantityFilters {
+                    min_quantity: dec!(0.01),
+                    max_quantity: None,
+                    step_size: dec!(0.01),
+                },
+                leverage: None,
+            },
+        }
+    }
+
+    #[test]
+    fn test_decimal_places_on_price_filters_4() {
+        let market = get_test_market();
+        assert_eq!(market.price_decimal_places(), 4);
+    }
+
+    #[test]
+    fn test_decimal_places_on_quantity_filters() {
+        let market = get_test_market();
+        assert_eq!(market.quantity_decimal_places(), 2);
+    }
 }
