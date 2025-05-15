@@ -70,6 +70,10 @@ pub struct RequestWithdrawalPayload {
     pub symbol: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub two_factor_token: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub auto_lend_redeem: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub auto_borrow: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
