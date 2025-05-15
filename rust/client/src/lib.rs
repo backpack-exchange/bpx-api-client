@@ -33,6 +33,7 @@ use base64::{engine::general_purpose::STANDARD, Engine};
 use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
 use reqwest::{header::CONTENT_TYPE, IntoUrl, Method, Request, Response, StatusCode};
 use routes::{
+    account::{API_ACCOUNT, API_ACCOUNT_MAX_BORROW, API_ACCOUNT_MAX_WITHDRAWAL},
     borrow_lend::API_BORROW_LEND_POSITIONS,
     capital::{API_CAPITAL, API_DEPOSITS, API_DEPOSIT_ADDRESS, API_WITHDRAWALS},
     futures::API_FUTURES_POSITION,
@@ -205,6 +206,14 @@ impl BpxClient {
         Self::process_response(res).await
     }
 
+    /// Sends a PATCH request with a JSON payload to the specified URL and signs it.
+    pub async fn patch<P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<Response> {
+        let req = self.build_and_maybe_sign_request(url, Method::PATCH, Some(&payload))?;
+        tracing::debug!("req: {:?}", req);
+        let res = self.client.execute(req).await?;
+        Self::process_response(res).await
+    }
+
     /// Returns a reference to the `VerifyingKey` used for request verification.
     pub fn verifier(&self) -> &VerifyingKey {
         &self.verifier
@@ -246,6 +255,10 @@ impl BpxClient {
             API_RFQ_QUOTE if method == Method::POST => "quoteSubmit",
             API_FUTURES_POSITION if method == Method::GET => "positionQuery",
             API_BORROW_LEND_POSITIONS if method == Method::GET => "borrowLendPositionQuery",
+            API_ACCOUNT if method == Method::GET => "accountQuery",
+            API_ACCOUNT_MAX_BORROW if method == Method::GET => "maxBorrowQuantity",
+            API_ACCOUNT_MAX_WITHDRAWAL if method == Method::GET => "maxWithdrawalQuantity",
+            API_ACCOUNT if method == Method::PATCH => "accountUpdate",
             _ => {
                 let req = self.client().request(method, url);
                 if let Some(payload) = payload {
