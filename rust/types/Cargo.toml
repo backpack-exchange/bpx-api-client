@@ -1,6 +1,6 @@
 [package]
 name = "bpx-api-types"
-version = "0.5.1"
+version = "0.6.2"
 license = "Apache-2.0"
 edition = "2021"
 description = "Backpack Exchange API types"
