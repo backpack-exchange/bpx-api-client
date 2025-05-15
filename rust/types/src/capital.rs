@@ -28,7 +28,7 @@ pub struct Deposit {
     pub identifier: Option<String>,
     pub source: DepositSource,
     pub status: DepositStatus,
-    pub subaccount_id: Option<i32>,
+    pub subaccount_id: Option<u64>,
     pub symbol: String,
     pub quantity: Decimal,
     pub created_at: chrono::NaiveDateTime,
@@ -90,7 +90,7 @@ pub struct Withdrawal {
     pub symbol: String,
     pub status: WithdrawalStatus,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub subaccount_id: Option<i32>,
+    pub subaccount_id: Option<u64>,
     pub to_address: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub transaction_hash: Option<String>,
@@ -105,4 +105,36 @@ pub enum WithdrawalStatus {
     Confirmed,
     Verifying,
     Void,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Collateral {
+    pub assets_value: Decimal,
+    pub borrow_liability: Decimal,
+    pub collateral: Vec<CollateralItem>,
+    pub imf: Decimal,
+    pub unsettled_equity: Decimal,
+    pub liabilities_value: Decimal,
+    pub margin_fraction: Decimal,
+    pub mmf: Decimal,
+    pub net_equity: Decimal,
+    pub net_equity_available: Decimal,
+    pub net_equity_locked: Decimal,
+    pub net_exposure_futures: Decimal,
+    pub pnl_unrealized: Decimal,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CollateralItem {
+    pub symbol: String,
+    pub asset_mark_price: Decimal,
+    pub total_quantity: Decimal,
+    pub balance_notional: Decimal,
+    pub collateral_weight: Decimal,
+    pub collateral_value: Decimal,
+    pub open_order_quantity: Decimal,
+    pub lend_quantity: Decimal,
+    pub available_quantity: Decimal,
 }
