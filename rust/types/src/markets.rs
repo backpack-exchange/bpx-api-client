@@ -204,13 +204,49 @@ pub struct MarkPrice {
     pub next_funding_timestamp: u64,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct MarkPriceUpdate {
+    /// Event type
+    #[serde(rename = "e")]
+    pub event_type: String,
+
+    /// Event timestamp in microseconds
+    #[serde(rename = "E")]
+    pub event_time: i64,
+
+    /// Symbol
+    #[serde(rename = "s")]
+    pub symbol: String,
+
+    /// Mark Price
+    #[serde(rename = "p")]
+    pub mark_price: Decimal,
+
+    /// Estimated funding rate
+    #[serde(rename = "f")]
+    pub funding_rate: Decimal,
+
+    /// Index Price
+    #[serde(rename = "i")]
+    pub index_price: Decimal,
+
+    /// Next funding timestamp in microseconds
+    #[serde(rename = "n")]
+    pub funding_timestamp: u64,
+
+    /// Engine timestamp in microseconds
+    #[serde(rename = "T")]
+    pub engine_timestamp: i64,
+}
+
 #[cfg(test)]
 mod test {
     use rust_decimal_macros::dec;
 
     use crate::markets::{Market, QuantityFilters};
 
-    use super::PriceFilters;
+    use super::{MarkPriceUpdate, PriceFilters};
 
     fn get_test_market() -> Market {
         Market {
@@ -243,5 +279,26 @@ mod test {
     fn test_decimal_places_on_quantity_filters() {
         let market = get_test_market();
         assert_eq!(market.quantity_decimal_places(), 2);
+    }
+
+    #[test]
+    fn test_mark_price_update_parse() {
+        let data = r#"
+{
+	"E": 1747291031914525,
+	"T": 1747291031910025,
+	"e": "markPrice",
+	"f": "-0.0000039641039274236048482914",
+	"i": "173.44031179",
+	"n": 1747296000000,
+	"p": "173.35998175",
+	"s": "SOL_USDC_PERP"
+}
+        "#;
+
+        let mark_price_update: MarkPriceUpdate = serde_json::from_str(data).unwrap();
+        assert_eq!(mark_price_update.symbol, "SOL_USDC_PERP".to_string());
+        assert_eq!(mark_price_update.funding_rate, dec!(-0.0000039641039274236048482914));
+        assert_eq!(mark_price_update.mark_price, dec!(173.35998175));
     }
 }
