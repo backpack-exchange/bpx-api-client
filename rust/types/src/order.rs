@@ -94,7 +94,7 @@ pub struct MarketOrder {
     pub time_in_force: TimeInForce,
     pub related_order_id: Option<String>,
     pub self_trade_prevention: SelfTradePrevention,
-    pub reduce_only: bool,
+    pub reduce_only: Option<bool>,
     pub status: OrderStatus,
     pub created_at: i64,
 }
@@ -123,7 +123,7 @@ pub struct LimitOrder {
     pub related_order_id: Option<String>,
     pub self_trade_prevention: SelfTradePrevention,
     pub post_only: bool,
-    pub reduce_only: bool,
+    pub reduce_only: Option<bool>,
     pub status: OrderStatus,
     pub created_at: i64,
 }
