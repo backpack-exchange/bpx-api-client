@@ -1,6 +1,75 @@
-use rust_decimal::Decimal;
-use serde::{Deserialize, Serialize};
+use std::{fmt, str::FromStr};
+
+use rust_decimal::{prelude::FromPrimitive, Decimal};
+use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
 use strum::{Display, EnumString};
+
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub enum TriggerQuantity {
+    Percent(Decimal),
+    Amount(Decimal),
+}
+
+impl<'de> Deserialize<'de> for TriggerQuantity {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct QtyVisitor;
+
+        impl<'de> Visitor<'de> for QtyVisitor {
+            type Value = TriggerQuantity;
+
+            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                f.write_str(r#"a string like "12.5%" or "0.01", or a number"#)
+            }
+
+            // ---------- JSON string ----------
+            fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                parse_str(v).map_err(serde::de::Error::custom)
+            }
+
+            // ---------- JSON numbers ----------
+            fn visit_f64<E>(self, v: f64) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Decimal::from_f64(v)
+                    .ok_or_else(|| serde::de::Error::custom("not a finite number"))
+                    .map(TriggerQuantity::Amount)
+            }
+
+            fn visit_i64<E>(self, v: i64) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Ok(TriggerQuantity::Amount(Decimal::from(v)))
+            }
+
+            fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
+            where
+                E: serde::de::Error,
+            {
+                Ok(TriggerQuantity::Amount(Decimal::from(v)))
+            }
+        }
+
+        deserializer.deserialize_any(QtyVisitor)
+    }
+}
+
+fn parse_str(s: &str) -> Result<TriggerQuantity, &'static str> {
+    if let Some(num) = s.strip_suffix('%') {
+        let d = Decimal::from_str(num.trim()).map_err(|_| "invalid percent value")?;
+        Ok(TriggerQuantity::Percent(d))
+    } else {
+        let d = Decimal::from_str(s.trim()).map_err(|_| "invalid decimal value")?;
+        Ok(TriggerQuantity::Amount(d))
+    }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -13,9 +82,19 @@ pub struct MarketOrder {
     pub executed_quantity: Decimal,
     pub quote_quantity: Option<Decimal>,
     pub executed_quote_quantity: Decimal,
+    pub stop_loss_trigger_price: Option<Decimal>,
+    pub stop_loss_limit_price: Option<Decimal>,
+    pub stop_loss_trigger_by: Option<Decimal>,
+    pub take_profit_trigger_price: Option<Decimal>,
+    pub take_profit_limit_price: Option<Decimal>,
+    pub take_profit_trigger_by: Option<Decimal>,
     pub trigger_price: Option<Decimal>,
+    pub trigger_quantity: Option<TriggerQuantity>,
+    pub triggered_at: Option<i64>,
     pub time_in_force: TimeInForce,
+    pub related_order_id: Option<String>,
     pub self_trade_prevention: SelfTradePrevention,
+    pub reduce_only: bool,
     pub status: OrderStatus,
     pub created_at: i64,
 }
@@ -30,11 +109,21 @@ pub struct LimitOrder {
     pub quantity: Decimal,
     pub executed_quantity: Decimal,
     pub executed_quote_quantity: Decimal,
+    pub stop_loss_trigger_price: Option<Decimal>,
+    pub stop_loss_limit_price: Option<Decimal>,
+    pub stop_loss_trigger_by: Option<Decimal>,
+    pub take_profit_trigger_price: Option<Decimal>,
+    pub take_profit_limit_price: Option<Decimal>,
+    pub take_profit_trigger_by: Option<Decimal>,
     pub price: Decimal,
     pub trigger_price: Option<Decimal>,
+    pub trigger_quantity: Option<TriggerQuantity>,
+    pub triggered_at: Option<i64>,
     pub time_in_force: TimeInForce,
+    pub related_order_id: Option<String>,
     pub self_trade_prevention: SelfTradePrevention,
     pub post_only: bool,
+    pub reduce_only: bool,
     pub status: OrderStatus,
     pub created_at: i64,
 }
@@ -87,6 +176,7 @@ pub enum OrderStatus {
     New,
     PartiallyFilled,
     Triggered,
+    TriggerPending,
 }
 
 #[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash)]
@@ -144,4 +234,20 @@ pub struct CancelOrderPayload {
 #[serde(rename_all = "camelCase")]
 pub struct CancelOpenOrdersPayload {
     pub symbol: String,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rust_decimal_macros::dec;
+    use serde_json::json;
+
+    #[test]
+    fn both_forms_round_trip() {
+        let q: TriggerQuantity = serde_json::from_value(json!("12.5%")).unwrap();
+        assert_eq!(q, TriggerQuantity::Percent(dec!(12.5)));
+
+        let q: TriggerQuantity = serde_json::from_value(json!("0.01")).unwrap();
+        assert_eq!(q, TriggerQuantity::Amount(dec!(0.01)));
+    }
 }
