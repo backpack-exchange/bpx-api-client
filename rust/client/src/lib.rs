@@ -175,7 +175,7 @@ impl BpxClient {
             let err_text = res.text().await?;
             let err = Error::BpxApiError {
                 status_code: e.status().unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
-                message: err_text,
+                message: err_text.into(),
             };
             return Err(err);
         }
@@ -278,7 +278,7 @@ impl BpxClient {
                     .into_iter()
                     .map(|(k, v)| (k, v.to_string()))
                     .collect::<BTreeMap<_, _>>(),
-                _ => return Err(Error::InvalidRequest("payload must be a JSON object".to_string())),
+                _ => return Err(Error::InvalidRequest("payload must be a JSON object".into())),
             }
         } else {
             BTreeMap::new()
