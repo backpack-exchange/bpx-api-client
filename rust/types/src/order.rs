@@ -4,6 +4,13 @@ use rust_decimal::{prelude::FromPrimitive, Decimal};
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
 use strum::{Display, EnumString};
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TriggerBy {
+    LastPrice,
+    MarkPrice,
+    IndexPrice,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TriggerQuantity {
     Percent(Decimal),
@@ -103,6 +110,7 @@ pub struct MarketOrder {
     pub take_profit_trigger_price: Option<Decimal>,
     pub take_profit_limit_price: Option<Decimal>,
     pub take_profit_trigger_by: Option<Decimal>,
+    pub trigger_by: Option<TriggerBy>,
     pub trigger_price: Option<Decimal>,
     pub trigger_quantity: Option<TriggerQuantity>,
     pub triggered_at: Option<i64>,
@@ -131,6 +139,7 @@ pub struct LimitOrder {
     pub take_profit_limit_price: Option<Decimal>,
     pub take_profit_trigger_by: Option<Decimal>,
     pub price: Decimal,
+    pub trigger_by: Option<TriggerBy>,
     pub trigger_price: Option<Decimal>,
     pub trigger_quantity: Option<TriggerQuantity>,
     pub triggered_at: Option<i64>,
@@ -232,6 +241,8 @@ pub struct ExecuteOrderPayload {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_in_force: Option<TimeInForce>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub trigger_by: Option<TriggerBy>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub trigger_price: Option<Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub trigger_quantity: Option<TriggerQuantity>,
@@ -287,5 +298,20 @@ mod tests {
         let trigger_quantity = TriggerQuantity::Amount(dec!(75.50));
         let trigger_quantity_str = serde_json::to_string(&trigger_quantity).unwrap();
         assert_eq!(trigger_quantity_str, "\"75.50\"");
+    }
+
+    #[test]
+    fn test_trigger_by_serialize() {
+        let trigger_by_last = TriggerBy::LastPrice;
+        let trigger_by_last_str = serde_json::to_string(&trigger_by_last).unwrap();
+        assert_eq!(trigger_by_last_str, "\"LastPrice\"");
+
+        let trigger_by_mark = TriggerBy::MarkPrice;
+        let trigger_by_mark_str = serde_json::to_string(&trigger_by_mark).unwrap();
+        assert_eq!(trigger_by_mark_str, "\"MarkPrice\"");
+
+        let trigger_by_index = TriggerBy::IndexPrice;
+        let trigger_by_index_str = serde_json::to_string(&trigger_by_index).unwrap();
+        assert_eq!(trigger_by_index_str, "\"IndexPrice\"");
     }
 }
