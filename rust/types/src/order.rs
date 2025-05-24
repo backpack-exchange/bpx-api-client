@@ -4,7 +4,7 @@ use rust_decimal::{prelude::FromPrimitive, Decimal};
 use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
 use strum::{Display, EnumString};
 
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TriggerQuantity {
     Percent(Decimal),
     Amount(Decimal),
@@ -58,6 +58,21 @@ impl<'de> Deserialize<'de> for TriggerQuantity {
         }
 
         deserializer.deserialize_any(QtyVisitor)
+    }
+}
+
+impl Serialize for TriggerQuantity {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(
+            match self {
+                Self::Percent(percent) => format!("{percent}%"),
+                Self::Amount(amount) => format!("{amount}"),
+            }
+            .as_str(),
+        )
     }
 }
 
@@ -218,6 +233,10 @@ pub struct ExecuteOrderPayload {
     pub time_in_force: Option<TimeInForce>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub trigger_price: Option<Decimal>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub trigger_quantity: Option<TriggerQuantity>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reduce_only: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
