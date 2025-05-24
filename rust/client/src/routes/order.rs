@@ -17,8 +17,7 @@ impl BpxClient {
         } else {
             url.push_str(&format!(
                 "&clientId={}",
-                client_id
-                    .ok_or_else(|| Error::InvalidRequest("either order_id or client_id is required".to_string()))?
+                client_id.ok_or_else(|| Error::InvalidRequest("either order_id or client_id is required".into()))?
             ));
         }
         let res = self.get(url).await?;

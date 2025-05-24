@@ -17,7 +17,7 @@ pub enum Error {
     #[error("Backpack API error: {status_code}: {message}")]
     BpxApiError {
         status_code: reqwest::StatusCode,
-        message: String,
+        message: Box<str>,
     },
 
     /// Invalid HTTP header value.
@@ -26,7 +26,7 @@ pub enum Error {
 
     /// Represents an invalid request with a custom message.
     #[error("Invalid request: {0}")]
-    InvalidRequest(String),
+    InvalidRequest(Box<str>),
 
     /// General HTTP client error from `reqwest`.
     #[error(transparent)]
@@ -50,5 +50,5 @@ pub enum Error {
 
     /// Invalid URL format.
     #[error("Invalid URL: {0}")]
-    UrlParseError(String),
+    UrlParseError(Box<str>),
 }
