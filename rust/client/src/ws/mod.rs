@@ -16,6 +16,21 @@ impl BpxClient {
     where
         T: DeserializeOwned + Send + 'static,
     {
+        self.internal_subscribe(&[stream], tx).await
+    }
+
+    /// Subscribes to multiple private WebSocket streams and sends messages of type `T` through a transmitter channel.
+    pub async fn subscribe_multiple<T>(&self, stream: &[&str], tx: Sender<T>)
+    where
+        T: DeserializeOwned + Send + 'static,
+    {
+        self.internal_subscribe(stream, tx).await
+    }
+
+    async fn internal_subscribe<T>(&self, stream: &[&str], tx: Sender<T>)
+    where
+        T: DeserializeOwned + Send + 'static,
+    {
         let timestamp = now_millis();
         let window = DEFAULT_WINDOW;
         let message = format!("instruction=subscribe&timestamp={}&window={}", timestamp, window);
@@ -25,7 +40,7 @@ impl BpxClient {
 
         let subscribe_message = json!({
             "method": "SUBSCRIBE",
-            "params": [stream.to_string()],
+            "params": stream,
             "signature": [verifying_key, signature, timestamp.to_string(), window.to_string()],
         });
 
@@ -36,7 +51,7 @@ impl BpxClient {
             .await
             .expect("Error subscribing to WebSocket");
 
-        tracing::debug!("Subscribed to {stream} stream...");
+        tracing::debug!("Subscribed to {stream:#?} streams...");
 
         while let Some(message) = ws_stream.next().await {
             match message {
