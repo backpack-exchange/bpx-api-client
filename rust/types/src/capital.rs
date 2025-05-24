@@ -116,7 +116,7 @@ pub struct Collateral {
     pub imf: Decimal,
     pub unsettled_equity: Decimal,
     pub liabilities_value: Decimal,
-    pub margin_fraction: Decimal,
+    pub margin_fraction: Option<Decimal>,
     pub mmf: Decimal,
     pub net_equity: Decimal,
     pub net_equity_available: Decimal,
