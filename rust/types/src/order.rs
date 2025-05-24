@@ -269,4 +269,23 @@ mod tests {
         let q: TriggerQuantity = serde_json::from_value(json!("0.01")).unwrap();
         assert_eq!(q, TriggerQuantity::Amount(dec!(0.01)));
     }
+
+    #[test]
+    fn test_trigger_quantity_serialize() {
+        let trigger_quantity = TriggerQuantity::Percent(dec!(100));
+        let trigger_quantity_str = serde_json::to_string(&trigger_quantity).unwrap();
+        assert_eq!(trigger_quantity_str, "\"100%\"");
+
+        let trigger_quantity = TriggerQuantity::Percent(dec!(75.50));
+        let trigger_quantity_str = serde_json::to_string(&trigger_quantity).unwrap();
+        assert_eq!(trigger_quantity_str, "\"75.50%\"");
+
+        let trigger_quantity = TriggerQuantity::Amount(dec!(100));
+        let trigger_quantity_str = serde_json::to_string(&trigger_quantity).unwrap();
+        assert_eq!(trigger_quantity_str, "\"100\"");
+
+        let trigger_quantity = TriggerQuantity::Amount(dec!(75.50));
+        let trigger_quantity_str = serde_json::to_string(&trigger_quantity).unwrap();
+        assert_eq!(trigger_quantity_str, "\"75.50\"");
+    }
 }
