@@ -127,7 +127,7 @@ pub enum RequestForQuoteUpdate {
         order_status: OrderStatus,
         #[serde(rename = "T")]
         timestamp: i64,
-    }   
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
