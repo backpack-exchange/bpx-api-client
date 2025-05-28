@@ -1,6 +1,6 @@
 use anyhow::Result;
 use bpx_api_client::{BpxClient, BACKPACK_API_BASE_URL, BACKPACK_WS_URL};
-use bpx_api_types::rfq::RequestForQuote;
+use bpx_api_types::rfq::RequestForQuoteUpdate;
 use std::env;
 use tokio::sync::mpsc;
 
@@ -12,7 +12,7 @@ async fn main() -> Result<()> {
 
     let client = BpxClient::init_with_ws(base_url, ws_url, &secret, None)?;
 
-    let (tx, mut rx) = mpsc::channel::<RequestForQuote>(100);
+    let (tx, mut rx) = mpsc::channel::<RequestForQuoteUpdate>(100);
     tokio::spawn(async move {
         while let Some(rfq) = rx.recv().await {
             println!("Received RFQ: {:?}", rfq);
