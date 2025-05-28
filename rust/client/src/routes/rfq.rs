@@ -1,4 +1,4 @@
-use bpx_api_types::rfq::{Quote, QuotePayload, RequestForQuote, RequestForQuotePayload};
+use bpx_api_types::rfq::{Quote, QuotePayload, RequestForQuote, RequestForQuoteUpdate, RequestForQuotePayload};
 
 #[cfg(feature = "ws")]
 use tokio::sync::mpsc::Sender;
@@ -27,7 +27,8 @@ impl BpxClient {
     }
 
     #[cfg(feature = "ws")]
-    pub async fn subscribe_to_rfqs(&self, tx: Sender<RequestForQuote>) {
+    pub async fn subscribe_to_rfqs(&self, tx: Sender<RequestForQuoteUpdate>) {
+
         self.subscribe(API_RFQ_STREAM, tx).await;
     }
 }
