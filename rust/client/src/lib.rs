@@ -215,12 +215,12 @@ impl BpxClient {
     }
 
     /// Returns a reference to the `VerifyingKey` used for request verification.
-    pub fn verifier(&self) -> &VerifyingKey {
+    pub const fn verifier(&self) -> &VerifyingKey {
         &self.verifier
     }
 
     /// Returns a reference to the underlying HTTP client.
-    pub fn client(&self) -> &reqwest::Client {
+    pub const fn client(&self) -> &reqwest::Client {
         &self.client
     }
 }

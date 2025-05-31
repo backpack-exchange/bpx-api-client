@@ -24,7 +24,7 @@ impl<'de> Deserialize<'de> for TriggerQuantity {
     {
         struct QtyVisitor;
 
-        impl<'de> Visitor<'de> for QtyVisitor {
+        impl Visitor<'_> for QtyVisitor {
             type Value = TriggerQuantity;
 
             fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {

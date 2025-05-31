@@ -3,10 +3,14 @@ use serde::{Deserialize, Serialize};
 
 use crate::Blockchain;
 
+/// An asset is most of the time a crypto coin that can have multiple representations
+/// across different blockchains. For example, USDT.
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Asset {
+    /// Identifier
     symbol: String,
+    /// See [`Token`]
     tokens: Vec<Token>,
 }
 
@@ -24,6 +28,7 @@ pub struct Ticker {
     pub trades: String,
 }
 
+/// Sent by an exchange to indicate a change in the order book, such as the execution of a bid or ask.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TickerUpdate {
@@ -60,12 +65,18 @@ pub struct TickerUpdate {
     pub timestamp: u64,
 }
 
+/// A market is where two assets are exchanged. Most notably, in a `BTC/USDC` pair
+/// `BTC` is the base and `USDC` is the quote.
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Market {
+    /// The `Market` identifier.
     pub symbol: String,
+    /// The base asset.
     pub base_symbol: String,
+    /// The quote asset for the market.
     pub quote_symbol: String,
+    /// See [`MarketFilters`].
     pub filters: MarketFilters,
 }
 
@@ -73,14 +84,14 @@ impl Market {
     /// Returns the decimal places this market supports on the price.
     /// We error if a price with more decimal places is provided.
     /// `Price decimal too long`
-    pub fn price_decimal_places(&self) -> u32 {
+    pub const fn price_decimal_places(&self) -> u32 {
         self.filters.price.tick_size.scale()
     }
 
     /// Returns the decimal places this market supports on the quantity.
     /// if you provide a more precise quantity you will get an error
     /// `Quantity decimal too long`
-    pub fn quantity_decimal_places(&self) -> u32 {
+    pub const fn quantity_decimal_places(&self) -> u32 {
         self.filters.quantity.step_size.scale()
     }
 }
