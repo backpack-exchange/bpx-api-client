@@ -1,5 +1,7 @@
-use bpx_api_types::rfq::{Quote, QuotePayload, RequestForQuote, RequestForQuotePayload, RequestForQuoteUpdate};
+use bpx_api_types::rfq::{Quote, QuotePayload, RequestForQuote, RequestForQuotePayload};
 
+#[cfg(feature = "ws")]
+use bpx_api_types::rfq::RequestForQuoteUpdate;
 #[cfg(feature = "ws")]
 use tokio::sync::mpsc::Sender;
 
@@ -11,6 +13,7 @@ pub const API_RFQ: &str = "/api/v1/rfq";
 #[doc(hidden)]
 pub const API_RFQ_QUOTE: &str = "/api/v1/rfq/quote";
 
+#[cfg(feature = "ws")]
 const API_RFQ_STREAM: &str = "account.rfqUpdate";
 
 impl BpxClient {
