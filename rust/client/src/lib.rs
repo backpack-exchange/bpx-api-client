@@ -11,6 +11,9 @@
 //!
 //! ## Example
 //! ```no_run
+//! # // We depend on tokio only when the `ws` feature is enabled.
+//! # #[cfg(feature = "ws")]
+//! # {
 //! use bpx_api_client::{BACKPACK_API_BASE_URL, BpxClient};
 //!
 //! #[tokio::main]
@@ -27,6 +30,7 @@
 //!         Err(err) => tracing::error!("Error: {:?}", err),
 //!     }
 //! }
+//! # }
 //! ```
 
 use base64::{engine::general_purpose::STANDARD, Engine};
@@ -88,6 +92,7 @@ pub struct BpxClient {
     signer: SigningKey,
     verifier: VerifyingKey,
     base_url: String,
+    #[allow(dead_code)]
     ws_url: Option<String>,
     client: reqwest::Client,
 }
