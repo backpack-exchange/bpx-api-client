@@ -13,7 +13,7 @@ pub const API_RFQ: &str = "/api/v1/rfq";
 #[doc(hidden)]
 pub const API_RFQ_QUOTE: &str = "/api/v1/rfq/quote";
 
-#[allow(dead_code)]
+#[cfg(feature = "ws")]
 const API_RFQ_STREAM: &str = "account.rfqUpdate";
 
 impl BpxClient {
