@@ -46,8 +46,9 @@ pub struct RequestForQuoteStream {
 
 /// RequestForQuote updates received from the websocket.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "e", rename_all = "camelCase")] // Discriminates based on "e" field
+#[serde(tag = "e")]
 pub enum RequestForQuoteUpdate {
+    #[serde(rename = "rfqActive")]
     RfqActive {
         #[serde(rename = "E")]
         event_time: i64,
@@ -57,8 +58,12 @@ pub enum RequestForQuoteUpdate {
         client_id: Option<u32>,
         #[serde(rename = "s")]
         symbol: String,
-        #[serde(rename = "q")]
-        quantity: Decimal,
+        #[serde(rename = "q", skip_serializing_if = "Option::is_none")]
+        quantity: Option<Decimal>,
+        #[serde(rename = "Q", skip_serializing_if = "Option::is_none")]
+        quote_quantity: Option<Decimal>,
+        #[serde(rename = "w")]
+        submission_time: i64,
         #[serde(rename = "W")]
         expiry_time: i64,
         #[serde(rename = "X")]
@@ -66,6 +71,82 @@ pub enum RequestForQuoteUpdate {
         #[serde(rename = "T")]
         timestamp: i64,
     },
+    #[serde(rename = "rfqRefreshed")]
+    RfqRefreshed {
+        #[serde(rename = "E")]
+        event_time: i64,
+        #[serde(rename = "R")]
+        rfq_id: u64,
+        #[serde(rename = "C", skip_serializing_if = "Option::is_none")]
+        client_id: Option<u32>,
+        #[serde(rename = "s")]
+        symbol: String,
+        #[serde(rename = "S")]
+        side: Side,
+        #[serde(rename = "q", skip_serializing_if = "Option::is_none")]
+        quantity: Option<Decimal>,
+        #[serde(rename = "Q", skip_serializing_if = "Option::is_none")]
+        quote_quantity: Option<Decimal>,
+        #[serde(rename = "w")]
+        submission_time: i64,
+        #[serde(rename = "W")]
+        expiry_time: i64,
+        #[serde(rename = "X")]
+        order_status: OrderStatus,
+        #[serde(rename = "T")]
+        timestamp: i64,
+    },
+    #[serde(rename = "rfqAccepted")]
+    RfqAccepted {
+        #[serde(rename = "E")]
+        event_time: i64,
+        #[serde(rename = "R")]
+        rfq_id: u64,
+        #[serde(rename = "C", skip_serializing_if = "Option::is_none")]
+        client_id: Option<u32>,
+        #[serde(rename = "s")]
+        symbol: String,
+        #[serde(rename = "S")]
+        side: Side,
+        #[serde(rename = "q", skip_serializing_if = "Option::is_none")]
+        quantity: Option<Decimal>,
+        #[serde(rename = "Q", skip_serializing_if = "Option::is_none")]
+        quote_quantity: Option<Decimal>,
+        #[serde(rename = "w")]
+        submission_time: i64,
+        #[serde(rename = "W")]
+        expiry_time: i64,
+        #[serde(rename = "X")]
+        order_status: OrderStatus,
+        #[serde(rename = "T")]
+        timestamp: i64,
+    },
+    #[serde(rename = "rfqCancelled")]
+    RfqCancelled {
+        #[serde(rename = "E")]
+        event_time: i64,
+        #[serde(rename = "R")]
+        rfq_id: u64,
+        #[serde(rename = "C", skip_serializing_if = "Option::is_none")]
+        client_id: Option<u32>,
+        #[serde(rename = "s")]
+        symbol: String,
+        #[serde(rename = "S")]
+        side: Side,
+        #[serde(rename = "q", skip_serializing_if = "Option::is_none")]
+        quantity: Option<Decimal>,
+        #[serde(rename = "Q", skip_serializing_if = "Option::is_none")]
+        quote_quantity: Option<Decimal>,
+        #[serde(rename = "w")]
+        submission_time: i64,
+        #[serde(rename = "W")]
+        expiry_time: i64,
+        #[serde(rename = "X")]
+        order_status: OrderStatus,
+        #[serde(rename = "T")]
+        timestamp: i64,
+    },
+    #[serde(rename = "quoteAccepted")]
     QuoteAccepted {
         #[serde(rename = "E")]
         event_time: i64,
@@ -73,38 +154,63 @@ pub enum RequestForQuoteUpdate {
         rfq_id: u64,
         #[serde(rename = "u")]
         quote_id: u64,
+        #[serde(rename = "C", skip_serializing_if = "Option::is_none")]
+        client_id: Option<u32>,
+        #[serde(rename = "s")]
+        symbol: String,
+        #[serde(rename = "p", skip_serializing_if = "Option::is_none")]
+        price: Option<Decimal>,
         #[serde(rename = "X")]
         order_status: OrderStatus,
         #[serde(rename = "T")]
         timestamp: i64,
     },
+    #[serde(rename = "quoteCancelled")]
     QuoteCancelled {
+        #[serde(rename = "E")]
+        event_time: i64,
         #[serde(rename = "R")]
         rfq_id: u64,
         #[serde(rename = "u")]
         quote_id: u64,
-        #[serde(rename = "X")]
-        status: OrderStatus,
-        #[serde(rename = "E")]
-        event_time: i64,
-    },
-    RfqFilled {
-        #[serde(rename = "E")]
-        event_time: i64,
-        #[serde(rename = "R")]
-        rfq_id: u64,
-        #[serde(rename = "Q")]
-        quote_id: u64,
-        #[serde(rename = "S")]
-        side: Side,
-        #[serde(rename = "p")]
-        price: Decimal,
+        #[serde(rename = "C", skip_serializing_if = "Option::is_none")]
+        client_id: Option<u32>,
+        #[serde(rename = "s")]
+        symbol: String,
+        #[serde(rename = "p", skip_serializing_if = "Option::is_none")]
+        price: Option<Decimal>,
         #[serde(rename = "X")]
         order_status: OrderStatus,
         #[serde(rename = "T")]
         timestamp: i64,
     },
+    #[serde(rename = "rfqCandidate")]
     RfqCandidate {
+        #[serde(rename = "E")]
+        event_time: i64,
+        #[serde(rename = "R")]
+        rfq_id: u64,
+        #[serde(rename = "u")]
+        quote_id: u64,
+        #[serde(rename = "C", skip_serializing_if = "Option::is_none")]
+        client_id: Option<u32>,
+        #[serde(rename = "s")]
+        symbol: String,
+        #[serde(rename = "S", skip_serializing_if = "Option::is_none")]
+        side: Option<Side>,
+        #[serde(rename = "q", skip_serializing_if = "Option::is_none")]
+        quantity: Option<Decimal>,
+        #[serde(rename = "Q", skip_serializing_if = "Option::is_none")]
+        quote_quantity: Option<Decimal>,
+        #[serde(rename = "p")]
+        price: Decimal, // This is the taker_price from the quote
+        #[serde(rename = "X")]
+        order_status: OrderStatus,
+        #[serde(rename = "T")]
+        timestamp: i64,
+    },
+    #[serde(rename = "rfqFilled")]
+    RfqFilled {
         #[serde(rename = "E")]
         event_time: i64,
         #[serde(rename = "R")]
@@ -121,8 +227,8 @@ pub enum RequestForQuoteUpdate {
         quantity: Option<Decimal>,
         #[serde(rename = "Q", skip_serializing_if = "Option::is_none")]
         quote_quantity: Option<Decimal>,
-        #[serde(rename = "p")]
-        price: Decimal,
+        #[serde(rename = "p", skip_serializing_if = "Option::is_none")]
+        price: Option<Decimal>,
         #[serde(rename = "X")]
         order_status: OrderStatus,
         #[serde(rename = "T")]
