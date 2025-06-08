@@ -46,7 +46,7 @@ pub struct RequestForQuoteStream {
 
 /// RequestForQuote updates received from the websocket.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(tag = "e")]
+#[serde(tag = "e", rename_all = "camelCase")] // Discriminates based on "e" field
 pub enum RequestForQuoteUpdate {
     #[serde(rename = "rfqActive")]
     RfqActive {
