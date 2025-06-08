@@ -6,6 +6,8 @@ use tokio::sync::mpsc;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    tracing_subscriber::fmt::init();
+
     let base_url = env::var("BASE_URL").unwrap_or_else(|_| BACKPACK_API_BASE_URL.to_string());
     let ws_url = env::var("WS_URL").unwrap_or_else(|_| BACKPACK_WS_URL.to_string());
     let secret = env::var("SECRET").expect("Missing SECRET environment variable");
