@@ -39,3 +39,12 @@ jobs:
       - name: Run tests
         run: cargo test
         working-directory: rust
+
+      - name: Run tests
+        run: cargo test --doc
+        working-directory: rust
+
+      - name: Check TOML format
+        run: npx @taplo/cli format --check
+
+      - uses: Swatinem/rust-cache@v2
