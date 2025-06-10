@@ -29,9 +29,9 @@ or create .env file iside examples folder
 
 add above to .env file
 
-3. **Install the dotenvy Crate**:
+3. **Set environment variable**:
    ```bash
-   cargo add dotenvy
+   export SECRET=your-secret-key
 
 ## Running the Examples
 
