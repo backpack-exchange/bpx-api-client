@@ -30,7 +30,7 @@ Assuming Rust and Cargo are installed via rustup:
    ```bash
    cd examples
 
-For detailed instructions on running the examples, including configuring environment variables, see the Examples README.
+For detailed instructions on running the examples, including configuring environment variables, see the [Examples README](./rust/examples/README.md).
 
 
 ## Contributing
