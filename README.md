@@ -10,6 +10,29 @@ This repository contains API clients for Backpack Exchange. Currently, only a `R
 
 *Example of an Order Book*
 
+## Setup Instructions
+
+Assuming Rust and Cargo are installed via rustup:
+
+1. **Navigate to the Rust Folder**:
+   ```bash
+   cd rust
+
+2. **Install just**:
+   ```bash
+   cargo install just
+
+3. **Build All Packages**:
+   ```bash
+   just build
+
+4. **Move to the Examples Directory**:
+   ```bash
+   cd examples
+
+For detailed instructions on running the examples, including configuring environment variables, see the [Examples README](./rust/examples/README.md).
+
+
 ## Contributing
 
 We welcome contributions from the community!  
