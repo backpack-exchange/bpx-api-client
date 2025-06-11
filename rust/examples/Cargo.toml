@@ -9,6 +9,7 @@ repository = "https://github.com/backpack-exchange/bpx-api-client"
 [dependencies]
 bpx-api-client = { path = "../client", features = ["ws"] }
 bpx-api-types = { path = "../types" }
+tracing-subscriber = { workspace = true }
 
 anyhow = { workspace = true }
 tokio = { workspace = true }

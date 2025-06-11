@@ -64,6 +64,8 @@ impl BpxClient {
                                         tracing::error!("Failed to send message through the channel");
                                     }
                                 }
+                            } else if let Some(payload) = value.get("error") {
+                                tracing::error!("Websocket Error Response: {}", payload);
                             }
                         }
                     }
