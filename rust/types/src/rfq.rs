@@ -48,7 +48,6 @@ pub struct RequestForQuoteStream {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "e", rename_all = "camelCase")] // Discriminates based on "e" field
 pub enum RequestForQuoteUpdate {
-    #[serde(rename = "rfqActive")]
     RfqActive {
         #[serde(rename = "E")]
         event_time: i64,
@@ -71,7 +70,6 @@ pub enum RequestForQuoteUpdate {
         #[serde(rename = "T")]
         timestamp: i64,
     },
-    #[serde(rename = "rfqRefreshed")]
     RfqRefreshed {
         #[serde(rename = "E")]
         event_time: i64,
@@ -96,7 +94,6 @@ pub enum RequestForQuoteUpdate {
         #[serde(rename = "T")]
         timestamp: i64,
     },
-    #[serde(rename = "rfqAccepted")]
     RfqAccepted {
         #[serde(rename = "E")]
         event_time: i64,
@@ -121,7 +118,6 @@ pub enum RequestForQuoteUpdate {
         #[serde(rename = "T")]
         timestamp: i64,
     },
-    #[serde(rename = "rfqCancelled")]
     RfqCancelled {
         #[serde(rename = "E")]
         event_time: i64,
@@ -146,7 +142,6 @@ pub enum RequestForQuoteUpdate {
         #[serde(rename = "T")]
         timestamp: i64,
     },
-    #[serde(rename = "quoteAccepted")]
     QuoteAccepted {
         #[serde(rename = "E")]
         event_time: i64,
@@ -165,7 +160,6 @@ pub enum RequestForQuoteUpdate {
         #[serde(rename = "T")]
         timestamp: i64,
     },
-    #[serde(rename = "quoteCancelled")]
     QuoteCancelled {
         #[serde(rename = "E")]
         event_time: i64,
@@ -184,7 +178,6 @@ pub enum RequestForQuoteUpdate {
         #[serde(rename = "T")]
         timestamp: i64,
     },
-    #[serde(rename = "rfqCandidate")]
     RfqCandidate {
         #[serde(rename = "E")]
         event_time: i64,
@@ -203,13 +196,12 @@ pub enum RequestForQuoteUpdate {
         #[serde(rename = "Q", skip_serializing_if = "Option::is_none")]
         quote_quantity: Option<Decimal>,
         #[serde(rename = "p")]
-        price: Decimal, // This is the taker_price from the quote
+        price: Decimal,
         #[serde(rename = "X")]
         order_status: OrderStatus,
         #[serde(rename = "T")]
         timestamp: i64,
     },
-    #[serde(rename = "rfqFilled")]
     RfqFilled {
         #[serde(rename = "E")]
         event_time: i64,
