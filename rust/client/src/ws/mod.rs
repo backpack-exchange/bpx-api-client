@@ -5,8 +5,8 @@ use futures_util::{SinkExt, StreamExt};
 use serde::de::DeserializeOwned;
 use serde_json::{json, Value};
 use tokio::sync::mpsc::Sender;
-use tokio_tungstenite::connect_async;
 use tokio_tungstenite::tungstenite::protocol::Message;
+use tokio_tungstenite::{connect_async, tungstenite::Utf8Bytes};
 
 use crate::{now_millis, BpxClient, BACKPACK_WS_URL, DEFAULT_WINDOW};
 
@@ -47,7 +47,7 @@ impl BpxClient {
         let ws_url = self.ws_url.as_deref().unwrap_or(BACKPACK_WS_URL);
         let (mut ws_stream, _) = connect_async(ws_url).await.expect("Error connecting to WebSocket");
         ws_stream
-            .send(Message::Text(subscribe_message.to_string()))
+            .send(Message::Text(Utf8Bytes::from(subscribe_message.to_string())))
             .await
             .expect("Error subscribing to WebSocket");
 

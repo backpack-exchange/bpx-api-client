@@ -1,6 +1,6 @@
 [package]
 name = "bpx-api-types"
-version = "0.6.3"
+version = "0.7.0"
 license = "Apache-2.0"
 edition = "2021"
 description = "Backpack Exchange API types"
@@ -15,3 +15,4 @@ strum = { workspace = true }
 [dev-dependencies]
 rust_decimal_macros = { workspace = true }
 serde_json = { workspace = true }
+
