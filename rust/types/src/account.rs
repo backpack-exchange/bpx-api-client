@@ -48,3 +48,10 @@ pub struct UpdateAccountPayload {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub leverage_limit: Option<Decimal>,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ConvertDustPayload {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub symbol: Option<String>,
+}
