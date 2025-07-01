@@ -11,7 +11,7 @@ impl BpxClient {
     pub async fn get_recent_trades(&self, symbol: &str, limit: Option<i16>) -> Result<Vec<Trade>> {
         let mut url = format!("{}{}?symbol={}", self.base_url, API_TRADES, symbol);
         if let Some(limit) = limit {
-            url.push_str(&format!("&limit={}", limit));
+            url.push_str(&format!("&limit={limit}"));
         }
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
@@ -27,7 +27,7 @@ impl BpxClient {
         let mut url = format!("{}{}?symbol={}", self.base_url, API_TRADES_HISTORY, symbol);
         for (k, v) in [("limit", limit), ("offset", offset)] {
             if let Some(v) = v {
-                url.push_str(&format!("&{}={}", k, v));
+                url.push_str(&format!("&{k}={v}"));
             }
         }
         let res = self.get(url).await?;

@@ -33,7 +33,7 @@ impl BpxClient {
     {
         let timestamp = now_millis();
         let window = DEFAULT_WINDOW;
-        let message = format!("instruction=subscribe&timestamp={}&window={}", timestamp, window);
+        let message = format!("instruction=subscribe&timestamp={timestamp}&window={window}");
 
         let verifying_key = STANDARD.encode(self.verifier.to_bytes());
         let signature = STANDARD.encode(self.signer.sign(message.as_bytes()).to_bytes());

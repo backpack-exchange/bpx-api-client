@@ -76,7 +76,7 @@ impl BpxClient {
         );
         for (k, v) in [("start_time", start_time), ("end_time", end_time)] {
             if let Some(v) = v {
-                url.push_str(&format!("&{}={}", k, v));
+                url.push_str(&format!("&{k}={v}"));
             }
         }
         let res = self.get(url).await?;

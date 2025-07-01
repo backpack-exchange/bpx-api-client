@@ -9,7 +9,7 @@ async fn main() {
     let client = BpxClient::init(base_url, &secret, None).expect("Failed to initialize Backpack API client");
 
     match client.get_open_orders(Some("SOL_USDC")).await {
-        Ok(orders) => println!("Open Orders: {:?}", orders),
-        Err(err) => tracing::error!("Error: {:?}", err),
+        Ok(orders) => println!("Open Orders: {orders:?}"),
+        Err(err) => tracing::error!("Error: {err:?}"),
     }
 }
