@@ -13,7 +13,7 @@ impl BpxClient {
     pub async fn get_open_order(&self, symbol: &str, order_id: Option<&str>, client_id: Option<u32>) -> Result<Order> {
         let mut url = format!("{}{}?symbol={}", self.base_url, API_ORDER, symbol);
         if let Some(order_id) = order_id {
-            url.push_str(&format!("&orderId={}", order_id));
+            url.push_str(&format!("&orderId={order_id}"));
         } else {
             url.push_str(&format!(
                 "&clientId={}",

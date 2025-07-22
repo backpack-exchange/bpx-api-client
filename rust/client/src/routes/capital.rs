@@ -32,7 +32,7 @@ impl BpxClient {
         let mut url = format!("{}{}", self.base_url, API_DEPOSITS);
         for (k, v) in [("limit", limit), ("offset", offset)] {
             if let Some(v) = v {
-                url.push_str(&format!("&{}={}", k, v));
+                url.push_str(&format!("&{k}={v}"));
             }
         }
         let res = self.get(url).await?;
@@ -51,7 +51,7 @@ impl BpxClient {
         let mut url = format!("{}{}", self.base_url, API_WITHDRAWALS);
         for (k, v) in [("limit", limit), ("offset", offset)] {
             if let Some(v) = v {
-                url.push_str(&format!("{}={}&", k, v));
+                url.push_str(&format!("{k}={v}&"));
             }
         }
         let res = self.get(url).await?;

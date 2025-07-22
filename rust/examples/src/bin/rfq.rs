@@ -17,7 +17,7 @@ async fn main() -> Result<()> {
     let (tx, mut rx) = mpsc::channel::<RequestForQuoteUpdate>(100);
     tokio::spawn(async move {
         while let Some(rfq) = rx.recv().await {
-            println!("Received RFQ: {:?}", rfq);
+            println!("Received RFQ: {rfq:?}");
         }
     });
 
