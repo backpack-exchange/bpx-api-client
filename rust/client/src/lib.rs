@@ -46,7 +46,7 @@ use routes::{
     user::API_USER_2FA,
 };
 use serde::Serialize;
-use serde_json::Value;
+use serde_json::{Map, Value};
 use std::{
     borrow::Cow,
     collections::BTreeMap,
@@ -255,6 +255,7 @@ impl BpxClient {
             API_ORDER if method == Method::POST => "orderExecute",
             API_ORDER if method == Method::DELETE => "orderCancel",
             API_ORDERS if method == Method::GET => "orderQueryAll",
+            API_ORDERS if method == Method::POST => "orderExecute",
             API_ORDERS if method == Method::DELETE => "orderCancelAll",
             API_RFQ if method == Method::POST => "rfqSubmit",
             API_RFQ_QUOTE if method == Method::POST => "quoteSubmit",
@@ -277,28 +278,9 @@ impl BpxClient {
         };
 
         let query_params = url.query_pairs().collect::<BTreeMap<Cow<'_, str>, Cow<'_, str>>>();
-        let body_params = if let Some(payload) = payload {
-            let s = serde_json::to_value(payload)?;
-            match s {
-                Value::Object(map) => map
-                    .into_iter()
-                    .map(|(k, v)| (k, v.to_string()))
-                    .collect::<BTreeMap<_, _>>(),
-                _ => return Err(Error::InvalidRequest("payload must be a JSON object".into())),
-            }
-        } else {
-            BTreeMap::new()
-        };
-
+        let body_params = get_body_params(payload)?;
         let timestamp = now_millis();
-        let mut signee = format!("instruction={instruction}");
-        for (k, v) in query_params {
-            signee.push_str(&format!("&{k}={v}"));
-        }
-        for (k, v) in body_params {
-            let v = v.trim_start_matches('"').trim_end_matches('"');
-            signee.push_str(&format!("&{k}={v}"));
-        }
+        let mut signee = build_signature(instruction, query_params, body_params);
         signee.push_str(&format!("&timestamp={timestamp}&window={DEFAULT_WINDOW}"));
         tracing::debug!("signee: {}", signee);
 
@@ -319,6 +301,64 @@ impl BpxClient {
             req.headers_mut().insert(CONTENT_TYPE, JSON_CONTENT.parse()?);
         }
         Ok(req)
+    }
+}
+
+fn get_body_params<P: Serialize>(payload: Option<&P>) -> Result<Vec<BTreeMap<String, String>>> {
+    if let Some(payload) = payload {
+        let s = serde_json::to_value(payload)?;
+        match s {
+            Value::Object(map) => Ok(vec![convert_body(map)]),
+            Value::Array(array) => {
+                let mut result = Vec::with_capacity(array.len());
+                for v in array {
+                    match v {
+                        Value::Object(m) => result.push(convert_body(m)),
+                        _ => return Err(Error::InvalidRequest("payload must be a JSON object".into())),
+                    }
+                }
+                Ok(result)
+            }
+            _ => return Err(Error::InvalidRequest("payload must be a JSON object".into())),
+        }
+    } else {
+        Ok(vec![])
+    }
+}
+
+fn convert_body(map: Map<String, Value>) -> BTreeMap<String, String> {
+    map.into_iter()
+        .map(|(k, v)| (k, v.to_string()))
+        .collect::<BTreeMap<_, _>>()
+}
+
+fn build_signature(
+    instruction: &str,
+    query_params: BTreeMap<Cow<'_, str>, Cow<'_, str>>,
+    body_params: Vec<BTreeMap<String, String>>,
+) -> String {
+    if body_params.is_empty() {
+        let mut signee = format!("instruction={instruction}");
+        for (k, v) in query_params {
+            signee.push_str(&format!("&{k}={v}"));
+        }
+
+        signee
+    } else {
+        let mut signee = String::new();
+        for body_params in body_params {
+            signee.push_str(&format!("instruction={instruction}"));
+            for (k, v) in &query_params {
+                signee.push_str(&format!("&{k}={v}"));
+            }
+            for (k, v) in body_params {
+                let v = v.trim_start_matches('"').trim_end_matches('"');
+                signee.push_str(&format!("&{k}={v}"));
+            }
+            signee.push_str("&");
+        }
+
+        signee.trim_end_matches("&").to_string()
     }
 }
 
