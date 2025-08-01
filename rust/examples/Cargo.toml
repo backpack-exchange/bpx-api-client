@@ -21,5 +21,9 @@ name = "orders"
 path = "src/bin/orders.rs"
 
 [[bin]]
+name = "history"
+path = "src/bin/order_history.rs"
+
+[[bin]]
 name = "rfq"
 path = "src/bin/rfq.rs"
