@@ -41,6 +41,7 @@ use routes::{
     borrow_lend::API_BORROW_LEND_POSITIONS,
     capital::{API_CAPITAL, API_COLLATERAL, API_DEPOSITS, API_DEPOSIT_ADDRESS, API_WITHDRAWALS},
     futures::API_FUTURES_POSITION,
+    history::API_ORDER_HISTORY,
     order::{API_ORDER, API_ORDERS},
     rfq::{API_RFQ, API_RFQ_QUOTE},
     user::API_USER_2FA,
@@ -65,6 +66,9 @@ pub use bpx_api_types as types;
 
 /// Re-export of the custom `Error` type and `Result` alias for error handling.
 pub use error::{Error, Result};
+
+/// Re-export of the order history query struct for convenience.
+pub use types::history::OrderHistoryQuery;
 
 const API_USER_AGENT: &str = "bpx-rust-client";
 const API_KEY_HEADER: &str = "X-API-Key";
@@ -256,6 +260,7 @@ impl BpxClient {
             API_ORDER if method == Method::DELETE => "orderCancel",
             API_ORDERS if method == Method::GET => "orderQueryAll",
             API_ORDERS if method == Method::DELETE => "orderCancelAll",
+            API_ORDER_HISTORY if method == Method::GET => "orderHistoryQueryAll",
             API_RFQ if method == Method::POST => "rfqSubmit",
             API_RFQ_QUOTE if method == Method::POST => "quoteSubmit",
             API_FUTURES_POSITION if method == Method::GET => "positionQuery",

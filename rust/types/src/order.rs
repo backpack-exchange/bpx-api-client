@@ -93,6 +93,62 @@ fn parse_str(s: &str) -> Result<TriggerQuantity, &'static str> {
     }
 }
 
+/// Custom timestamp deserializer that handles both i64 and ISO string formats
+mod flexible_timestamp {
+    use serde::{de::Visitor, Deserialize, Deserializer};
+    use std::fmt;
+
+    struct TimestampVisitor;
+
+    impl Visitor<'_> for TimestampVisitor {
+        type Value = i64;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("an integer timestamp or ISO datetime string")
+        }
+
+        fn visit_i64<E>(self, v: i64) -> Result<Self::Value, E>
+        where
+            E: serde::de::Error,
+        {
+            Ok(v)
+        }
+
+        fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
+        where
+            E: serde::de::Error,
+        {
+            Ok(v as i64)
+        }
+
+        fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+        where
+            E: serde::de::Error,
+        {
+            // Try parsing as integer first
+            if let Ok(num) = v.parse::<i64>() {
+                return Ok(num);
+            }
+
+            // Parse ISO datetime string using chrono NaiveDateTime
+            // Handle format: "2025-07-24T04:05:48.931" (no timezone)
+            let naive_datetime = chrono::NaiveDateTime::parse_from_str(v, "%Y-%m-%dT%H:%M:%S%.3f")
+                .or_else(|_| chrono::NaiveDateTime::parse_from_str(v, "%Y-%m-%dT%H:%M:%S"))
+                .map_err(|e| serde::de::Error::custom(format!("Invalid datetime format '{}': {}", v, e)))?;
+
+            // Convert to UTC timestamp in milliseconds
+            Ok(naive_datetime.and_utc().timestamp_millis())
+        }
+    }
+
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<i64, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_any(TimestampVisitor)
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MarketOrder {
@@ -119,7 +175,15 @@ pub struct MarketOrder {
     pub self_trade_prevention: SelfTradePrevention,
     pub reduce_only: Option<bool>,
     pub status: OrderStatus,
+    #[serde(deserialize_with = "flexible_timestamp::deserialize")]
     pub created_at: i64,
+    // Optional fields for order history compatibility
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expiry_reason: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub strategy_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub system_order_type: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -149,7 +213,17 @@ pub struct LimitOrder {
     pub post_only: bool,
     pub reduce_only: Option<bool>,
     pub status: OrderStatus,
+    #[serde(deserialize_with = "flexible_timestamp::deserialize")]
     pub created_at: i64,
+    // Optional fields for order history compatibility
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub expiry_reason: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub quote_quantity: Option<Decimal>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub strategy_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub system_order_type: Option<String>,
 }
 
 #[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash)]
@@ -488,5 +562,182 @@ mod tests {
         "#;
         let order_update: OrderUpdate = serde_json::from_str(data).unwrap();
         assert_eq!(order_update.trigger_price.unwrap(), dec!(178.55));
+    }
+
+    #[test]
+    fn test_flexible_timestamp_parsing() {
+        // Test integer timestamp (from open orders API)
+        let timestamp_int = super::flexible_timestamp::deserialize(serde_json::Value::Number(serde_json::Number::from(1754019359017_i64))).unwrap();
+        assert_eq!(timestamp_int, 1754019359017);
+
+        // Test string timestamp with milliseconds (from order history API)
+        let timestamp_str = super::flexible_timestamp::deserialize(serde_json::Value::String("2025-07-24T04:05:48.931".to_string())).unwrap();
+        // This should convert to a reasonable Unix timestamp in milliseconds
+        assert!(timestamp_str > 1700000000000); // After 2023
+        assert!(timestamp_str < 2000000000000); // Before 2033
+
+        // Test string timestamp without milliseconds
+        let timestamp_str_no_ms = super::flexible_timestamp::deserialize(serde_json::Value::String("2025-07-24T04:05:48".to_string())).unwrap();
+        assert!(timestamp_str_no_ms > 1700000000000);
+        assert!(timestamp_str_no_ms < 2000000000000);
+
+        // Test string that looks like an integer
+        let timestamp_str_int = super::flexible_timestamp::deserialize(serde_json::Value::String("1754019359017".to_string())).unwrap();
+        assert_eq!(timestamp_str_int, 1754019359017);
+    }
+
+    #[test]
+    fn test_historical_order_parsing() {
+        // Test parsing a historical order (from /wapi/v1/history/orders)
+        let historical_order_json = r#"
+        {
+            "clientId": null,
+            "createdAt": "2025-07-24T04:05:48.931",
+            "executedQuantity": "0",
+            "executedQuoteQuantity": "0",
+            "expiryReason": null,
+            "id": "3998427932",
+            "orderType": "Limit",
+            "postOnly": false,
+            "price": "182",
+            "quantity": "0.1",
+            "quoteQuantity": "18.2",
+            "selfTradePrevention": "RejectTaker",
+            "side": "Bid",
+            "status": "Cancelled",
+            "stopLossLimitPrice": null,
+            "stopLossTriggerBy": null,
+            "stopLossTriggerPrice": null,
+            "strategyId": null,
+            "symbol": "SOL_USDC",
+            "systemOrderType": null,
+            "takeProfitLimitPrice": null,
+            "takeProfitTriggerBy": null,
+            "takeProfitTriggerPrice": null,
+            "timeInForce": "GTC",
+            "triggerBy": null,
+            "triggerPrice": null,
+            "triggerQuantity": null
+        }
+        "#;
+
+        let order: Order = serde_json::from_str(historical_order_json).unwrap();
+        match order {
+            Order::Limit(limit_order) => {
+                assert_eq!(limit_order.id, "3998427932");
+                assert_eq!(limit_order.symbol, "SOL_USDC");
+                assert_eq!(limit_order.price, dec!(182));
+                assert_eq!(limit_order.quantity, dec!(0.1));
+                assert_eq!(limit_order.status, OrderStatus::Cancelled);
+                assert_eq!(limit_order.quote_quantity, Some(dec!(18.2)));
+                assert_eq!(limit_order.strategy_id, None);
+                assert_eq!(limit_order.system_order_type, None);
+                // Timestamp should be parsed correctly
+                assert!(limit_order.created_at > 1700000000000);
+                assert!(limit_order.created_at < 2000000000000);
+            }
+            _ => panic!("Expected Limit order"),
+        }
+    }
+
+    #[test]
+    fn test_open_order_parsing_with_integer_timestamp() {
+        // Test parsing an open order (from /api/v1/orders) - simulated structure
+        let open_order_json = r#"
+        {
+            "id": "4570246549",
+            "clientId": null,
+            "symbol": "SOL_USDC",
+            "side": "Bid",
+            "quantity": "0.1",
+            "executedQuantity": "0",
+            "executedQuoteQuantity": "0",
+            "stopLossLimitPrice": null,
+            "stopLossTriggerBy": null,
+            "stopLossTriggerPrice": null,
+            "takeProfitLimitPrice": null,
+            "takeProfitTriggerBy": null,
+            "takeProfitTriggerPrice": null,
+            "price": "166.33",
+            "triggerBy": null,
+            "triggerPrice": null,
+            "triggerQuantity": null,
+            "triggeredAt": null,
+            "timeInForce": "GTC",
+            "relatedOrderId": null,
+            "selfTradePrevention": "RejectTaker",
+            "postOnly": false,
+            "reduceOnly": null,
+            "status": "New",
+            "createdAt": 1754019359017,
+            "orderType": "Limit"
+        }
+        "#;
+
+        let order: Order = serde_json::from_str(open_order_json).unwrap();
+        match order {
+            Order::Limit(limit_order) => {
+                assert_eq!(limit_order.id, "4570246549");
+                assert_eq!(limit_order.symbol, "SOL_USDC");
+                assert_eq!(limit_order.price, dec!(166.33));
+                assert_eq!(limit_order.quantity, dec!(0.1));
+                assert_eq!(limit_order.status, OrderStatus::New);
+                assert_eq!(limit_order.created_at, 1754019359017);
+                // Historical-only fields should be None for open orders
+                assert_eq!(limit_order.quote_quantity, None);
+                assert_eq!(limit_order.strategy_id, None);
+                assert_eq!(limit_order.expiry_reason, None);
+            }
+            _ => panic!("Expected Limit order"),
+        }
+    }
+
+    #[test]
+    fn test_market_order_with_string_timestamp() {
+        // Test market order with string timestamp
+        let market_order_json = r#"
+        {
+            "id": "123456789",
+            "clientId": null,
+            "symbol": "SOL_USDC",
+            "side": "Ask",
+            "quantity": null,
+            "executedQuantity": "1.5",
+            "quoteQuantity": "300",
+            "executedQuoteQuantity": "297.45",
+            "stopLossLimitPrice": null,
+            "stopLossTriggerBy": null,
+            "stopLossTriggerPrice": null,
+            "takeProfitLimitPrice": null,
+            "takeProfitTriggerBy": null,
+            "takeProfitTriggerPrice": null,
+            "triggerBy": null,
+            "triggerPrice": null,
+            "triggerQuantity": null,
+            "triggeredAt": null,
+            "timeInForce": "IOC",
+            "relatedOrderId": null,
+            "selfTradePrevention": "RejectTaker",
+            "reduceOnly": null,
+            "status": "Filled",
+            "createdAt": "2025-07-23T06:40:02.881",
+            "orderType": "Market"
+        }
+        "#;
+
+        let order: Order = serde_json::from_str(market_order_json).unwrap();
+        match order {
+            Order::Market(market_order) => {
+                assert_eq!(market_order.id, "123456789");
+                assert_eq!(market_order.symbol, "SOL_USDC");
+                assert_eq!(market_order.executed_quantity, dec!(1.5));
+                assert_eq!(market_order.quote_quantity, Some(dec!(300)));
+                assert_eq!(market_order.status, OrderStatus::Filled);
+                // Timestamp should be parsed correctly from string
+                assert!(market_order.created_at > 1700000000000);
+                assert!(market_order.created_at < 2000000000000);
+            }
+            _ => panic!("Expected Market order"),
+        }
     }
 }
