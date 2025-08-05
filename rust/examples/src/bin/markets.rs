@@ -9,8 +9,11 @@ async fn main() {
 
     let client = BpxClient::init(base_url, &secret, None).expect("Failed to initialize Backpack API client");
 
-    match client.get_open_orders(Some("SOL_USDC")).await {
-        Ok(orders) => println!("Open Orders: {orders:?}"),
+    match client.get_markets().await {
+        Ok(markets) => {
+            let markets_json = serde_json::to_string_pretty(&markets).unwrap();
+            println!("{markets_json}");
+        }
         Err(err) => tracing::error!("Error: {err:?}"),
     }
 }

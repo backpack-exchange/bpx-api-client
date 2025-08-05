@@ -10,11 +10,16 @@ repository = "https://github.com/backpack-exchange/bpx-api-client"
 bpx-api-client = { path = "../client", features = ["ws"] }
 bpx-api-types = { path = "../types" }
 tracing-subscriber = { workspace = true }
-
 anyhow = { workspace = true }
+dotenv = { workspace = true }
+serde_json = { workspace = true }
 tokio = { workspace = true }
 tokio-tungstenite = { workspace = true }
 tracing = { workspace = true }
+
+[[bin]]
+name = "markets"
+path = "src/bin/markets.rs"
 
 [[bin]]
 name = "orders"

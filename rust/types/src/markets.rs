@@ -15,6 +15,13 @@ pub struct Asset {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum MarketType {
+    Spot,
+    Perp,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Ticker {
     pub symbol: String,
@@ -76,6 +83,8 @@ pub struct Market {
     pub base_symbol: String,
     /// The quote asset for the market.
     pub quote_symbol: String,
+    /// The type of the market, either `Spot` or `Perp`.
+    pub market_type: MarketType,
     /// See [`MarketFilters`].
     pub filters: MarketFilters,
 }
@@ -99,33 +108,33 @@ impl Market {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MarketFilters {
-    price: PriceFilters,
-    quantity: QuantityFilters,
-    leverage: Option<LeverageFilters>,
+    pub price: PriceFilters,
+    pub quantity: QuantityFilters,
+    pub leverage: Option<LeverageFilters>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PriceFilters {
-    min_price: Decimal,
-    max_price: Option<Decimal>,
-    tick_size: Decimal,
+    pub min_price: Decimal,
+    pub max_price: Option<Decimal>,
+    pub tick_size: Decimal,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct QuantityFilters {
-    min_quantity: Decimal,
-    max_quantity: Option<Decimal>,
-    step_size: Decimal,
+    pub min_quantity: Decimal,
+    pub max_quantity: Option<Decimal>,
+    pub step_size: Decimal,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LeverageFilters {
-    min_leverage: Decimal,
-    max_leverage: Decimal,
-    step_size: Decimal,
+    pub min_leverage: Decimal,
+    pub max_leverage: Decimal,
+    pub step_size: Decimal,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -253,17 +262,15 @@ pub struct MarkPriceUpdate {
 
 #[cfg(test)]
 mod test {
+    use super::*;
     use rust_decimal_macros::dec;
-
-    use crate::markets::{Market, QuantityFilters};
-
-    use super::{MarkPriceUpdate, PriceFilters};
 
     fn get_test_market() -> Market {
         Market {
             symbol: "TEST_MARKET".to_string(),
             base_symbol: "TEST".to_string(),
             quote_symbol: "MARKET".to_string(),
+            market_type: MarketType::Spot,
             filters: super::MarketFilters {
                 price: PriceFilters {
                     min_price: dec!(0.0001),
