@@ -4,10 +4,12 @@ default:
 
 #  Run the example retrieving all the open orders
 orders:
-    SECRET=... \
     cargo -q run --bin orders
 
 #  Run the example subscribing to the RFQ WebSocket
 rfq:
-    SECRET=... \
     cargo -q run --bin rfq
+
+#  Run the example to retrieve markets
+markets:
+    cargo -q run --bin markets

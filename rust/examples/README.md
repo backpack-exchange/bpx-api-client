@@ -17,21 +17,15 @@ Follow these steps to configure and run the examples: Inside examples folder
 1. **Create a `.env` File**:
    ```bash
    touch .env
+   ```
 
-or create .env file iside examples folder
-
-2. **Add Environment Variables**:
+2. **Add Environment Variables to `.env` File**:
     ```bash
     BPX_API_KEY=your_api_key_here
     SECRET=your_api_secret_here
     BASE_URL=https://api.backpack.exchange
     WS_URL=wss://ws.backpack.exchange
-
-add above to .env file
-
-3. **Set environment variable**:
-   ```bash
-   export SECRET=your-secret-key
+   ```
 
 ## Running the Examples
 
