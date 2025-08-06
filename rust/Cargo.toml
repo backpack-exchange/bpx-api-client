@@ -5,6 +5,9 @@ resolver = "2"
 [workspace.package]
 keywords = ["backpack", "exchange"]
 repository = "https://github.com/backpack-exchange/bpx-api-client"
+version = "0.7.1"
+license = "Apache-2.0"
+edition = "2021"
 
 [workspace.dependencies]
 anyhow = "1"

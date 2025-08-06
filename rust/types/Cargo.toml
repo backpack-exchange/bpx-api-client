@@ -1,10 +1,12 @@
 [package]
 name = "bpx-api-types"
-version = "0.7.0"
-license = "Apache-2.0"
-edition = "2021"
 description = "Backpack Exchange API types"
-repository = "https://github.com/backpack-exchange/bpx-api-client"
+version.workspace = true
+edition.workspace = true
+keywords.workspace = true
+license.workspace = true
+repository.workspace = true
+
 
 [dependencies]
 chrono = { workspace = true }
@@ -15,4 +17,3 @@ strum = { workspace = true }
 [dev-dependencies]
 rust_decimal_macros = { workspace = true }
 serde_json = { workspace = true }
-
