@@ -15,39 +15,39 @@ pub struct Trade {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TradeUpdate {
-    /// Event type
+    /// Event type.
     #[serde(rename = "e")]
     pub event_type: String,
 
-    /// Event timestamp in microseconds
+    /// Event timestamp in microseconds.
     #[serde(rename = "E")]
     pub event_time: i64,
 
-    /// Symbol
+    /// Symbol.
     #[serde(rename = "s")]
     pub symbol: String,
 
-    /// Price
+    /// Price.
     #[serde(rename = "p")]
     pub price: Decimal,
 
-    /// Quantity
+    /// Quantity.
     #[serde(rename = "q")]
     pub quantity: Decimal,
 
-    /// Buyer order ID
+    /// Buyer order ID.
     #[serde(rename = "b")]
     pub buyer_order_id: String,
 
-    /// Seller order ID
+    /// Seller order ID.
     #[serde(rename = "a")]
     pub seller_order_id: String,
 
-    /// Trade ID
+    /// Trade ID.
     #[serde(rename = "t")]
     pub trade_id: u64,
 
-    /// Engine timestamp in microseconds
+    /// Engine timestamp in microseconds.
     #[serde(rename = "T")]
     pub timestamp: i64,
 
