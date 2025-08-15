@@ -237,9 +237,23 @@ pub struct ExecuteOrderPayload {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub quote_quantity: Option<Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub reduce_only: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub self_trade_prevention: Option<SelfTradePrevention>,
     pub side: Side,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stop_loss_limit_price: Option<Decimal>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stop_loss_trigger_by: Option<TriggerBy>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stop_loss_trigger_price: Option<Decimal>,
     pub symbol: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub take_profit_limit_price: Option<Decimal>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub take_profit_trigger_by: Option<TriggerBy>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub take_profit_trigger_price: Option<Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_in_force: Option<TimeInForce>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -248,8 +262,6 @@ pub struct ExecuteOrderPayload {
     pub trigger_price: Option<Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub trigger_quantity: Option<TriggerQuantity>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub reduce_only: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
