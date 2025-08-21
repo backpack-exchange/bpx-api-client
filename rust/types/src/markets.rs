@@ -207,6 +207,57 @@ pub struct Kline {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct KlineUpdate {
+    /// Event type
+    #[serde(rename = "e")]
+    pub event_type: String,
+
+    /// Event timestamp in microseconds
+    #[serde(rename = "E")]
+    pub event_time: i64,
+
+    /// Symbol
+    #[serde(rename = "s")]
+    pub symbol: String,
+
+    /// K-Line start time in seconds
+    #[serde(rename = "t")]
+    pub start_time: i64,
+
+    /// K-Line end time in seconds
+    #[serde(rename = "T")]
+    pub end_time: i64,
+
+    /// Open price
+    #[serde(rename = "o")]
+    pub open_price: Decimal,
+
+    /// Close price
+    #[serde(rename = "c")]
+    pub close_price: Decimal,
+
+    /// High price
+    #[serde(rename = "h")]
+    pub high_price: Decimal,
+
+    /// Low price
+    #[serde(rename = "l")]
+    pub low_price: Decimal,
+
+    /// Base asset volume
+    #[serde(rename = "v")]
+    pub volume: Decimal,
+
+    /// Number of trades
+    #[serde(rename = "n")]
+    pub trades: u64,
+
+    /// Is this k-line closed?
+    #[serde(rename = "X")]
+    pub is_closed: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FundingRate {
     pub symbol: String,
@@ -318,5 +369,30 @@ mod test {
         assert_eq!(mark_price_update.symbol, "SOL_USDC_PERP".to_string());
         assert_eq!(mark_price_update.funding_rate, dec!(-0.0000039641039274236048482914));
         assert_eq!(mark_price_update.mark_price, dec!(173.35998175));
+    }
+
+    #[test]
+    fn test_kline_update_parse() {
+        let data = r#"
+{
+  "e": "kline",
+  "E": 1694687692980000,
+  "s": "SOL_USD",
+  "t": 123400000,
+  "T": 123460000,
+  "o": "18.75",
+  "c": "19.25",
+  "h": "19.80",
+  "l": "18.50",
+  "v": "32123",
+  "n": 93828,
+  "X": false
+}
+        "#;
+
+        let kline_update: KlineUpdate = serde_json::from_str(data).unwrap();
+        assert_eq!(kline_update.symbol, "SOL_USD".to_string());
+        assert_eq!(kline_update.start_time, 123400000);
+        assert_eq!(kline_update.open_price, dec!(18.75));
     }
 }
