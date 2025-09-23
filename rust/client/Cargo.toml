@@ -7,6 +7,9 @@ keywords.workspace = true
 license.workspace = true
 repository.workspace = true
 
+[package.metadata.docs.rs]
+all-features = true
+
 [dependencies]
 base64 = { workspace = true }
 bpx-api-types = { path = "../types", version = "0.7.0" }
