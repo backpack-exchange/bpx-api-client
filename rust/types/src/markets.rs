@@ -152,9 +152,14 @@ pub struct Token {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderBookDepth {
+    /// Resting limit orders on ask side, listed as price-quantity pairs
     pub asks: Vec<(Decimal, Decimal)>,
+    /// Resting limit orders on bid side, listed as price-quantity pairs
     pub bids: Vec<(Decimal, Decimal)>,
+    /// The id of the last update applied to this order book state
     pub last_update_id: String,
+    /// Timestamp in microseconds
+    pub timestamp: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
