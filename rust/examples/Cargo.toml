@@ -8,8 +8,8 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-bpx-api-client = { path = "../client", features = ["ws"] }
-bpx-api-types = { path = "../types" }
+bpx-api-client = { workspace = true, features = ["ws"] }
+bpx-api-types = { workspace = true }
 tracing-subscriber = { workspace = true }
 anyhow = { workspace = true }
 dotenv = { workspace = true }

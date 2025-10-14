@@ -21,7 +21,7 @@ pub enum FillType {
 #[serde(rename_all = "camelCase")]
 pub struct Fill {
     pub trade_id: Option<i64>,
-    pub client_id: String,
+    pub client_id: Option<String>,
     pub order_id: String,
     pub symbol: String,
     pub fee_symbol: String,

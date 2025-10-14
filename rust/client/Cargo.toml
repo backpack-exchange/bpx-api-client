@@ -9,7 +9,7 @@ repository.workspace = true
 
 [dependencies]
 base64 = { workspace = true }
-bpx-api-types = { path = "../types", version = "0.7.0" }
+bpx-api-types = { workspace = true }
 ed25519-dalek = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
