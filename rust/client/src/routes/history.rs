@@ -12,7 +12,6 @@ impl BpxClient {
         let query_string =
             serde_qs::to_string(&params).map_err(|e| Error::UrlParseError(e.to_string().into_boxed_str()))?;
         let url = format!("{}{}?{}", self.base_url, API_FILLS_HISTORY, query_string);
-        tracing::info!("Fetching historical fills from {}", url);
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
     }
