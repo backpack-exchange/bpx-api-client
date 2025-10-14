@@ -2,6 +2,7 @@ pub mod account;
 pub mod borrow_lend;
 pub mod capital;
 pub mod futures;
+pub mod history;
 pub mod markets;
 pub mod order;
 pub mod rfq;
