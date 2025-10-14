@@ -7,7 +7,7 @@ use crate::BpxClient;
 pub const API_FILLS_HISTORY: &str = "/wapi/v1/history/fills";
 
 impl BpxClient {
-    /// Fetches historical trades for a given symbol, with optional limit and offset.
+    /// Fetches historical fills with optional filtering and pagination parameters.
     pub async fn get_historical_fills(&self, params: FillsHistoryParams) -> Result<Vec<Fill>> {
         let query_string =
             serde_qs::to_string(&params).map_err(|e| Error::UrlParseError(e.to_string().into_boxed_str()))?;
