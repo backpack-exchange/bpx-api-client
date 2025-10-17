@@ -67,14 +67,14 @@ impl BpxClient {
         &self,
         symbol: &str,
         kline_interval: &str,
-        start_time: Option<i64>,
+        start_time: i64,
         end_time: Option<i64>,
     ) -> Result<Vec<Kline>> {
         let mut url = format!(
-            "/{}{}?symbol={}&kline_interval={}",
-            self.base_url, API_KLINES, symbol, kline_interval
+            "{}{}?symbol={}&interval={}&startTime={}",
+            self.base_url, API_KLINES, symbol, kline_interval, start_time
         );
-        for (k, v) in [("start_time", start_time), ("end_time", end_time)] {
+        for (k, v) in [("endTime", end_time)] {
             if let Some(v) = v {
                 url.push_str(&format!("&{k}={v}"));
             }
