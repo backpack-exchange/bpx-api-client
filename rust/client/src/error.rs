@@ -28,6 +28,10 @@ pub enum Error {
     #[error("Invalid request: {0}")]
     InvalidRequest(Box<str>),
 
+    /// Client needs to be authenticated to perform the requested action.
+    #[error("Client is not authenticated")]
+    NotAuthenticated,
+
     /// General HTTP client error from `reqwest`.
     #[error(transparent)]
     Reqwest(#[from] reqwest::Error),

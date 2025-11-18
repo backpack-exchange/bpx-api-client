@@ -13,7 +13,11 @@ async fn main() -> Result<()> {
     let ws_url = env::var("WS_URL").unwrap_or_else(|_| BACKPACK_WS_URL.to_string());
     let secret = env::var("SECRET").expect("Missing SECRET environment variable");
 
-    let client = BpxClient::init_with_ws(base_url, ws_url, &secret, None)?;
+    let client = BpxClient::builder()
+        .base_url(base_url)
+        .ws_url(ws_url)
+        .secret(&secret)
+        .build()?;
 
     let (tx, mut rx) = mpsc::channel::<RequestForQuoteUpdate>(100);
     tokio::spawn(async move {
@@ -22,7 +26,10 @@ async fn main() -> Result<()> {
         }
     });
 
-    client.subscribe_to_rfqs(tx).await;
+    client
+        .subscribe_to_rfqs(tx)
+        .await
+        .expect("Failed to subscribe to RFQ updates");
 
     Ok(())
 }
