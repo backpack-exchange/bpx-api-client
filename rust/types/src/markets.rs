@@ -9,9 +9,9 @@ use crate::Blockchain;
 #[serde(rename_all = "camelCase")]
 pub struct Asset {
     /// Identifier
-    symbol: String,
+    pub symbol: String,
     /// See [`Token`]
-    tokens: Vec<Token>,
+    pub tokens: Vec<Token>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
