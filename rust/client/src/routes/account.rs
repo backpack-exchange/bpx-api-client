@@ -1,5 +1,5 @@
-use crate::error::Result;
 use crate::BpxClient;
+use crate::error::Result;
 use bpx_api_types::account::{
     AccountMaxBorrow, AccountMaxWithdrawal, AccountSettings, ConvertDustPayload, UpdateAccountPayload,
 };

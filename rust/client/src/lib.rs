@@ -33,13 +33,13 @@
 //! # }
 //! ```
 
-use base64::{engine::general_purpose::STANDARD, Engine};
+use base64::{Engine, engine::general_purpose::STANDARD};
 use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
-use reqwest::{header::CONTENT_TYPE, IntoUrl, Method, Request, Response, StatusCode};
+use reqwest::{IntoUrl, Method, Request, Response, StatusCode, header::CONTENT_TYPE};
 use routes::{
     account::{API_ACCOUNT, API_ACCOUNT_CONVERT_DUST, API_ACCOUNT_MAX_BORROW, API_ACCOUNT_MAX_WITHDRAWAL},
     borrow_lend::API_BORROW_LEND_POSITIONS,
-    capital::{API_CAPITAL, API_COLLATERAL, API_DEPOSITS, API_DEPOSIT_ADDRESS, API_WITHDRAWALS},
+    capital::{API_CAPITAL, API_COLLATERAL, API_DEPOSIT_ADDRESS, API_DEPOSITS, API_WITHDRAWALS},
     futures::API_FUTURES_POSITION,
     history::API_FILLS_HISTORY,
     order::{API_ORDER, API_ORDERS},

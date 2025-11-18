@@ -1,14 +1,14 @@
-use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
+use base64::engine::general_purpose::STANDARD;
 use ed25519_dalek::Signer;
 use futures_util::{SinkExt, StreamExt};
 use serde::de::DeserializeOwned;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use tokio::sync::mpsc::Sender;
 use tokio_tungstenite::tungstenite::protocol::Message;
 use tokio_tungstenite::{connect_async, tungstenite::Utf8Bytes};
 
-use crate::{now_millis, BpxClient, BACKPACK_WS_URL, DEFAULT_WINDOW};
+use crate::{BACKPACK_WS_URL, BpxClient, DEFAULT_WINDOW, now_millis};
 
 impl BpxClient {
     /// Subscribes to a private WebSocket stream and sends messages of type `T` through a transmitter channel.
@@ -59,10 +59,10 @@ impl BpxClient {
                     Message::Text(text) => {
                         if let Ok(value) = serde_json::from_str::<Value>(&text) {
                             if let Some(payload) = value.get("data") {
-                                if let Ok(data) = T::deserialize(payload) {
-                                    if tx.send(data).await.is_err() {
-                                        tracing::error!("Failed to send message through the channel");
-                                    }
+                                if let Ok(data) = T::deserialize(payload)
+                                    && tx.send(data).await.is_err()
+                                {
+                                    tracing::error!("Failed to send message through the channel");
                                 }
                             } else if let Some(payload) = value.get("error") {
                                 tracing::error!("Websocket Error Response: {}", payload);

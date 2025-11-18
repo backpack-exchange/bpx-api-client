@@ -5,8 +5,8 @@ use bpx_api_types::rfq::RequestForQuoteUpdate;
 #[cfg(feature = "ws")]
 use tokio::sync::mpsc::Sender;
 
-use crate::error::Result;
 use crate::BpxClient;
+use crate::error::Result;
 
 #[doc(hidden)]
 pub const API_RFQ: &str = "/api/v1/rfq";

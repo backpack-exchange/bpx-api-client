@@ -2,8 +2,8 @@ use crate::error::Result;
 use std::collections::HashMap;
 
 use bpx_api_types::{
-    capital::{Balance, Collateral, Deposit, DepositAddress, RequestWithdrawalPayload, Withdrawal},
     Blockchain,
+    capital::{Balance, Collateral, Deposit, DepositAddress, RequestWithdrawalPayload, Withdrawal},
 };
 
 use crate::BpxClient;

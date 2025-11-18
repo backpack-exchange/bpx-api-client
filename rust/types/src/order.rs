@@ -1,7 +1,7 @@
 use std::{fmt, str::FromStr};
 
-use rust_decimal::{prelude::FromPrimitive, Decimal};
-use serde::{de::Visitor, Deserialize, Deserializer, Serialize};
+use rust_decimal::{Decimal, prelude::FromPrimitive};
+use serde::{Deserialize, Deserializer, Serialize, de::Visitor};
 use strum::{Display, EnumString};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

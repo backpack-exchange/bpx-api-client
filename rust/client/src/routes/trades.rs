@@ -1,7 +1,7 @@
 use bpx_api_types::trade::Trade;
 
-use crate::error::Result;
 use crate::BpxClient;
+use crate::error::Result;
 
 const API_TRADES: &str = "/api/v1/trades";
 const API_TRADES_HISTORY: &str = "/api/v1/trades/history";
