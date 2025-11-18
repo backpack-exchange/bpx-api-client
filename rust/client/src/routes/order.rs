@@ -1,7 +1,7 @@
 use bpx_api_types::order::{CancelOpenOrdersPayload, CancelOrderPayload, ExecuteOrderPayload, Order};
 
-use crate::error::{Error, Result};
 use crate::BpxClient;
+use crate::error::{Error, Result};
 
 #[doc(hidden)]
 pub const API_ORDER: &str = "/api/v1/order";

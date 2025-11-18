@@ -1,5 +1,5 @@
 use anyhow::Result;
-use bpx_api_client::{BpxClient, BACKPACK_API_BASE_URL, BACKPACK_WS_URL};
+use bpx_api_client::{BACKPACK_API_BASE_URL, BACKPACK_WS_URL, BpxClient};
 use bpx_api_types::rfq::RequestForQuoteUpdate;
 use std::env;
 use tokio::sync::mpsc;

@@ -1,6 +1,6 @@
 use bpx_api_client::{
+    BACKPACK_API_BASE_URL, BpxClient,
     types::{fill::FillsHistoryParams, history::SortDirection},
-    BpxClient, BACKPACK_API_BASE_URL,
 };
 use std::env;
 

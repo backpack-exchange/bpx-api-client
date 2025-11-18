@@ -1,6 +1,6 @@
 use bpx_api_types::user::{RequestTwoFactorPayload, RequestTwoFactorResponse};
 
-use crate::{error::Result, BpxClient};
+use crate::{BpxClient, error::Result};
 
 #[doc(hidden)]
 pub const API_USER_2FA: &str = "/wapi/v1/user/2fa";

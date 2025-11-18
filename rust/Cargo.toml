@@ -5,9 +5,9 @@ resolver = "2"
 [workspace.package]
 keywords = ["backpack", "exchange"]
 repository = "https://github.com/backpack-exchange/bpx-api-client"
-version = "0.7.2"
+version = "0.8.0"
 license = "Apache-2.0"
-edition = "2021"
+edition = "2024"
 
 [workspace.dependencies]
 anyhow = "1"
@@ -15,27 +15,27 @@ base64 = "0.22"
 bpx-api-client = { path = "client" }
 bpx-api-types = { path = "types" }
 chrono = { default-features = false, version = "0.4", features = ["serde"] }
-dotenv = "0.15.0"
+dotenv = "0.15"
 ed25519-dalek = "2"
 futures-util = { default-features = false, version = "0.3" }
 reqwest = { version = "0.12", default-features = false, features = [
   "json",
   "rustls-tls",
 ] }
-rust_decimal = "1.37"
-rust_decimal_macros = "1.37"
+rust_decimal = "1"
+rust_decimal_macros = "1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_qs = "0.15"
 strum = { version = "0.27", features = ["derive"] }
 thiserror = "2"
-tokio = { version = "1.45", features = [
+tokio = { version = "1", features = [
   "macros",
   "rt-multi-thread",
   "signal",
   "sync",
   "time",
 ] }
-tokio-tungstenite = { version = "0.27", features = ["rustls-tls-native-roots"] }
+tokio-tungstenite = { version = "0.28", features = ["rustls-tls-native-roots"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"

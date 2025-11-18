@@ -1,7 +1,7 @@
 use bpx_api_types::fill::{Fill, FillsHistoryParams};
 
-use crate::error::{Error, Result};
 use crate::BpxClient;
+use crate::error::{Error, Result};
 
 #[doc(hidden)]
 pub const API_FILLS_HISTORY: &str = "/wapi/v1/history/fills";

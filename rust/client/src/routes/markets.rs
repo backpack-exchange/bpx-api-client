@@ -1,7 +1,7 @@
 use bpx_api_types::markets::{Asset, FundingRate, Kline, MarkPrice, Market, OrderBookDepth, Ticker};
 
-use crate::error::Result;
 use crate::BpxClient;
+use crate::error::Result;
 
 const API_ASSETS: &str = "/api/v1/assets";
 const API_MARKETS: &str = "/api/v1/markets";

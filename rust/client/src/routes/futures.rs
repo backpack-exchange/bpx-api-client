@@ -1,7 +1,7 @@
 use bpx_api_types::futures::FuturePosition;
 
-use crate::error::Result;
 use crate::BpxClient;
+use crate::error::Result;
 
 #[doc(hidden)]
 pub const API_FUTURES_POSITION: &str = "/api/v1/position";

@@ -7,7 +7,6 @@ keywords.workspace = true
 license.workspace = true
 repository.workspace = true
 
-
 [dependencies]
 chrono = { workspace = true }
 rust_decimal = { workspace = true, features = ["serde"] }

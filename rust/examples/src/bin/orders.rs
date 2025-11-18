@@ -1,4 +1,4 @@
-use bpx_api_client::{BpxClient, BACKPACK_API_BASE_URL};
+use bpx_api_client::{BACKPACK_API_BASE_URL, BpxClient};
 use std::env;
 
 #[tokio::main]
