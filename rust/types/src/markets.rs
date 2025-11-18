@@ -208,7 +208,7 @@ pub struct Kline {
     pub close: Option<Decimal>,
     pub end: Option<String>,
     pub volume: Decimal,
-    pub trades: u64,
+    pub trades: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
