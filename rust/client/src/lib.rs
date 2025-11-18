@@ -34,8 +34,8 @@
 //! ```
 
 use base64::{Engine, engine::general_purpose::STANDARD};
-use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
-use reqwest::{IntoUrl, Method, Request, Response, StatusCode, header::CONTENT_TYPE};
+use ed25519_dalek::{Signature, Signer, SigningKey};
+use reqwest::{IntoUrl, Method, Request, Response, StatusCode, Url, header::CONTENT_TYPE};
 use routes::{
     account::{API_ACCOUNT, API_ACCOUNT_CONVERT_DUST, API_ACCOUNT_MAX_BORROW, API_ACCOUNT_MAX_WITHDRAWAL},
     borrow_lend::API_BORROW_LEND_POSITIONS,
@@ -90,11 +90,9 @@ pub type BpxHeaders = reqwest::header::HeaderMap;
 /// A client for interacting with the Backpack Exchange API.
 #[derive(Debug, Clone)]
 pub struct BpxClient {
-    signer: SigningKey,
-    verifier: VerifyingKey,
-    base_url: String,
-    #[allow(dead_code)]
-    ws_url: Option<String>,
+    signing_key: Option<SigningKey>,
+    base_url: Url,
+    ws_url: Url,
     client: reqwest::Client,
 }
 
@@ -120,56 +118,32 @@ impl AsRef<reqwest::Client> for BpxClient {
 
 // Public functions.
 impl BpxClient {
+    pub fn builder() -> BpxClientBuilder {
+        BpxClientBuilder::new()
+    }
+
     /// Initializes a new client with the given base URL, API secret, and optional headers.
     ///
     /// This sets up the signing and verification keys, and creates a `reqwest` client
     /// with default headers including the API key and content type.
     pub fn init(base_url: String, secret: &str, headers: Option<BpxHeaders>) -> Result<Self> {
-        Self::init_internal(base_url, None, secret, headers)
+        BpxClientBuilder::new()
+            .base_url(base_url)
+            .secret(secret)
+            .headers(headers.unwrap_or_default())
+            .build()
     }
 
     /// Initializes a new client with WebSocket support.
     #[cfg(feature = "ws")]
+    #[deprecated(note = "Use BpxClient::builder() instead to configure the client with a custom websocket URL.")]
     pub fn init_with_ws(base_url: String, ws_url: String, secret: &str, headers: Option<BpxHeaders>) -> Result<Self> {
-        Self::init_internal(base_url, Some(ws_url), secret, headers)
-    }
-
-    /// Internal helper function for client initialization.
-    fn init_internal(
-        base_url: String,
-        ws_url: Option<String>,
-        secret: &str,
-        headers: Option<BpxHeaders>,
-    ) -> Result<Self> {
-        let signer = STANDARD
-            .decode(secret)?
-            .try_into()
-            .map(|s| SigningKey::from_bytes(&s))
-            .map_err(|_| Error::SecretKey)?;
-
-        let verifier = signer.verifying_key();
-
-        let mut headers = headers.unwrap_or_default();
-        headers.insert(API_KEY_HEADER, STANDARD.encode(verifier).parse()?);
-        headers.insert(CONTENT_TYPE, JSON_CONTENT.parse()?);
-
-        let client = reqwest::Client::builder()
-            .user_agent(API_USER_AGENT)
-            .default_headers(headers)
-            .build()?;
-
-        Ok(BpxClient {
-            signer,
-            verifier,
-            base_url,
-            ws_url,
-            client,
-        })
-    }
-
-    /// Creates a new, empty `BpxHeaders` instance.
-    pub fn create_headers() -> BpxHeaders {
-        reqwest::header::HeaderMap::new()
+        BpxClientBuilder::new()
+            .base_url(base_url)
+            .ws_url(ws_url)
+            .secret(secret)
+            .headers(headers.unwrap_or_default())
+            .build()
     }
 
     /// Processes the response to check for HTTP errors and extracts
@@ -191,7 +165,7 @@ impl BpxClient {
     /// Sends a GET request to the specified URL and signs it before execution.
     pub async fn get<U: IntoUrl>(&self, url: U) -> Result<Response> {
         let req = self.build_and_maybe_sign_request::<(), _>(url, Method::GET, None)?;
-        tracing::debug!("req: {:?}", req);
+        tracing::debug!(?req, "GET request");
         let res = self.client.execute(req).await?;
         Self::process_response(res).await
     }
@@ -199,7 +173,7 @@ impl BpxClient {
     /// Sends a POST request with a JSON payload to the specified URL and signs it.
     pub async fn post<P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<Response> {
         let req = self.build_and_maybe_sign_request(url, Method::POST, Some(&payload))?;
-        tracing::debug!("req: {:?}", req);
+        tracing::debug!(?req, "POST request");
         let res = self.client.execute(req).await?;
         Self::process_response(res).await
     }
@@ -207,7 +181,7 @@ impl BpxClient {
     /// Sends a DELETE request with a JSON payload to the specified URL and signs it.
     pub async fn delete<P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<Response> {
         let req = self.build_and_maybe_sign_request(url, Method::DELETE, Some(&payload))?;
-        tracing::debug!("req: {:?}", req);
+        tracing::debug!(?req, "DELETE request");
         let res = self.client.execute(req).await?;
         Self::process_response(res).await
     }
@@ -215,14 +189,9 @@ impl BpxClient {
     /// Sends a PATCH request with a JSON payload to the specified URL and signs it.
     pub async fn patch<P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<Response> {
         let req = self.build_and_maybe_sign_request(url, Method::PATCH, Some(&payload))?;
-        tracing::debug!("req: {:?}", req);
+        tracing::debug!(?req, "PATCH request");
         let res = self.client.execute(req).await?;
         Self::process_response(res).await
-    }
-
-    /// Returns a reference to the `VerifyingKey` used for request verification.
-    pub const fn verifier(&self) -> &VerifyingKey {
-        &self.verifier
     }
 
     /// Returns a reference to the underlying HTTP client.
@@ -278,6 +247,10 @@ impl BpxClient {
             }
         };
 
+        let Some(signing_key) = &self.signing_key else {
+            return Err(Error::NotAuthenticated);
+        };
+
         let query_params = url.query_pairs().collect::<BTreeMap<Cow<'_, str>, Cow<'_, str>>>();
         let body_params = if let Some(payload) = payload {
             let s = serde_json::to_value(payload)?;
@@ -304,7 +277,7 @@ impl BpxClient {
         signee.push_str(&format!("&timestamp={timestamp}&window={DEFAULT_WINDOW}"));
         tracing::debug!("signee: {}", signee);
 
-        let signature: Signature = self.signer.sign(signee.as_bytes());
+        let signature: Signature = signing_key.sign(signee.as_bytes());
         let signature = STANDARD.encode(signature.to_bytes());
 
         let mut req = self.client().request(method, url);
@@ -321,6 +294,127 @@ impl BpxClient {
             req.headers_mut().insert(CONTENT_TYPE, JSON_CONTENT.parse()?);
         }
         Ok(req)
+    }
+}
+
+#[derive(Debug, Default)]
+pub struct BpxClientBuilder {
+    base_url: Option<String>,
+    ws_url: Option<String>,
+    secret: Option<String>,
+    headers: Option<BpxHeaders>,
+}
+
+impl BpxClientBuilder {
+    pub fn new() -> Self {
+        Default::default()
+    }
+
+    /// Sets the base URL for the Backpack Exchange API.
+    /// If not set, defaults to `BACKPACK_API_BASE_URL`.
+    ///
+    /// # Arguments
+    /// * `base_url` - The base URL
+    ///
+    /// # Returns
+    /// * `Self` - The updated builder instance
+    pub fn base_url(mut self, base_url: impl ToString) -> Self {
+        self.base_url = Some(base_url.to_string());
+        self
+    }
+
+    /// Sets the WebSocket URL for the Backpack Exchange API.
+    /// If not set, defaults to `BACKPACK_WS_URL`.
+    ///
+    /// # Arguments
+    /// * `ws_url` - The WebSocket URL
+    ///
+    /// # Returns
+    /// * `Self` - The updated builder instance
+    pub fn ws_url(mut self, ws_url: impl ToString) -> Self {
+        self.ws_url = Some(ws_url.to_string());
+        self
+    }
+
+    /// Sets the API secret for signing requests.
+    /// If not set, the client will be unauthenticated.
+    ///
+    /// # Arguments
+    /// * `secret` - The API secret
+    ///
+    /// # Returns
+    /// * `Self` - The updated builder instance
+    pub fn secret(mut self, secret: impl ToString) -> Self {
+        self.secret = Some(secret.to_string());
+        self
+    }
+
+    /// Sets custom HTTP headers for the client.
+    /// If not set, no additional headers will be included.
+    ///
+    /// # Arguments
+    /// * `headers` - The custom HTTP headers
+    ///
+    /// # Returns
+    /// * `Self` - The updated builder instance
+    pub fn headers(mut self, headers: BpxHeaders) -> Self {
+        self.headers = Some(headers);
+        self
+    }
+
+    /// Builds the `BpxClient` instance with the configured parameters.
+    ///
+    /// # Returns
+    /// * `Result<BpxClient>` - The constructed client or an error if building fails
+    pub fn build(self) -> Result<BpxClient> {
+        let base_url = self
+            .base_url
+            .map(Cow::from)
+            .unwrap_or_else(|| Cow::Borrowed(BACKPACK_API_BASE_URL));
+
+        let base_url = Url::parse(&base_url).map_err(|e| Error::UrlParseError(e.to_string().into()))?;
+
+        let ws_url = self
+            .ws_url
+            .map(Cow::from)
+            .unwrap_or_else(|| Cow::Borrowed(BACKPACK_WS_URL));
+
+        let ws_url = Url::parse(&ws_url).map_err(|e| Error::UrlParseError(e.to_string().into()))?;
+
+        let signing_key = if let Some(secret) = self.secret {
+            Some(
+                STANDARD
+                    .decode(secret)?
+                    .try_into()
+                    .map(|s| SigningKey::from_bytes(&s))
+                    .map_err(|_| Error::SecretKey)?,
+            )
+        } else {
+            None
+        };
+
+        let mut header_map = BpxHeaders::new();
+        if let Some(headers) = self.headers {
+            header_map.extend(headers);
+        }
+
+        header_map.insert(CONTENT_TYPE, JSON_CONTENT.parse()?);
+        if let Some(signing_key) = &signing_key {
+            let verifier = signing_key.verifying_key();
+            header_map.insert(API_KEY_HEADER, STANDARD.encode(verifier).parse()?);
+        }
+
+        let client = BpxClient {
+            signing_key,
+            base_url,
+            ws_url,
+            client: reqwest::Client::builder()
+                .user_agent(API_USER_AGENT)
+                .default_headers(header_map)
+                .build()?,
+        };
+
+        Ok(client)
     }
 }
 

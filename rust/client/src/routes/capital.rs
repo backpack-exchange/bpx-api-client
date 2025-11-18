@@ -9,15 +9,15 @@ use bpx_api_types::{
 use crate::BpxClient;
 
 #[doc(hidden)]
-pub const API_CAPITAL: &str = "/api/v1/capital";
+pub(crate) const API_CAPITAL: &str = "/api/v1/capital";
 #[doc(hidden)]
-pub const API_DEPOSITS: &str = "/wapi/v1/capital/deposits";
+pub(crate) const API_DEPOSITS: &str = "/wapi/v1/capital/deposits";
 #[doc(hidden)]
-pub const API_DEPOSIT_ADDRESS: &str = "/wapi/v1/capital/deposit/address";
+pub(crate) const API_DEPOSIT_ADDRESS: &str = "/wapi/v1/capital/deposit/address";
 #[doc(hidden)]
-pub const API_WITHDRAWALS: &str = "/wapi/v1/capital/withdrawals";
+pub(crate) const API_WITHDRAWALS: &str = "/wapi/v1/capital/withdrawals";
 #[doc(hidden)]
-pub const API_COLLATERAL: &str = "/api/v1/capital/collateral";
+pub(crate) const API_COLLATERAL: &str = "/api/v1/capital/collateral";
 
 impl BpxClient {
     /// Fetches the account's current balances.
