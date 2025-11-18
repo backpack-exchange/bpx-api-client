@@ -93,7 +93,7 @@ pub struct BpxClient {
     signer: SigningKey,
     verifier: VerifyingKey,
     base_url: String,
-    #[allow(dead_code)]
+    #[cfg(feature = "ws")]
     ws_url: Option<String>,
     client: reqwest::Client,
 }
@@ -125,7 +125,13 @@ impl BpxClient {
     /// This sets up the signing and verification keys, and creates a `reqwest` client
     /// with default headers including the API key and content type.
     pub fn init(base_url: String, secret: &str, headers: Option<BpxHeaders>) -> Result<Self> {
-        Self::init_internal(base_url, None, secret, headers)
+        Self::init_internal(
+            base_url,
+            #[cfg(feature = "ws")]
+            None,
+            secret,
+            headers,
+        )
     }
 
     /// Initializes a new client with WebSocket support.
@@ -137,7 +143,7 @@ impl BpxClient {
     /// Internal helper function for client initialization.
     fn init_internal(
         base_url: String,
-        ws_url: Option<String>,
+        #[cfg(feature = "ws")] ws_url: Option<String>,
         secret: &str,
         headers: Option<BpxHeaders>,
     ) -> Result<Self> {
@@ -162,6 +168,7 @@ impl BpxClient {
             signer,
             verifier,
             base_url,
+            #[cfg(feature = "ws")]
             ws_url,
             client,
         })
