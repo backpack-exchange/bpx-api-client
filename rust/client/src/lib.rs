@@ -90,12 +90,29 @@ pub type BpxHeaders = reqwest::header::HeaderMap;
 /// A client for interacting with the Backpack Exchange API.
 #[derive(Debug, Clone)]
 pub struct BpxClient {
-    signer: SigningKey,
-    verifier: VerifyingKey,
+    auth_keys: Option<AuthKeyPair>,
     base_url: String,
     #[cfg(feature = "ws")]
     ws_url: Option<String>,
     client: reqwest::Client,
+}
+
+#[derive(Debug, Clone)]
+struct AuthKeyPair {
+    signer: SigningKey,
+    verifier: VerifyingKey,
+}
+
+impl AuthKeyPair {
+    pub fn try_from_secret(secret: &str) -> Result<Self> {
+        let signer = STANDARD
+            .decode(secret)?
+            .try_into()
+            .map(|s| SigningKey::from_bytes(&s))
+            .map_err(|_| Error::SecretKey)?;
+        let verifier = signer.verifying_key();
+        Ok(Self { signer, verifier })
+    }
 }
 
 impl std::ops::Deref for BpxClient {
@@ -129,7 +146,22 @@ impl BpxClient {
             base_url,
             #[cfg(feature = "ws")]
             None,
-            secret,
+            Some(secret),
+            headers,
+        )
+    }
+
+    /// Initializes a new client with the given base URL and optional headers.
+    ///
+    /// The client will return an error for authenticated endpoints.
+    ///
+    /// This creates a `reqwest` client with the specified headers and content type.
+    pub fn init_public(base_url: String, headers: Option<BpxHeaders>) -> Result<Self> {
+        Self::init_internal(
+            base_url,
+            #[cfg(feature = "ws")]
+            None,
+            None,
             headers,
         )
     }
@@ -137,27 +169,31 @@ impl BpxClient {
     /// Initializes a new client with WebSocket support.
     #[cfg(feature = "ws")]
     pub fn init_with_ws(base_url: String, ws_url: String, secret: &str, headers: Option<BpxHeaders>) -> Result<Self> {
-        Self::init_internal(base_url, Some(ws_url), secret, headers)
+        Self::init_internal(base_url, Some(ws_url), Some(secret), headers)
+    }
+
+    /// Initializes a new client with WebSocket support.
+    ///
+    /// The client will return an error for authenticated endpoints.
+    #[cfg(feature = "ws")]
+    pub fn init_with_ws_public(base_url: String, ws_url: String, headers: Option<BpxHeaders>) -> Result<Self> {
+        Self::init_internal(base_url, Some(ws_url), None, headers)
     }
 
     /// Internal helper function for client initialization.
     fn init_internal(
         base_url: String,
         #[cfg(feature = "ws")] ws_url: Option<String>,
-        secret: &str,
+        secret: Option<&str>,
         headers: Option<BpxHeaders>,
     ) -> Result<Self> {
-        let signer = STANDARD
-            .decode(secret)?
-            .try_into()
-            .map(|s| SigningKey::from_bytes(&s))
-            .map_err(|_| Error::SecretKey)?;
-
-        let verifier = signer.verifying_key();
-
         let mut headers = headers.unwrap_or_default();
-        headers.insert(API_KEY_HEADER, STANDARD.encode(verifier).parse()?);
         headers.insert(CONTENT_TYPE, JSON_CONTENT.parse()?);
+
+        let auth_keys = secret.map(AuthKeyPair::try_from_secret).transpose()?;
+        if let Some(auth_keys) = auth_keys.as_ref() {
+            headers.insert(API_KEY_HEADER, STANDARD.encode(auth_keys.verifier).parse()?);
+        }
 
         let client = reqwest::Client::builder()
             .user_agent(API_USER_AGENT)
@@ -165,8 +201,7 @@ impl BpxClient {
             .build()?;
 
         Ok(BpxClient {
-            signer,
-            verifier,
+            auth_keys,
             base_url,
             #[cfg(feature = "ws")]
             ws_url,
@@ -228,8 +263,12 @@ impl BpxClient {
     }
 
     /// Returns a reference to the `VerifyingKey` used for request verification.
-    pub const fn verifier(&self) -> &VerifyingKey {
-        &self.verifier
+    pub const fn verifier(&self) -> Option<&VerifyingKey> {
+        // Option::map is not const stable yet, so use match instead.
+        match self.auth_keys.as_ref() {
+            Some(k) => Some(&k.verifier),
+            None => None,
+        }
     }
 
     /// Returns a reference to the underlying HTTP client.
@@ -285,6 +324,12 @@ impl BpxClient {
             }
         };
 
+        let signer = &self
+            .auth_keys
+            .as_ref()
+            .ok_or_else(|| Error::NoSecretKey(format!("{instruction} ({method} {})", url.path()).into()))?
+            .signer;
+
         let query_params = url.query_pairs().collect::<BTreeMap<Cow<'_, str>, Cow<'_, str>>>();
         let body_params = if let Some(payload) = payload {
             let s = serde_json::to_value(payload)?;
@@ -311,7 +356,7 @@ impl BpxClient {
         signee.push_str(&format!("&timestamp={timestamp}&window={DEFAULT_WINDOW}"));
         tracing::debug!("signee: {}", signee);
 
-        let signature: Signature = self.signer.sign(signee.as_bytes());
+        let signature: Signature = signer.sign(signee.as_bytes());
         let signature = STANDARD.encode(signature.to_bytes());
 
         let mut req = self.client().request(method, url);

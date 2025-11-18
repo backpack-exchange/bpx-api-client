@@ -8,11 +8,11 @@ use tokio::sync::mpsc::Sender;
 use tokio_tungstenite::tungstenite::protocol::Message;
 use tokio_tungstenite::{connect_async, tungstenite::Utf8Bytes};
 
-use crate::{BACKPACK_WS_URL, BpxClient, DEFAULT_WINDOW, now_millis};
+use crate::{BACKPACK_WS_URL, BpxClient, DEFAULT_WINDOW, Error, error::Result, now_millis};
 
 impl BpxClient {
     /// Subscribes to a private WebSocket stream and sends messages of type `T` through a transmitter channel.
-    pub async fn subscribe<T>(&self, stream: &str, tx: Sender<T>)
+    pub async fn subscribe<T>(&self, stream: &str, tx: Sender<T>) -> Result<()>
     where
         T: DeserializeOwned + Send + 'static,
     {
@@ -20,29 +20,47 @@ impl BpxClient {
     }
 
     /// Subscribes to multiple private WebSocket streams and sends messages of type `T` through a transmitter channel.
-    pub async fn subscribe_multiple<T>(&self, stream: &[&str], tx: Sender<T>)
+    pub async fn subscribe_multiple<T>(&self, streams: &[&str], tx: Sender<T>) -> Result<()>
     where
         T: DeserializeOwned + Send + 'static,
     {
-        self.internal_subscribe(stream, tx).await
+        self.internal_subscribe(streams, tx).await
     }
 
-    async fn internal_subscribe<T>(&self, stream: &[&str], tx: Sender<T>)
+    async fn internal_subscribe<T>(&self, streams: &[&str], tx: Sender<T>) -> Result<()>
     where
         T: DeserializeOwned + Send + 'static,
     {
-        let timestamp = now_millis();
-        let window = DEFAULT_WINDOW;
-        let message = format!("instruction=subscribe&timestamp={timestamp}&window={window}");
+        let is_private = streams.iter().any(|s| is_private_stream(s));
+        let subscribe_message = if is_private {
+            let auth_keys: &crate::AuthKeyPair = self.auth_keys.as_ref().ok_or_else(|| {
+                let private_streams = streams
+                    .iter()
+                    .filter(|s| is_private_stream(s))
+                    .copied()
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                Error::NoSecretKey(format!("WebSocket subscription to private stream(s): {private_streams}").into())
+            })?;
 
-        let verifying_key = STANDARD.encode(self.verifier.to_bytes());
-        let signature = STANDARD.encode(self.signer.sign(message.as_bytes()).to_bytes());
+            let timestamp = now_millis();
+            let window = DEFAULT_WINDOW;
+            let message = format!("instruction=subscribe&timestamp={timestamp}&window={window}");
 
-        let subscribe_message = json!({
-            "method": "SUBSCRIBE",
-            "params": stream,
-            "signature": [verifying_key, signature, timestamp.to_string(), window.to_string()],
-        });
+            let verifying_key = STANDARD.encode(auth_keys.verifier.to_bytes());
+            let signature = STANDARD.encode(auth_keys.signer.sign(message.as_bytes()).to_bytes());
+
+            json!({
+                "method": "SUBSCRIBE",
+                "params": streams,
+                "signature": [verifying_key, signature, timestamp.to_string(), window.to_string()],
+            })
+        } else {
+            json!({
+                "method": "SUBSCRIBE",
+                "params": streams
+            })
+        };
 
         let ws_url = self.ws_url.as_deref().unwrap_or(BACKPACK_WS_URL);
         let (mut ws_stream, _) = connect_async(ws_url).await.expect("Error connecting to WebSocket");
@@ -51,7 +69,7 @@ impl BpxClient {
             .await
             .expect("Error subscribing to WebSocket");
 
-        tracing::debug!("Subscribed to {stream:#?} streams...");
+        tracing::debug!("Subscribed to {streams:#?} streams...");
 
         while let Some(message) = ws_stream.next().await {
             match message {
@@ -75,5 +93,10 @@ impl BpxClient {
                 Err(error) => tracing::error!("WebSocket error: {}", error),
             }
         }
+        Ok(())
     }
+}
+
+fn is_private_stream(stream: &str) -> bool {
+    stream.starts_with("account.")
 }

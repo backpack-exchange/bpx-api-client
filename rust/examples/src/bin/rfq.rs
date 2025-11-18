@@ -22,7 +22,10 @@ async fn main() -> Result<()> {
         }
     });
 
-    client.subscribe_to_rfqs(tx).await;
+    client
+        .subscribe_to_rfqs(tx)
+        .await
+        .expect("Failed to subscribe to RFQ updates");
 
     Ok(())
 }

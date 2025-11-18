@@ -36,6 +36,12 @@ pub enum Error {
     #[error("Invalid secret key")]
     SecretKey,
 
+    /// No secret key was provided during client initialization, but an authenticated endpoint was called.
+    #[error(
+        "This operation requires authentication, but the client was initialized without a secret key. Attempted operation: {0}. Use BpxClient::init() or BpxClient::init_with_ws() with a secret key to access authenticated endpoints."
+    )]
+    NoSecretKey(Box<str>),
+
     /// Error during JSON serialization or deserialization.
     #[error(transparent)]
     SerdeJson(#[from] serde_json::error::Error),

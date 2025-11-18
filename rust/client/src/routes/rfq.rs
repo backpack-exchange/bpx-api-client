@@ -30,7 +30,7 @@ impl BpxClient {
     }
 
     #[cfg(feature = "ws")]
-    pub async fn subscribe_to_rfqs(&self, tx: Sender<RequestForQuoteUpdate>) {
-        self.subscribe(API_RFQ_STREAM, tx).await;
+    pub async fn subscribe_to_rfqs(&self, tx: Sender<RequestForQuoteUpdate>) -> Result<()> {
+        self.subscribe(API_RFQ_STREAM, tx).await
     }
 }
