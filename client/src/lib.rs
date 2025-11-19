@@ -37,7 +37,9 @@ use base64::{Engine, engine::general_purpose::STANDARD};
 use ed25519_dalek::{Signature, Signer, SigningKey};
 use reqwest::{IntoUrl, Method, Request, Response, StatusCode, Url, header::CONTENT_TYPE};
 use routes::{
-    account::{API_ACCOUNT, API_ACCOUNT_CONVERT_DUST, API_ACCOUNT_MAX_BORROW, API_ACCOUNT_MAX_WITHDRAWAL},
+    account::{
+        API_ACCOUNT, API_ACCOUNT_CONVERT_DUST, API_ACCOUNT_MAX_BORROW, API_ACCOUNT_MAX_WITHDRAWAL,
+    },
     borrow_lend::API_BORROW_LEND_POSITIONS,
     capital::{API_CAPITAL, API_COLLATERAL, API_DEPOSIT_ADDRESS, API_DEPOSITS, API_WITHDRAWALS},
     futures::API_FUTURES_POSITION,
@@ -137,8 +139,15 @@ impl BpxClient {
 
     /// Initializes a new client with WebSocket support.
     #[cfg(feature = "ws")]
-    #[deprecated(note = "Use BpxClient::builder() instead to configure the client with a custom websocket URL.")]
-    pub fn init_with_ws(base_url: String, ws_url: String, secret: &str, headers: Option<BpxHeaders>) -> Result<Self> {
+    #[deprecated(
+        note = "Use BpxClient::builder() instead to configure the client with a custom websocket URL."
+    )]
+    pub fn init_with_ws(
+        base_url: String,
+        ws_url: String,
+        secret: &str,
+        headers: Option<BpxHeaders>,
+    ) -> Result<Self> {
         BpxClientBuilder::new()
             .base_url(base_url)
             .ws_url(ws_url)
@@ -252,7 +261,9 @@ impl BpxClient {
             return Err(Error::NotAuthenticated);
         };
 
-        let query_params = url.query_pairs().collect::<BTreeMap<Cow<'_, str>, Cow<'_, str>>>();
+        let query_params = url
+            .query_pairs()
+            .collect::<BTreeMap<Cow<'_, str>, Cow<'_, str>>>();
         let body_params = if let Some(payload) = payload {
             let s = serde_json::to_value(payload)?;
             match s {
@@ -260,7 +271,11 @@ impl BpxClient {
                     .into_iter()
                     .map(|(k, v)| (k, v.to_string()))
                     .collect::<BTreeMap<_, _>>(),
-                _ => return Err(Error::InvalidRequest("payload must be a JSON object".into())),
+                _ => {
+                    return Err(Error::InvalidRequest(
+                        "payload must be a JSON object".into(),
+                    ));
+                }
             }
         } else {
             BTreeMap::new()
@@ -286,13 +301,15 @@ impl BpxClient {
             req = req.json(payload);
         }
         let mut req = req.build()?;
-        req.headers_mut().insert(SIGNATURE_HEADER, signature.parse()?);
+        req.headers_mut()
+            .insert(SIGNATURE_HEADER, signature.parse()?);
         req.headers_mut()
             .insert(TIMESTAMP_HEADER, timestamp.to_string().parse()?);
         req.headers_mut()
             .insert(WINDOW_HEADER, DEFAULT_WINDOW.to_string().parse()?);
         if matches!(req.method(), &Method::POST | &Method::DELETE) {
-            req.headers_mut().insert(CONTENT_TYPE, JSON_CONTENT.parse()?);
+            req.headers_mut()
+                .insert(CONTENT_TYPE, JSON_CONTENT.parse()?);
         }
         Ok(req)
     }
@@ -332,6 +349,7 @@ impl BpxClientBuilder {
     ///
     /// # Returns
     /// * `Self` - The updated builder instance
+    #[cfg(feature = "ws")]
     pub fn ws_url(mut self, ws_url: impl ToString) -> Self {
         self.ws_url = Some(ws_url.to_string());
         self
@@ -368,19 +386,12 @@ impl BpxClientBuilder {
     /// # Returns
     /// * `Result<BpxClient>` - The constructed client or an error if building fails
     pub fn build(self) -> Result<BpxClient> {
-        let base_url = self
-            .base_url
-            .map(Cow::from)
-            .unwrap_or_else(|| Cow::Borrowed(BACKPACK_API_BASE_URL));
+        let base_url = self.base_url.as_deref().unwrap_or(BACKPACK_API_BASE_URL);
+        let base_url =
+            Url::parse(base_url).map_err(|e| Error::UrlParseError(e.to_string().into()))?;
 
-        let base_url = Url::parse(&base_url).map_err(|e| Error::UrlParseError(e.to_string().into()))?;
-
-        let ws_url = self
-            .ws_url
-            .map(Cow::from)
-            .unwrap_or_else(|| Cow::Borrowed(BACKPACK_WS_URL));
-
-        let ws_url = Url::parse(&ws_url).map_err(|e| Error::UrlParseError(e.to_string().into()))?;
+        let ws_url = self.ws_url.as_deref().unwrap_or(BACKPACK_WS_URL);
+        let ws_url = Url::parse(ws_url).map_err(|e| Error::UrlParseError(e.to_string().into()))?;
 
         let signing_key = if let Some(secret) = self.secret {
             Some(

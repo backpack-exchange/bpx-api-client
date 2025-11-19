@@ -1,4 +1,6 @@
-use bpx_api_types::order::{CancelOpenOrdersPayload, CancelOrderPayload, ExecuteOrderPayload, Order};
+use bpx_api_types::order::{
+    CancelOpenOrdersPayload, CancelOrderPayload, ExecuteOrderPayload, Order,
+};
 
 use crate::BpxClient;
 use crate::error::{Error, Result};
@@ -10,14 +12,21 @@ pub const API_ORDERS: &str = "/api/v1/orders";
 
 impl BpxClient {
     /// Fetches a specific open order by symbol and either order ID or client ID.
-    pub async fn get_open_order(&self, symbol: &str, order_id: Option<&str>, client_id: Option<u32>) -> Result<Order> {
+    pub async fn get_open_order(
+        &self,
+        symbol: &str,
+        order_id: Option<&str>,
+        client_id: Option<u32>,
+    ) -> Result<Order> {
         let mut url = format!("{}{}?symbol={}", self.base_url, API_ORDER, symbol);
         if let Some(order_id) = order_id {
             url.push_str(&format!("&orderId={order_id}"));
         } else {
             url.push_str(&format!(
                 "&clientId={}",
-                client_id.ok_or_else(|| Error::InvalidRequest("either order_id or client_id is required".into()))?
+                client_id.ok_or_else(|| Error::InvalidRequest(
+                    "either order_id or client_id is required".into()
+                ))?
             ));
         }
         let res = self.get(url).await?;
@@ -32,7 +41,12 @@ impl BpxClient {
     }
 
     /// Cancels a specific order by symbol and either order ID or client ID.
-    pub async fn cancel_order(&self, symbol: &str, order_id: Option<&str>, client_id: Option<u32>) -> Result<Order> {
+    pub async fn cancel_order(
+        &self,
+        symbol: &str,
+        order_id: Option<&str>,
+        client_id: Option<u32>,
+    ) -> Result<Order> {
         let url = format!("{}{}", self.base_url, API_ORDER);
         let payload = CancelOrderPayload {
             symbol: symbol.to_string(),

@@ -1,7 +1,8 @@
 use crate::BpxClient;
 use crate::error::Result;
 use bpx_api_types::account::{
-    AccountMaxBorrow, AccountMaxWithdrawal, AccountSettings, ConvertDustPayload, UpdateAccountPayload,
+    AccountMaxBorrow, AccountMaxWithdrawal, AccountSettings, ConvertDustPayload,
+    UpdateAccountPayload,
 };
 
 #[doc(hidden)]
@@ -23,7 +24,10 @@ impl BpxClient {
 
     /// Fetches the account's maximum borrow amount for a given symbol.
     pub async fn get_account_max_borrow(&self, symbol: &str) -> Result<AccountMaxBorrow> {
-        let url = format!("{}{}?symbol={}", self.base_url, API_ACCOUNT_MAX_BORROW, symbol);
+        let url = format!(
+            "{}{}?symbol={}",
+            self.base_url, API_ACCOUNT_MAX_BORROW, symbol
+        );
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
     }
@@ -35,7 +39,10 @@ impl BpxClient {
         auto_borrow: Option<bool>,
         auto_lend_redeem: Option<bool>,
     ) -> Result<AccountMaxWithdrawal> {
-        let mut url = format!("{}{}?symbol={}", self.base_url, API_ACCOUNT_MAX_WITHDRAWAL, symbol);
+        let mut url = format!(
+            "{}{}?symbol={}",
+            self.base_url, API_ACCOUNT_MAX_WITHDRAWAL, symbol
+        );
         if let Some(auto_borrow) = auto_borrow {
             url.push_str(&format!("&autoBorrow={auto_borrow}"));
         }

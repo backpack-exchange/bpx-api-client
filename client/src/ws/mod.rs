@@ -48,10 +48,14 @@ impl BpxClient {
             "signature": [verifying_key, signature, timestamp.to_string(), window.to_string()],
         });
 
-        let ws_url = self.ws_url.to_string();
-        let (mut ws_stream, _) = connect_async(ws_url).await.expect("Error connecting to WebSocket");
+        let ws_url = self.ws_url.as_str();
+        let (mut ws_stream, _) = connect_async(ws_url)
+            .await
+            .expect("Error connecting to WebSocket");
         ws_stream
-            .send(Message::Text(Utf8Bytes::from(subscribe_message.to_string())))
+            .send(Message::Text(Utf8Bytes::from(
+                subscribe_message.to_string(),
+            )))
             .await
             .expect("Error subscribing to WebSocket");
 

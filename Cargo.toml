@@ -3,11 +3,11 @@ members = ["client", "examples", "types"]
 resolver = "2"
 
 [workspace.package]
-keywords = ["backpack", "exchange"]
-repository = "https://github.com/backpack-exchange/bpx-api-client"
-version = "0.10.0"
-license = "Apache-2.0"
 edition = "2024"
+keywords = ["backpack", "exchange"]
+license = "Apache-2.0"
+repository = "https://github.com/backpack-exchange/bpx-api-client"
+version = "0.10.1"
 
 [workspace.dependencies]
 anyhow = "1"
@@ -19,8 +19,8 @@ dotenv = "0.15"
 ed25519-dalek = "2"
 futures-util = { default-features = false, version = "0.3" }
 reqwest = { version = "0.12", default-features = false, features = [
-  "json",
-  "rustls-tls",
+    "json",
+    "rustls-tls",
 ] }
 rust_decimal = "1"
 rust_decimal_macros = "1"
@@ -30,11 +30,11 @@ serde_qs = "0.15"
 strum = { version = "0.27", features = ["derive"] }
 thiserror = "2"
 tokio = { version = "1", features = [
-  "macros",
-  "rt-multi-thread",
-  "signal",
-  "sync",
-  "time",
+    "macros",
+    "rt-multi-thread",
+    "signal",
+    "sync",
+    "time",
 ] }
 tokio-tungstenite = { version = "0.28", features = ["rustls-tls-native-roots"] }
 tracing = "0.1"
