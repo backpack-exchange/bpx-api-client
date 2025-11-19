@@ -5,11 +5,9 @@ use std::env;
 async fn main() {
     dotenv::dotenv().ok();
     let base_url = env::var("BASE_URL").unwrap_or_else(|_| BACKPACK_API_BASE_URL.to_string());
-    let secret = env::var("SECRET").expect("Missing SECRET environment variable");
 
     let client = BpxClient::builder()
         .base_url(base_url.clone())
-        .secret(&secret)
         .build()
         .expect("Failed to initialize Backpack API client");
 

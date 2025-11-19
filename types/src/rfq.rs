@@ -4,7 +4,9 @@ use strum::{Display, EnumString};
 
 use crate::order::{OrderStatus, Side};
 
-#[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash)]
+#[derive(
+    Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash,
+)]
 #[strum(serialize_all = "PascalCase")]
 #[serde(rename_all = "PascalCase")]
 pub enum RfqExecutionMode {

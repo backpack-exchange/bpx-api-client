@@ -419,7 +419,10 @@ mod test {
 
         let mark_price_update: MarkPriceUpdate = serde_json::from_str(data).unwrap();
         assert_eq!(mark_price_update.symbol, "SOL_USDC_PERP".to_string());
-        assert_eq!(mark_price_update.funding_rate, dec!(-0.0000039641039274236048482914));
+        assert_eq!(
+            mark_price_update.funding_rate,
+            dec!(-0.0000039641039274236048482914)
+        );
         assert_eq!(mark_price_update.mark_price, dec!(173.35998175));
     }
 

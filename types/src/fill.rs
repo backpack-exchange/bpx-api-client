@@ -2,7 +2,16 @@ use super::{history::SortDirection, markets::MarketType, order::Side};
 use rust_decimal::Decimal;
 
 #[derive(
-    Debug, strum::Display, Clone, Copy, serde::Serialize, serde::Deserialize, strum::EnumString, PartialEq, Eq, Hash,
+    Debug,
+    strum::Display,
+    Clone,
+    Copy,
+    serde::Serialize,
+    serde::Deserialize,
+    strum::EnumString,
+    PartialEq,
+    Eq,
+    Hash,
 )]
 #[strum(serialize_all = "PascalCase")]
 #[serde(rename_all = "PascalCase")]

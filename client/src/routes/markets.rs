@@ -1,4 +1,6 @@
-use bpx_api_types::markets::{Asset, FundingRate, Kline, MarkPrice, Market, OrderBookDepth, Ticker};
+use bpx_api_types::markets::{
+    Asset, FundingRate, Kline, MarkPrice, Market, OrderBookDepth, Ticker,
+};
 
 use crate::BpxClient;
 use crate::error::Result;

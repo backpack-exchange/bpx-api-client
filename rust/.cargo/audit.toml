@@ -1,2 +1,0 @@
-[advisories]
-ignore = ["RUSTSEC-2023-0033"] # issue in rust_decimal due to borsh
