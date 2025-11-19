@@ -1,5 +1,5 @@
 use rust_decimal::Decimal;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 
 use crate::Blockchain;
 
@@ -157,7 +157,12 @@ pub struct OrderBookDepth {
     /// Resting limit orders on bid side, listed as price-quantity pairs
     pub bids: Vec<(Decimal, Decimal)>,
     /// The id of the last update applied to this order book state
-    pub last_update_id: String,
+    // The API currently returns i64 encoded as a string. This was likely done to work around
+    // JavaScript's inability to handle large integers using the Number type.
+    // We should change the API at some point to return an i64 instead of a string, but it's
+    // a breaking change, so just improving the client for now.
+    #[serde(deserialize_with = "deserialize_str_or_i64")]
+    pub last_update_id: i64,
     /// Timestamp in microseconds
     pub timestamp: i64,
 }
@@ -183,11 +188,11 @@ pub struct OrderBookDepthUpdate {
 
     /// First update ID in event
     #[serde(rename = "U")]
-    pub first_update_id: u64,
+    pub first_update_id: i64,
 
     /// Last update ID in event
     #[serde(rename = "u")]
-    pub last_update_id: u64,
+    pub last_update_id: i64,
 
     /// Asks
     #[serde(rename = "a")]
@@ -316,6 +321,48 @@ pub struct MarkPriceUpdate {
     pub engine_timestamp: i64,
 }
 
+/// Deserializes a value that can be either a string or an i64 into an i64.
+fn deserialize_str_or_i64<'de, D>(deserializer: D) -> Result<i64, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    use serde::de::Visitor;
+    use std::fmt;
+
+    struct StringOrI64Visitor;
+
+    impl<'de> Visitor<'de> for StringOrI64Visitor {
+        type Value = i64;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("a string or an integer")
+        }
+
+        fn visit_str<E>(self, value: &str) -> Result<i64, E>
+        where
+            E: serde::de::Error,
+        {
+            value.parse().map_err(serde::de::Error::custom)
+        }
+
+        fn visit_i64<E>(self, value: i64) -> Result<i64, E>
+        where
+            E: serde::de::Error,
+        {
+            Ok(value)
+        }
+
+        fn visit_u64<E>(self, value: u64) -> Result<i64, E>
+        where
+            E: serde::de::Error,
+        {
+            i64::try_from(value).map_err(|_| serde::de::Error::custom("value too large"))
+        }
+    }
+
+    deserializer.deserialize_any(StringOrI64Visitor)
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -399,5 +446,35 @@ mod test {
         assert_eq!(kline_update.symbol, "SOL_USD".to_string());
         assert_eq!(kline_update.start_time, 123400000);
         assert_eq!(kline_update.open_price, dec!(18.75));
+    }
+
+    #[test]
+    fn test_order_book_depth_last_update_id_as_string() {
+        let data = r#"
+{
+  "asks": [["18.70", "0.000"]],
+  "bids": [["18.67", "0.832"]],
+  "lastUpdateId": "94978271",
+  "timestamp": 1694687965941000
+}
+        "#;
+
+        let depth: OrderBookDepth = serde_json::from_str(data).unwrap();
+        assert_eq!(depth.last_update_id, 94978271);
+    }
+
+    #[test]
+    fn test_order_book_depth_last_update_id_as_i64() {
+        let data = r#"
+{
+  "asks": [["18.70", "0.000"]],
+  "bids": [["18.67", "0.832"]],
+  "lastUpdateId": 94978271,
+  "timestamp": 1694687965941000
+}
+        "#;
+
+        let depth: OrderBookDepth = serde_json::from_str(data).unwrap();
+        assert_eq!(depth.last_update_id, 94978271);
     }
 }
