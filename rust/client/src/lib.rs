@@ -92,6 +92,7 @@ pub type BpxHeaders = reqwest::header::HeaderMap;
 pub struct BpxClient {
     signing_key: Option<SigningKey>,
     base_url: Url,
+    #[cfg_attr(not(feature = "ws"), allow(dead_code))]
     ws_url: Url,
     client: reqwest::Client,
 }
