@@ -21,32 +21,40 @@ impl BpxClient {
     }
 
     /// Subscribes to multiple private WebSocket streams and sends messages of type `T` through a transmitter channel.
-    pub async fn subscribe_multiple<T>(&self, stream: &[&str], tx: Sender<T>) -> Result<()>
+    pub async fn subscribe_multiple<T>(&self, streams: &[&str], tx: Sender<T>) -> Result<()>
     where
         T: DeserializeOwned + Send + 'static,
     {
-        self.internal_subscribe(stream, tx).await
+        self.internal_subscribe(streams, tx).await
     }
 
-    async fn internal_subscribe<T>(&self, stream: &[&str], tx: Sender<T>) -> Result<()>
+    async fn internal_subscribe<T>(&self, streams: &[&str], tx: Sender<T>) -> Result<()>
     where
         T: DeserializeOwned + Send + 'static,
     {
         let timestamp = now_millis();
         let window = DEFAULT_WINDOW;
-        let message = format!("instruction=subscribe&timestamp={timestamp}&window={window}");
-        let Some(signing_key) = &self.signing_key else {
-            return Err(Error::NotAuthenticated);
+
+        let is_private = streams.iter().any(|s| is_private_stream(s));
+        let subscribe_message = if is_private {
+            let signing_key = self.signing_key.as_ref().ok_or(Error::NotAuthenticated)?;
+
+            let message = format!("instruction=subscribe&timestamp={timestamp}&window={window}");
+
+            let verifying_key = STANDARD.encode(signing_key.verifying_key().to_bytes());
+            let signature = STANDARD.encode(signing_key.sign(message.as_bytes()).to_bytes());
+
+            json!({
+                "method": "SUBSCRIBE",
+                "params": streams,
+                "signature": [verifying_key, signature, timestamp.to_string(), window.to_string()],
+            })
+        } else {
+            json!({
+                "method": "SUBSCRIBE",
+                "params": streams
+            })
         };
-
-        let verifying_key = STANDARD.encode(signing_key.verifying_key().to_bytes());
-        let signature = STANDARD.encode(signing_key.sign(message.as_bytes()).to_bytes());
-
-        let subscribe_message = json!({
-            "method": "SUBSCRIBE",
-            "params": stream,
-            "signature": [verifying_key, signature, timestamp.to_string(), window.to_string()],
-        });
 
         let ws_url = self.ws_url.as_str();
         let (mut ws_stream, _) = connect_async(ws_url)
@@ -59,7 +67,7 @@ impl BpxClient {
             .await
             .expect("Error subscribing to WebSocket");
 
-        tracing::debug!("Subscribed to {stream:#?} streams...");
+        tracing::debug!("Subscribed to {streams:#?} streams...");
 
         while let Some(message) = ws_stream.next().await {
             match message {
@@ -83,7 +91,10 @@ impl BpxClient {
                 Err(error) => tracing::error!(%error, "WebSocket error"),
             }
         }
-
         Ok(())
     }
+}
+
+fn is_private_stream(stream: &str) -> bool {
+    stream.starts_with("account.")
 }
