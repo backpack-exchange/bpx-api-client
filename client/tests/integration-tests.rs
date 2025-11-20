@@ -3,6 +3,10 @@
 //!
 //! However they are useful to prove that our types are serde compatible with the exchange,
 //! that URLs are correct, and so on.
+//!
+//! The tests are feature gated so that they can be run optionally, since if the exchange
+//! is down we don't want CI to fail. We can run them in CI as an optional step which is
+//! allowed to fail.
 
 #[cfg(feature = "integration-tests")]
 mod tests {
