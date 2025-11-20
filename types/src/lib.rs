@@ -52,4 +52,16 @@ pub enum Blockchain {
     XRP,
     Litecoin,
     Berachain,
+    HyperEVM,
+    Plasma,
+    Arbitrum,
+    Base,
+    Optimism,
+    Aptos,
+    Sei,
+    Tron,
+    #[strum(serialize = "0G")]
+    #[serde(rename = "0G")]
+    ZeroG,
+    Eclipse,
 }
