@@ -18,13 +18,13 @@ const API_RFQ_STREAM: &str = "account.rfqUpdate";
 
 impl BpxClient {
     pub async fn submit_rfq(&self, payload: RequestForQuotePayload) -> Result<RequestForQuote> {
-        let endpoint = format!("{}{}", self.base_url, API_RFQ);
+        let endpoint = self.base_url.join(API_RFQ)?;
         let res = self.post(endpoint, payload).await?;
         res.json().await.map_err(Into::into)
     }
 
     pub async fn submit_quote(&self, payload: QuotePayload) -> Result<Quote> {
-        let endpoint = format!("{}{}", self.base_url, API_RFQ_QUOTE);
+        let endpoint = self.base_url.join(API_RFQ_QUOTE)?;
         let res = self.post(endpoint, payload).await?;
         res.json().await.map_err(Into::into)
     }
