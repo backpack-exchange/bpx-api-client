@@ -30,3 +30,7 @@ tokio-tungstenite = { workspace = true, optional = true }
 [features]
 default = []
 ws = ["futures-util", "tokio", "tokio-tungstenite"]
+integration-tests = []
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt"] }
