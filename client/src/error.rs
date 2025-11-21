@@ -56,3 +56,9 @@ pub enum Error {
     #[error("Invalid URL: {0}")]
     UrlParseError(Box<str>),
 }
+
+impl From<url::ParseError> for Error {
+    fn from(e: url::ParseError) -> Self {
+        Error::UrlParseError(e.to_string().into_boxed_str())
+    }
+}

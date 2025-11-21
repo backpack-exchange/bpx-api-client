@@ -20,6 +20,7 @@ serde_json = { workspace = true }
 serde_qs = { workspace = true }
 thiserror = { workspace = true }
 tracing = { workspace = true }
+url = { workspace = true }
 
 # Optional dependencies
 futures-util = { workspace = true, optional = true }
@@ -29,3 +30,7 @@ tokio-tungstenite = { workspace = true, optional = true }
 [features]
 default = []
 ws = ["futures-util", "tokio", "tokio-tungstenite"]
+integration-tests = []
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["macros", "rt"] }

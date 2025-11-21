@@ -17,49 +17,52 @@ const API_MARK_PRICES: &str = "/api/v1/markPrices";
 impl BpxClient {
     /// Fetches available assets and their associated tokens.
     pub async fn get_assets(&self) -> Result<Vec<Asset>> {
-        let url = format!("{}{}", self.base_url, API_ASSETS);
+        let url = self.base_url.join(API_ASSETS)?;
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
     }
 
     /// Retrieves a list of available markets.
     pub async fn get_markets(&self) -> Result<Vec<Market>> {
-        let url = format!("{}{}", self.base_url, API_MARKETS);
+        let url = self.base_url.join(API_MARKETS)?;
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
     }
 
     /// Retrieves mark price, index price and the funding rate for the current interval for all symbols, or the symbol specified.
     pub async fn get_all_mark_prices(&self) -> Result<Vec<MarkPrice>> {
-        let url = format!("{}{}", self.base_url, API_MARK_PRICES);
+        let url = self.base_url.join(API_MARK_PRICES)?;
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
     }
 
     /// Fetches the ticker information for a given symbol.
     pub async fn get_ticker(&self, symbol: &str) -> Result<Ticker> {
-        let url = format!("{}{}?symbol={}", self.base_url, API_TICKER, symbol);
+        let mut url = self.base_url.join(API_TICKER)?;
+        url.query_pairs_mut().append_pair("symbol", symbol);
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
     }
 
     /// Fetches the ticker information for all symbols.
     pub async fn get_tickers(&self) -> Result<Vec<Ticker>> {
-        let url = format!("{}{}", self.base_url, API_TICKERS);
+        let url = self.base_url.join(API_TICKERS)?;
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
     }
 
     /// Retrieves the order book depth for a given symbol.
     pub async fn get_order_book_depth(&self, symbol: &str) -> Result<OrderBookDepth> {
-        let url = format!("{}{}?symbol={}", self.base_url, API_DEPTH, symbol);
+        let mut url = self.base_url.join(API_DEPTH)?;
+        url.query_pairs_mut().append_pair("symbol", symbol);
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
     }
 
     /// Funding interval rate history for futures.
     pub async fn get_funding_interval_rates(&self, symbol: &str) -> Result<Vec<FundingRate>> {
-        let url = format!("{}{}?symbol={}", self.base_url, API_FUNDING, symbol);
+        let mut url = self.base_url.join(API_FUNDING)?;
+        url.query_pairs_mut().append_pair("symbol", symbol);
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
     }
@@ -72,13 +75,14 @@ impl BpxClient {
         start_time: i64,
         end_time: Option<i64>,
     ) -> Result<Vec<Kline>> {
-        let mut url = format!(
-            "{}{}?symbol={}&interval={}&startTime={}",
-            self.base_url, API_KLINES, symbol, kline_interval, start_time
-        );
-        for (k, v) in [("endTime", end_time)] {
-            if let Some(v) = v {
-                url.push_str(&format!("&{k}={v}"));
+        let mut url = self.base_url.join(API_KLINES)?;
+        {
+            let mut query = url.query_pairs_mut();
+            query.append_pair("symbol", symbol);
+            query.append_pair("interval", kline_interval);
+            query.append_pair("startTime", &start_time.to_string());
+            if let Some(end_time) = end_time {
+                query.append_pair("endTime", &end_time.to_string());
             }
         }
         let res = self.get(url).await?;

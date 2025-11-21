@@ -22,7 +22,7 @@ pub const API_COLLATERAL: &str = "/api/v1/capital/collateral";
 impl BpxClient {
     /// Fetches the account's current balances.
     pub async fn get_balances(&self) -> Result<HashMap<String, Balance>> {
-        let url = format!("{}{}", self.base_url, API_CAPITAL);
+        let url = self.base_url.join(API_CAPITAL)?;
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
     }
@@ -33,10 +33,14 @@ impl BpxClient {
         limit: Option<i64>,
         offset: Option<i64>,
     ) -> Result<Vec<Deposit>> {
-        let mut url = format!("{}{}", self.base_url, API_DEPOSITS);
-        for (k, v) in [("limit", limit), ("offset", offset)] {
-            if let Some(v) = v {
-                url.push_str(&format!("&{k}={v}"));
+        let mut url = self.base_url.join(API_DEPOSITS)?;
+        {
+            let mut query = url.query_pairs_mut();
+            if let Some(limit) = limit {
+                query.append_pair("limit", &limit.to_string());
+            }
+            if let Some(offset) = offset {
+                query.append_pair("offset", &offset.to_string());
             }
         }
         let res = self.get(url).await?;
@@ -45,10 +49,9 @@ impl BpxClient {
 
     /// Fetches the deposit address for a specified blockchain.
     pub async fn get_deposit_address(&self, blockchain: Blockchain) -> Result<DepositAddress> {
-        let url = format!(
-            "{}{}?blockchain={}",
-            self.base_url, API_DEPOSIT_ADDRESS, blockchain
-        );
+        let mut url = self.base_url.join(API_DEPOSIT_ADDRESS)?;
+        url.query_pairs_mut()
+            .append_pair("blockchain", &blockchain.to_string());
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
     }
@@ -59,10 +62,14 @@ impl BpxClient {
         limit: Option<i64>,
         offset: Option<i64>,
     ) -> Result<Vec<Withdrawal>> {
-        let mut url = format!("{}{}", self.base_url, API_WITHDRAWALS);
-        for (k, v) in [("limit", limit), ("offset", offset)] {
-            if let Some(v) = v {
-                url.push_str(&format!("{k}={v}&"));
+        let mut url = self.base_url.join(API_WITHDRAWALS)?;
+        {
+            let mut query = url.query_pairs_mut();
+            if let Some(limit) = limit {
+                query.append_pair("limit", &limit.to_string());
+            }
+            if let Some(offset) = offset {
+                query.append_pair("offset", &offset.to_string());
             }
         }
         let res = self.get(url).await?;
@@ -74,14 +81,14 @@ impl BpxClient {
         &self,
         payload: RequestWithdrawalPayload,
     ) -> Result<Withdrawal> {
-        let endpoint = format!("{}{}", self.base_url, API_WITHDRAWALS);
+        let endpoint = self.base_url.join(API_WITHDRAWALS)?;
         let res = self.post(endpoint, payload).await?;
         res.json().await.map_err(Into::into)
     }
 
     /// Fetches the subaccount's collateral information.
     pub async fn get_collateral(&self) -> Result<Collateral> {
-        let url = format!("{}{}", self.base_url, API_COLLATERAL);
+        let url = self.base_url.join(API_COLLATERAL)?;
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
     }

@@ -9,9 +9,13 @@ const API_TRADES_HISTORY: &str = "/api/v1/trades/history";
 impl BpxClient {
     /// Fetches the most recent trades for a given symbol, with an optional limit.
     pub async fn get_recent_trades(&self, symbol: &str, limit: Option<i16>) -> Result<Vec<Trade>> {
-        let mut url = format!("{}{}?symbol={}", self.base_url, API_TRADES, symbol);
-        if let Some(limit) = limit {
-            url.push_str(&format!("&limit={limit}"));
+        let mut url = self.base_url.join(API_TRADES)?;
+        {
+            let mut query = url.query_pairs_mut();
+            query.append_pair("symbol", symbol);
+            if let Some(limit) = limit {
+                query.append_pair("limit", &limit.to_string());
+            }
         }
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
@@ -24,10 +28,15 @@ impl BpxClient {
         limit: Option<i64>,
         offset: Option<i64>,
     ) -> Result<Vec<Trade>> {
-        let mut url = format!("{}{}?symbol={}", self.base_url, API_TRADES_HISTORY, symbol);
-        for (k, v) in [("limit", limit), ("offset", offset)] {
-            if let Some(v) = v {
-                url.push_str(&format!("&{k}={v}"));
+        let mut url = self.base_url.join(API_TRADES_HISTORY)?;
+        {
+            let mut query = url.query_pairs_mut();
+            query.append_pair("symbol", symbol);
+            if let Some(limit) = limit {
+                query.append_pair("limit", &limit.to_string());
+            }
+            if let Some(offset) = offset {
+                query.append_pair("offset", &offset.to_string());
             }
         }
         let res = self.get(url).await?;

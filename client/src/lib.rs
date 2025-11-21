@@ -387,11 +387,10 @@ impl BpxClientBuilder {
     /// * `Result<BpxClient>` - The constructed client or an error if building fails
     pub fn build(self) -> Result<BpxClient> {
         let base_url = self.base_url.as_deref().unwrap_or(BACKPACK_API_BASE_URL);
-        let base_url =
-            Url::parse(base_url).map_err(|e| Error::UrlParseError(e.to_string().into()))?;
+        let base_url = Url::parse(base_url)?;
 
         let ws_url = self.ws_url.as_deref().unwrap_or(BACKPACK_WS_URL);
-        let ws_url = Url::parse(ws_url).map_err(|e| Error::UrlParseError(e.to_string().into()))?;
+        let ws_url = Url::parse(ws_url)?;
 
         let signing_key = if let Some(secret) = self.secret {
             Some(
