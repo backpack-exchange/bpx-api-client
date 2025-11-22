@@ -26,6 +26,7 @@ pub struct Deposit {
     pub from_address: Option<String>,
     pub confirmation_block_number: Option<i32>,
     pub identifier: Option<String>,
+    pub transaction_hash: Option<String>,
     pub source: DepositSource,
     pub status: DepositStatus,
     pub subaccount_id: Option<u64>,
