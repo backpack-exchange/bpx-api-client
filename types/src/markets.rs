@@ -8,6 +8,10 @@ use crate::Blockchain;
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Asset {
+    /// CoinGecko ID for price tracking
+    pub coingecko_id: Option<String>,
+    /// Human-readable display name
+    pub display_name: String,
     /// Identifier
     pub symbol: String,
     /// See [`Token`]
@@ -141,7 +145,9 @@ pub struct LeverageFilters {
 #[serde(rename_all = "camelCase")]
 pub struct Token {
     pub blockchain: Blockchain,
+    pub contract_address: String,
     pub deposit_enabled: bool,
+    pub display_name: String,
     pub minimum_deposit: Decimal,
     pub withdraw_enabled: bool,
     pub minimum_withdrawal: Decimal,
