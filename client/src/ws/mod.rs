@@ -75,10 +75,16 @@ impl BpxClient {
                     Message::Text(text) => {
                         if let Ok(value) = serde_json::from_str::<Value>(&text) {
                             if let Some(payload) = value.get("data") {
-                                if let Ok(data) = T::deserialize(payload)
-                                    && tx.send(data).await.is_err()
-                                {
-                                    tracing::error!("Failed to send message through the channel");
+                                match T::deserialize(payload) {
+                                    Ok(data) => {
+                                        if tx.send(data).await.is_err() {
+                                            tracing::warn!("Channel is closed");
+                                            break;
+                                        }
+                                    }
+                                    Err(err) => {
+                                        tracing::error!("Could not deserialize ws payload: {err}");
+                                    }
                                 }
                             } else if let Some(payload) = value.get("error") {
                                 tracing::error!(?payload, "Websocket Error Response");
