@@ -1,3 +1,17 @@
+## [unreleased]
+
+### 🐛 Bug Fixes
+
+- Github action
+
+### ⚙️ Miscellaneous Tasks
+
+- Github actions fixes
+- Remove gpg signing in release action
+- Remove push and publish in release.toml
+- Push tags in release action
+- Fix action
+- Add cargo registry token secret to release action
 ## [0.10.4] - 2025-11-26
 
 ### 🚀 Features
@@ -30,41 +44,6 @@
 
 ### 🚀 Features
 
-- Add new convert dust api
-- Add TradeUpdate struct
-- Update ExecuteOrderPayload to match current api
-- Allow unauthenticated client, creation of client via builder ([#64](https://github.com/backpack-exchange/bpx-api-client/issues/64))
-
-### 🐛 Bug Fixes
-
-- Use correct type for trigger_by fields
-- *(client)* Allow(dead_code) on ws_url when not feature disabled ([#67](https://github.com/backpack-exchange/bpx-api-client/issues/67))
-- Return NotAuthenticated error in WS subscribe for private streams if no key configured ([#70](https://github.com/backpack-exchange/bpx-api-client/issues/70))
-- Fix URLs not joining base_url to path correctly (contained '//') which was causing 404 ([#71](https://github.com/backpack-exchange/bpx-api-client/issues/71))
-
-### 💼 Other
-
-- Fixes for 'uninlined_format_args' rule
-
-### 🚜 Refactor
-
-- Change OrderBookDepth::last_update_id to be i64 and OrderBookDepthUpdate::first_update_id and last_update_id to be i64 ([#65](https://github.com/backpack-exchange/bpx-api-client/issues/65))
-
-### 📚 Documentation
-
-- Add trailing .
-
-### ⚙️ Miscellaneous Tasks
-
-- Update to rust 2024 ([#63](https://github.com/backpack-exchange/bpx-api-client/issues/63))
-- *(client)* Use path + version to refer to local types crate ([#66](https://github.com/backpack-exchange/bpx-api-client/issues/66))
-- Bump version to 0.1.0 ([#68](https://github.com/backpack-exchange/bpx-api-client/issues/68))
-- Expose public urls + cleanup ([#69](https://github.com/backpack-exchange/bpx-api-client/issues/69))
-- Bump version for depdendency
-## [0.6.3] - 2025-06-04
-
-### 🚀 Features
-
 - Add futures 'get open positions'
 - Add type for depth websocket updates
 - Add TickerUpdate struct
@@ -82,6 +61,10 @@
 - Add TriggerBy
 - Add MarkPriceUpdate struct
 - Add OrderUpdate type
+- Add new convert dust api
+- Add TradeUpdate struct
+- Update ExecuteOrderPayload to match current api
+- Allow unauthenticated client, creation of client via builder ([#64](https://github.com/backpack-exchange/bpx-api-client/issues/64))
 
 ### 🐛 Bug Fixes
 
@@ -95,10 +78,23 @@
 - Use Decimal instead of String in TickerUpdate
 - Make fields of OrderBookDepthUpdate public
 - Make "reduce_only" an Option
+- Use correct type for trigger_by fields
+- *(client)* Allow(dead_code) on ws_url when not feature disabled ([#67](https://github.com/backpack-exchange/bpx-api-client/issues/67))
+- Return NotAuthenticated error in WS subscribe for private streams if no key configured ([#70](https://github.com/backpack-exchange/bpx-api-client/issues/70))
+- Fix URLs not joining base_url to path correctly (contained '//') which was causing 404 ([#71](https://github.com/backpack-exchange/bpx-api-client/issues/71))
 
 ### 💼 Other
 
 - Fixes
+- Fixes for 'uninlined_format_args' rule
+
+### 🚜 Refactor
+
+- Change OrderBookDepth::last_update_id to be i64 and OrderBookDepthUpdate::first_update_id and last_update_id to be i64 ([#65](https://github.com/backpack-exchange/bpx-api-client/issues/65))
+
+### 📚 Documentation
+
+- Add trailing .
 
 ### 🧪 Testing
 
@@ -107,3 +103,8 @@
 ### ⚙️ Miscellaneous Tasks
 
 - Rename Position -> FuturePosition
+- Update to rust 2024 ([#63](https://github.com/backpack-exchange/bpx-api-client/issues/63))
+- *(client)* Use path + version to refer to local types crate ([#66](https://github.com/backpack-exchange/bpx-api-client/issues/66))
+- Bump version to 0.1.0 ([#68](https://github.com/backpack-exchange/bpx-api-client/issues/68))
+- Expose public urls + cleanup ([#69](https://github.com/backpack-exchange/bpx-api-client/issues/69))
+- Bump version for depdendency
