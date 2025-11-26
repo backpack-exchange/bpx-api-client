@@ -34,7 +34,7 @@
 //! ```
 
 use base64::{Engine, engine::general_purpose::STANDARD};
-use ed25519_dalek::{Signature, Signer, SigningKey};
+use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
 use reqwest::{IntoUrl, Method, Request, Response, StatusCode, Url, header::CONTENT_TYPE};
 use routes::{
     account::{
@@ -93,6 +93,7 @@ pub type BpxHeaders = reqwest::header::HeaderMap;
 #[derive(Debug, Clone)]
 pub struct BpxClient {
     signing_key: Option<SigningKey>,
+    verifying_key: Option<VerifyingKey>,
     base_url: Url,
     #[cfg_attr(not(feature = "ws"), allow(dead_code))]
     ws_url: Url,
@@ -202,6 +203,12 @@ impl BpxClient {
         tracing::debug!(?req, "PATCH request");
         let res = self.client.execute(req).await?;
         Self::process_response(res).await
+    }
+
+    /// Returns a reference to the [`VerifyingKey`] used for request verification.
+    /// Return will be [`Some`] if the client was initialised with a secret key, otherwise [`None`].
+    pub const fn verifying_key(&self) -> Option<&VerifyingKey> {
+        self.verifying_key.as_ref()
     }
 
     /// Returns a reference to the underlying HTTP client.
@@ -403,6 +410,7 @@ impl BpxClientBuilder {
         } else {
             None
         };
+        let verifying_key = signing_key.as_ref().map(|s| s.verifying_key());
 
         let mut header_map = BpxHeaders::new();
         if let Some(headers) = self.headers {
@@ -417,6 +425,7 @@ impl BpxClientBuilder {
 
         let client = BpxClient {
             signing_key,
+            verifying_key,
             base_url,
             ws_url,
             client: reqwest::Client::builder()
