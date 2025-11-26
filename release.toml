@@ -5,11 +5,5 @@ allow-branch = ["master"]
 shared-version = "workspace"
 tag = true
 tag-name = "v{{version}}"
-
 consolidate-commits = false
-pre-release-hook = [
-    "sh",
-    "-c",
-    "root=$(git rev-parse --show-toplevel) && git-cliff --repository $root --output $root/CHANGELOG.md",
-]
 pre-release-commit-message = "chore(release): v{{version}}"

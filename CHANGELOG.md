@@ -1,8 +1,26 @@
-## [bpx-api-types-v0.10.3] - 2025-11-26
+## [0.10.4] - 2025-11-26
+
+### 🚀 Features
+
+- *(rfq)* Add missing quote fields ([#75](https://github.com/backpack-exchange/bpx-api-client/issues/75))
+
+### ⚙️ Miscellaneous Tasks
+
+- Git-cliff integration ([#76](https://github.com/backpack-exchange/bpx-api-client/issues/76))
+- Update cargo-release config to support git-cliff pre-commit hook
+- Add release workflow
+- Use github hosted runner
+- Github action fixes
+- *(release)* V0.10.4
+## [0.10.3] - 2025-11-26
 
 ### 🚀 Features
 
 - Add method verifying_key() which was previously called verifier() and removed in 509c6bf0eb98619a82d139559bbd8bc5131ab2bb ([#74](https://github.com/backpack-exchange/bpx-api-client/issues/74))
+
+### 🐛 Bug Fixes
+
+- Deps
 
 ### ⚙️ Miscellaneous Tasks
 
@@ -10,12 +28,82 @@
 - Release
 ## [0.10.2] - 2025-11-22
 
+### 🚀 Features
+
+- Add new convert dust api
+- Add TradeUpdate struct
+- Update ExecuteOrderPayload to match current api
+- Allow unauthenticated client, creation of client via builder ([#64](https://github.com/backpack-exchange/bpx-api-client/issues/64))
+
 ### 🐛 Bug Fixes
 
+- Use correct type for trigger_by fields
+- *(client)* Allow(dead_code) on ws_url when not feature disabled ([#67](https://github.com/backpack-exchange/bpx-api-client/issues/67))
 - Return NotAuthenticated error in WS subscribe for private streams if no key configured ([#70](https://github.com/backpack-exchange/bpx-api-client/issues/70))
 - Fix URLs not joining base_url to path correctly (contained '//') which was causing 404 ([#71](https://github.com/backpack-exchange/bpx-api-client/issues/71))
 
+### 💼 Other
+
+- Fixes for 'uninlined_format_args' rule
+
+### 🚜 Refactor
+
+- Change OrderBookDepth::last_update_id to be i64 and OrderBookDepthUpdate::first_update_id and last_update_id to be i64 ([#65](https://github.com/backpack-exchange/bpx-api-client/issues/65))
+
+### 📚 Documentation
+
+- Add trailing .
+
 ### ⚙️ Miscellaneous Tasks
 
+- Update to rust 2024 ([#63](https://github.com/backpack-exchange/bpx-api-client/issues/63))
+- *(client)* Use path + version to refer to local types crate ([#66](https://github.com/backpack-exchange/bpx-api-client/issues/66))
+- Bump version to 0.1.0 ([#68](https://github.com/backpack-exchange/bpx-api-client/issues/68))
 - Expose public urls + cleanup ([#69](https://github.com/backpack-exchange/bpx-api-client/issues/69))
 - Bump version for depdendency
+## [0.6.3] - 2025-06-04
+
+### 🚀 Features
+
+- Add futures 'get open positions'
+- Add type for depth websocket updates
+- Add TickerUpdate struct
+- Make TickerUpdate fields public
+- Add get_funding_interval_rates
+- Add serde to rust_decimal, define funding_rate as Decimal
+- Add total method to Balance
+- Add borrow&lend, margin
+- Remove json data
+- Use MarginFunction for Future Position
+- Add MarkPrices
+- Add auto lend & borrow flags to ExecuteOrderPayload
+- Add new blockchains
+- Update Order & OrderStatus
+- Add TriggerBy
+- Add MarkPriceUpdate struct
+- Add OrderUpdate type
+
+### 🐛 Bug Fixes
+
+- *(client)* Fix market URL typos
+- Various small fixes
+- Remove clone
+- Remove debug print
+- Enable rustls-tls-native-roots feature for websockets
+- Comments on OrderBookDepthUpdate struct
+- Return new type Asset on "get_assets"
+- Use Decimal instead of String in TickerUpdate
+- Make fields of OrderBookDepthUpdate public
+- Make "reduce_only" an Option
+
+### 💼 Other
+
+- Fixes
+
+### 🧪 Testing
+
+- Add tests for custom TriggerQuantity Serialize implementation
+
+### ⚙️ Miscellaneous Tasks
+
+- Rename Position -> FuturePosition

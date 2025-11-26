@@ -26,6 +26,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
         with:
+          fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: true
 
@@ -34,6 +35,9 @@ jobs:
 
       - name: Install cargo-release
         run: cargo install cargo-release
+
+      - name: Install git-cliff
+        run: cargo install git-cliff
 
       - name: Check compilation
         run: cargo check --all-features
@@ -66,5 +70,10 @@ jobs:
           APP_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           cd bpx-api-client
+
+          git remote set-url origin "https://x-access-token:${APP_TOKEN}@github.com/backpack-exchange/bpx-api-client.git"
+          git-cliff -o CHANGELOG.md
+          git add -A
+          git commit -m "chore: update CHANGELOG.md"
 
           cargo release version ${{ github.event.inputs.release_level }} --execute --no-confirm
