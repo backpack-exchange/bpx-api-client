@@ -9,8 +9,8 @@ repository.workspace = true
 
 [dependencies]
 anyhow = { workspace = true }
-bpx-api-client = { workspace = true, features = ["ws"] }
-bpx-api-types = { workspace = true }
+bpx-api-client = { path = "../client", version = "0.10.2", features = ["ws"] }
+bpx-api-types = { path = "../types", version = "0.10.2" }
 dotenv = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
