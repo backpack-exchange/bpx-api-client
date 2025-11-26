@@ -16,7 +16,7 @@ release = true
 
 [dependencies]
 base64 = { workspace = true }
-bpx-api-types = { path = "../types", version = "0.10.2" }
+bpx-api-types = { path = "../types", version = "0.10.3" }
 ed25519-dalek = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
