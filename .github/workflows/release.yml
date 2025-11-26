@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    branches:
+      - master
+    inputs:
+      release_level:
+        description: 'Release level'
+        required: true
+        type: choice
+        options:
+          - alpha
+          - beta
+          - patch
+          - minor
+          - major
+
+jobs:
+  release:
+    runs-on: depot-ubuntu-24.04-arm-64
+    permissions:
+      contents: write  # Required for pushing commits and tags
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-release
+        run: cargo install cargo-release
+
+      - name: Check compilation
+        run: cargo check --all-features
+
+      - name: Get GitHub App token (for bpx-api-client)
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.BACKPACK_CI_APP_ID }}
+          private-key: ${{ secrets.BACKPACK_CI_APP_PRIVATE_KEY }}
+          owner: backpack-exchange
+          repositories: |
+            bpx-api-client
+
+      - name: Configure git (disable signing in CI)
+        run: |
+          git config --global user.email "bot@backpack.exchange"
+          git config --global user.name  "backpack-exchange[bot]"
+          git config --global credential.helper cache
+          git config --global commit.gpgsign true
+          
+      - name: Release
+        env:
+          APP_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          cd bpx-api-client
+
+          cargo release version ${{ github.event.inputs.release_level }} --execute --no-confirm
