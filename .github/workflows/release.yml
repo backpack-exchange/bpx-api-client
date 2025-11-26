@@ -72,12 +72,14 @@ jobs:
           cd bpx-api-client
 
           git remote set-url origin "https://x-access-token:${APP_TOKEN}@github.com/backpack-exchange/bpx-api-client.git"
-          git-cliff -o CHANGELOG.md
-          git add -A
-          git commit -m "chore: update CHANGELOG.md"
 
           cargo release version ${{ github.event.inputs.release_level }} --execute --no-confirm
 
+          git-cliff -o CHANGELOG.md
+          git add -A
+          git commit --amend --no-edit
+
           CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD || echo master)"
-          git push origin "HEAD:${CURRENT_BRANCH}"
+          git push origin "HEAD:${CURRENT_BRANCH}" --tags
+
           cargo publish
