@@ -2,3 +2,6 @@ release = false
 sign-commit = true
 sign-tag = true
 allow-branch = ["master"]
+shared-version = "workspace"
+tag = true
+tag-name = "v{{version}}"
