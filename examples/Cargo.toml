@@ -10,8 +10,8 @@ publish.workspace = true
 
 [dependencies]
 anyhow = { workspace = true }
-bpx-api-client = { path = "../client", version = "0.10.3", features = ["ws"] }
-bpx-api-types = { path = "../types", version = "0.10.3" }
+bpx-api-client = { path = "../client", version = "0.10.4", features = ["ws"] }
+bpx-api-types = { path = "../types", version = "0.10.4" }
 dotenv = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
