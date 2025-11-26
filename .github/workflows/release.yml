@@ -54,6 +54,12 @@ jobs:
           git config --global user.name  "backpack-exchange[bot]"
           git config --global credential.helper cache
           git config --global commit.gpgsign true
+
+      - name: Clone bpx-api-client repository
+        env:
+          APP_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          git clone "https://x-access-token:${APP_TOKEN}@github.com/backpack-exchange/bpx-api-client.git" bpx-api-client
           
       - name: Release
         env:
