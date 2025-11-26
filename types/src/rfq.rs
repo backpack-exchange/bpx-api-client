@@ -233,10 +233,26 @@ pub enum RequestForQuoteUpdate {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Quote {
+    /// Unique RFQ order ID assigned by the matching engine.
     pub rfq_id: String,
+
+    /// Unique RFQ quote ID, assigned by the matching engine.
     pub quote_id: String,
+
+    /// Custom RFQ quote ID assigned by the maker (optionally)
     pub client_id: Option<u32>,
+
+    /// Quote Bid Price.
+    pub bid_price: Decimal,
+
+    /// Quote Ask Price.
+    pub ask_price: Decimal,
+
+    /// Status.
     pub status: OrderStatus,
+
+    /// Time the quote was created.
+    pub created_at: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
