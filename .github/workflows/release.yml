@@ -92,4 +92,4 @@ jobs:
           git push origin "HEAD:${CURRENT_BRANCH}" --tags
 
           # Publish
-          cargo publish
+          cargo publish --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
