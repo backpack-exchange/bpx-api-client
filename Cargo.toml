@@ -6,6 +6,7 @@ resolver = "2"
 edition = "2024"
 keywords = ["backpack", "exchange"]
 license = "Apache-2.0"
+publish = false
 repository = "https://github.com/backpack-exchange/bpx-api-client"
 version = "0.10.2"
 

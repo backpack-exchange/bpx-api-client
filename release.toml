@@ -1,0 +1,4 @@
+release = false
+sign-commit = true
+sign-tag = true
+allow-branch = ["master"]
