@@ -82,7 +82,7 @@ jobs:
           # Generate the CHANGELOG
           git-cliff -o CHANGELOG.md
           git add -A
-          git commit --amend --no-edit
+          git commit -m "chore(release) v${NEW_VERSION}"
 
           # Tag the release
           git tag $HEAD v${NEW_VERSION}
