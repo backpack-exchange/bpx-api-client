@@ -80,12 +80,16 @@ jobs:
           NEW_VERSION=$(grep "^version" Cargo.toml | head -1 | cut -d'"' -f2)
 
           # Generate the CHANGELOG
+          git tag v${NEW_VERSION}
           git-cliff -o CHANGELOG.md
+          git tag --delete v${NEW_VERSION}
+
+          # Commit the changes
           git add -A
           git commit -m "chore(release) v${NEW_VERSION}"
 
           # Tag the release
-          git tag $HEAD v${NEW_VERSION}
+          git tag v${NEW_VERSION}
 
           # Push
           CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD || echo master)"
