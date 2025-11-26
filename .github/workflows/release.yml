@@ -57,7 +57,7 @@ jobs:
           git config --global user.email "bot@backpack.exchange"
           git config --global user.name  "backpack-exchange[bot]"
           git config --global credential.helper cache
-          git config --global commit.gpgsign true
+          git config --global commit.gpgsign false
 
       - name: Clone bpx-api-client repository
         env:
