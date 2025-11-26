@@ -77,3 +77,7 @@ jobs:
           git commit -m "chore: update CHANGELOG.md"
 
           cargo release version ${{ github.event.inputs.release_level }} --execute --no-confirm
+
+          CURRENT_BRANCH="$(git rev-parse --abbrev-ref HEAD || echo master)"
+          git push origin "HEAD:${CURRENT_BRANCH}"
+          cargo publish

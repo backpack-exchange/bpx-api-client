@@ -1,3 +1,5 @@
+push = false
+publish = false
 release = false
 allow-branch = ["master"]
 shared-version = "workspace"
