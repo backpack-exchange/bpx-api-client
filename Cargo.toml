@@ -12,7 +12,7 @@ version = "0.10.6"
 
 [workspace.dependencies]
 anyhow = "1"
-base64 = "0.22"
+base64ct = { version = "1", features = ["alloc"] }
 chrono = { default-features = false, version = "0.4", features = ["serde"] }
 dotenv = "0.15"
 ed25519-dalek = "2"

@@ -10,8 +10,8 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     /// Error decoding a base64 string.
-    #[error(transparent)]
-    Base64Decode(#[from] base64::DecodeError),
+    #[error("base64 decode error: {0}")]
+    Base64Decode(#[from] base64ct::Error),
 
     /// Backpack API returned an error with status code and message.
     #[error("Backpack API error: {status_code}: {message}")]
