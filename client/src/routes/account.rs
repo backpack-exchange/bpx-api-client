@@ -1,14 +1,16 @@
 use crate::BpxClient;
-use crate::error::Result;
+use crate::error::{Error, Result};
 use bpx_api_types::account::{
-    AccountMaxBorrow, AccountMaxWithdrawal, AccountSettings, ConvertDustPayload,
-    UpdateAccountPayload,
+    AccountMaxBorrow, AccountMaxOrder, AccountMaxWithdrawal, AccountSettings, ConvertDustPayload,
+    MaxOrderQuery, UpdateAccountPayload,
 };
 
 #[doc(hidden)]
 pub const API_ACCOUNT: &str = "/api/v1/account";
 #[doc(hidden)]
 pub const API_ACCOUNT_MAX_BORROW: &str = "/api/v1/account/limits/borrow";
+#[doc(hidden)]
+pub const API_ACCOUNT_MAX_ORDER: &str = "/api/v1/account/limits/order";
 #[doc(hidden)]
 pub const API_ACCOUNT_MAX_WITHDRAWAL: &str = "/api/v1/account/limits/withdrawal";
 #[doc(hidden)]
@@ -26,6 +28,16 @@ impl BpxClient {
     pub async fn get_account_max_borrow(&self, symbol: &str) -> Result<AccountMaxBorrow> {
         let mut url = self.base_url.join(API_ACCOUNT_MAX_BORROW)?;
         url.query_pairs_mut().append_pair("symbol", symbol);
+        let res = self.get(url).await?;
+        res.json().await.map_err(Into::into)
+    }
+
+    /// Fetches the account's maximum order amount for a given symbol.
+    pub async fn get_account_max_order(&self, params: MaxOrderQuery) -> Result<AccountMaxOrder> {
+        let mut url = self.base_url.join(API_ACCOUNT_MAX_ORDER)?;
+        let query_string = serde_qs::to_string(&params)
+            .map_err(|e| Error::UrlParseError(e.to_string().into_boxed_str()))?;
+        url.set_query(Some(&query_string));
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
     }
