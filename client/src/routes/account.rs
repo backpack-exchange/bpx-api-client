@@ -21,7 +21,7 @@ impl BpxClient {
     pub async fn get_account(&self) -> Result<AccountSettings> {
         let url = self.base_url.join(API_ACCOUNT)?;
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 
     /// Fetches the account's maximum borrow amount for a given symbol.
@@ -29,7 +29,7 @@ impl BpxClient {
         let mut url = self.base_url.join(API_ACCOUNT_MAX_BORROW)?;
         url.query_pairs_mut().append_pair("symbol", symbol);
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 
     /// Fetches the account's maximum order amount for a given symbol.
@@ -39,7 +39,7 @@ impl BpxClient {
             .map_err(|e| Error::UrlParseError(e.to_string().into_boxed_str()))?;
         url.set_query(Some(&query_string));
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 
     /// Fetches the account's maximum withdrawal amount for a given symbol.
@@ -61,7 +61,7 @@ impl BpxClient {
             }
         }
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 
     /// Updates the account's settings.
