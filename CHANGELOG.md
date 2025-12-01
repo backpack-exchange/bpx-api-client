@@ -1,3 +1,8 @@
+## [0.10.6] - 2025-12-01
+
+### ⚙️ Miscellaneous Tasks
+
+- Fix release action CHANGELOG.md tagging
 ## [0.10.5] - 2025-11-26
 
 ### 🐛 Bug Fixes
