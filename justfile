@@ -24,3 +24,7 @@ build:
 # build project (release profile)
 release:
     cargo build --all-targets --release
+
+# run example
+example name:
+    cargo run --bin {{name}} -p bpx-api-examples

@@ -38,7 +38,7 @@ use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
 use reqwest::{IntoUrl, Method, Request, Response, StatusCode, Url, header::CONTENT_TYPE};
 use routes::{
     account::{
-        API_ACCOUNT, API_ACCOUNT_CONVERT_DUST, API_ACCOUNT_MAX_BORROW, API_ACCOUNT_MAX_WITHDRAWAL,
+        API_ACCOUNT, API_ACCOUNT_CONVERT_DUST, API_ACCOUNT_MAX_BORROW, API_ACCOUNT_MAX_WITHDRAWAL, API_ACCOUNT_MAX_ORDER
     },
     borrow_lend::API_BORROW_LEND_POSITIONS,
     capital::{API_CAPITAL, API_COLLATERAL, API_DEPOSIT_ADDRESS, API_DEPOSITS, API_WITHDRAWALS},
@@ -250,6 +250,7 @@ impl BpxClient {
             API_COLLATERAL if method == Method::GET => "collateralQuery",
             API_ACCOUNT if method == Method::GET => "accountQuery",
             API_ACCOUNT_MAX_BORROW if method == Method::GET => "maxBorrowQuantity",
+            API_ACCOUNT_MAX_ORDER if method == Method::GET => "maxOrderQuantity",
             API_ACCOUNT_MAX_WITHDRAWAL if method == Method::GET => "maxWithdrawalQuantity",
             API_ACCOUNT if method == Method::PATCH => "accountUpdate",
             API_ACCOUNT_CONVERT_DUST if method == Method::POST => "convertDust",
