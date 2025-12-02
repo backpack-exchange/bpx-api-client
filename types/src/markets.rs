@@ -112,14 +112,14 @@ impl Market {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MarketFilters {
-    pub price: PriceFilters,
-    pub quantity: QuantityFilters,
-    pub leverage: Option<LeverageFilters>,
+    pub price: PriceFilter,
+    pub quantity: QuantityFilter,
+    pub leverage: Option<LeverageFilter>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PriceFilters {
+pub struct PriceFilter {
     /// Minimum price the order book will allow.
     pub min_price: Decimal,
     /// Maximum price the order book will allow.
@@ -179,7 +179,7 @@ pub struct PriceBandPremium {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct QuantityFilters {
+pub struct QuantityFilter {
     pub min_quantity: Decimal,
     pub max_quantity: Option<Decimal>,
     pub step_size: Decimal,
@@ -187,7 +187,7 @@ pub struct QuantityFilters {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct LeverageFilters {
+pub struct LeverageFilter {
     pub min_leverage: Decimal,
     pub max_leverage: Decimal,
     pub step_size: Decimal,
@@ -433,7 +433,7 @@ mod test {
             quote_symbol: "MARKET".to_string(),
             market_type: MarketType::Spot,
             filters: super::MarketFilters {
-                price: PriceFilters {
+                price: PriceFilter {
                     min_price: dec!(0.0001),
                     max_price: None,
                     tick_size: dec!(0.0001),
@@ -446,7 +446,7 @@ mod test {
                     borrow_entry_fee_max_multiplier: None,
                     borrow_entry_fee_min_multiplier: None,
                 },
-                quantity: QuantityFilters {
+                quantity: QuantityFilter {
                     min_quantity: dec!(0.01),
                     max_quantity: None,
                     step_size: dec!(0.01),
