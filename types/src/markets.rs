@@ -14,13 +14,6 @@ pub struct Asset {
     pub tokens: Vec<Token>,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "UPPERCASE")]
-pub enum MarketType {
-    Spot,
-    Perp,
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Ticker {
@@ -83,8 +76,9 @@ pub struct Market {
     pub base_symbol: String,
     /// The quote asset for the market.
     pub quote_symbol: String,
-    /// The type of the market, either `Spot` or `Perp`.
-    pub market_type: MarketType,
+    /// The type of the market. Can be `SPOT`, `PERP`, `IPERP`, `DATED`, `PREDICTION`, `RFQ` or `MONAD`.
+    /// New market types may also be added in the future.
+    pub market_type: String,
     /// See [`MarketFilters`].
     pub filters: MarketFilters,
 }
@@ -373,7 +367,7 @@ mod test {
             symbol: "TEST_MARKET".to_string(),
             base_symbol: "TEST".to_string(),
             quote_symbol: "MARKET".to_string(),
-            market_type: MarketType::Spot,
+            market_type: "SPOT".to_string(),
             filters: super::MarketFilters {
                 price: PriceFilters {
                     min_price: dec!(0.0001),
