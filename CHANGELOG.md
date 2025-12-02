@@ -1,3 +1,8 @@
+## [0.11.0] - 2025-12-02
+
+### 🚀 Features
+
+- Add missing fields to PriceFilters ([#81](https://github.com/backpack-exchange/bpx-api-client/issues/81))
 ## [0.10.6] - 2025-12-01
 
 ### ⚙️ Miscellaneous Tasks
