@@ -23,8 +23,18 @@ impl BpxClient {
     }
 
     /// Retrieves a list of available markets.
-    pub async fn get_markets(&self) -> Result<Vec<Market>> {
-        let url = self.base_url.join(API_MARKETS)?;
+    pub async fn get_markets(
+        &self,
+        market_types: Option<impl IntoIterator<Item = impl AsRef<str>>>,
+    ) -> Result<Vec<Market>> {
+        let mut url = self.base_url.join(API_MARKETS)?;
+        if let Some(market_types) = market_types {
+            let mut query = url.query_pairs_mut();
+            for market_type in market_types {
+                query.append_pair("marketType", market_type.as_ref());
+            }
+        }
+        println!("{:?}", url);
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
     }

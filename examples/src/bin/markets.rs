@@ -11,7 +11,10 @@ async fn main() {
         .build()
         .expect("Failed to initialize Backpack API client");
 
-    match client.get_markets().await {
+    match client
+        .get_markets(Some(vec!["PREDICTION".to_owned()]))
+        .await
+    {
         Ok(markets) => {
             let markets_json = serde_json::to_string_pretty(&markets).unwrap();
             println!("{markets_json}");
