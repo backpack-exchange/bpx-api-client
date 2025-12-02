@@ -1,6 +1,5 @@
 use crate::error::Result;
-use base64::Engine;
-use base64::engine::general_purpose::STANDARD;
+use base64ct::{Base64, Encoding};
 use ed25519_dalek::Signer;
 use futures_util::{SinkExt, StreamExt};
 use serde::de::DeserializeOwned;
@@ -41,8 +40,8 @@ impl BpxClient {
 
             let message = format!("instruction=subscribe&timestamp={timestamp}&window={window}");
 
-            let verifying_key = STANDARD.encode(signing_key.verifying_key().to_bytes());
-            let signature = STANDARD.encode(signing_key.sign(message.as_bytes()).to_bytes());
+            let verifying_key = Base64::encode_string(&signing_key.verifying_key().to_bytes());
+            let signature = Base64::encode_string(&signing_key.sign(message.as_bytes()).to_bytes());
 
             json!({
                 "method": "SUBSCRIBE",

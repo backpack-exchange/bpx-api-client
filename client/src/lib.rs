@@ -33,7 +33,7 @@
 //! # }
 //! ```
 
-use base64::{Engine, engine::general_purpose::STANDARD};
+use base64ct::{Base64, Encoding};
 use ed25519_dalek::{Signature, Signer, SigningKey, VerifyingKey};
 use reqwest::{IntoUrl, Method, Request, Response, StatusCode, Url, header::CONTENT_TYPE};
 use routes::{
@@ -303,7 +303,7 @@ impl BpxClient {
         tracing::debug!("signee: {}", signee);
 
         let signature: Signature = signing_key.sign(signee.as_bytes());
-        let signature = STANDARD.encode(signature.to_bytes());
+        let signature = Base64::encode_string(&signature.to_bytes());
 
         let mut req = self.client().request(method, url);
         if let Some(payload) = payload {
@@ -403,8 +403,7 @@ impl BpxClientBuilder {
 
         let signing_key = if let Some(secret) = self.secret {
             Some(
-                STANDARD
-                    .decode(secret)?
+                Base64::decode_vec(&secret)?
                     .try_into()
                     .map(|s| SigningKey::from_bytes(&s))
                     .map_err(|_| Error::SecretKey)?,
@@ -422,7 +421,10 @@ impl BpxClientBuilder {
         header_map.insert(CONTENT_TYPE, JSON_CONTENT.parse()?);
         if let Some(signing_key) = &signing_key {
             let verifier = signing_key.verifying_key();
-            header_map.insert(API_KEY_HEADER, STANDARD.encode(verifier).parse()?);
+            header_map.insert(
+                API_KEY_HEADER,
+                Base64::encode_string(&verifier.to_bytes()).parse()?,
+            );
         }
 
         let client = BpxClient {
