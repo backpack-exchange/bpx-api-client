@@ -64,4 +64,5 @@ pub enum Blockchain {
     #[serde(rename = "0G")]
     ZeroG,
     Eclipse,
+    Monad,
 }
