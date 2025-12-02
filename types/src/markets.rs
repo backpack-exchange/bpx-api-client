@@ -112,22 +112,74 @@ impl Market {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MarketFilters {
-    pub price: PriceFilters,
-    pub quantity: QuantityFilters,
-    pub leverage: Option<LeverageFilters>,
+    pub price: PriceFilter,
+    pub quantity: QuantityFilter,
+    pub leverage: Option<LeverageFilter>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PriceFilters {
+pub struct PriceFilter {
+    /// Minimum price the order book will allow.
     pub min_price: Decimal,
+    /// Maximum price the order book will allow.
     pub max_price: Option<Decimal>,
+    /// Price increment.
     pub tick_size: Decimal,
+    /// Maximum allowed multiplier move from last active price.
+    pub max_multiplier: Option<Decimal>,
+    /// Minimum allowed multiplier move from last active price.
+    pub min_multiplier: Option<Decimal>,
+    /// Maximum allowed impact multiplier from last active price. This
+    /// determines how far above the best ask a market buy can penetrate.
+    pub max_impact_multiplier: Option<Decimal>,
+    /// Minimum allowed impact multiplier from last active price. This
+    /// determines how far below the best bid a market sell can penetrate.
+    pub min_impact_multiplier: Option<Decimal>,
+    /// Price band for futures markets. Restricts the price moving too far from
+    /// the mean mark price.
+    pub mean_mark_price_band: Option<PriceBandMarkPrice>,
+    /// Price band for futures markets. Restricts the premium moving too far
+    /// from the mean premium.
+    pub mean_premium_band: Option<PriceBandPremium>,
+    /// Maximum allowed multiplier move from last active price without
+    /// incurring an entry fee when borrowing for spot margin.
+    pub borrow_entry_fee_max_multiplier: Option<Decimal>,
+    /// Minimum allowed multiplier move from last active price without
+    /// incurring an entry fee when borrowing for spot margin.
+    pub borrow_entry_fee_min_multiplier: Option<Decimal>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct QuantityFilters {
+pub struct PriceBandMarkPrice {
+    /// Maximum allowed multiplier move from mean price.
+    pub max_multiplier: Decimal,
+    /// Minimum allowed multiplier move from mean price.
+    pub min_multiplier: Decimal,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PriceBandPremium {
+    /// Latest index price.
+    pub index_price: Option<Decimal>,
+    /// Maximum premium the order book will allow. This is constantly updated
+    /// based on the mean premium scaled by the `tolerance_pct`
+    pub max_premium_pct: Option<Decimal>,
+    /// Minimum premium the order book will allow. This is constantly updated
+    /// based on the mean premium scaled by the `tolerance_pct`
+    pub min_premium_pct: Option<Decimal>,
+    /// Maximum allowed deviation from the mean premium. E.g. if
+    /// `tolerance_pct` is 0.05 (5%), and the mean premium is 5%, then
+    /// orders will be prevented from being placed if the premium exceeds 10%.
+    /// User to calculate `min_premium_pct` and `max_premium_pct`.
+    pub tolerance_pct: Decimal,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct QuantityFilter {
     pub min_quantity: Decimal,
     pub max_quantity: Option<Decimal>,
     pub step_size: Decimal,
@@ -135,7 +187,7 @@ pub struct QuantityFilters {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct LeverageFilters {
+pub struct LeverageFilter {
     pub min_leverage: Decimal,
     pub max_leverage: Decimal,
     pub step_size: Decimal,
@@ -381,12 +433,20 @@ mod test {
             quote_symbol: "MARKET".to_string(),
             market_type: MarketType::Spot,
             filters: super::MarketFilters {
-                price: PriceFilters {
+                price: PriceFilter {
                     min_price: dec!(0.0001),
                     max_price: None,
                     tick_size: dec!(0.0001),
+                    min_multiplier: Some(dec!(1.25)),
+                    max_multiplier: Some(dec!(0.75)),
+                    max_impact_multiplier: Some(dec!(1.05)),
+                    min_impact_multiplier: Some(dec!(0.95)),
+                    mean_mark_price_band: None,
+                    mean_premium_band: None,
+                    borrow_entry_fee_max_multiplier: None,
+                    borrow_entry_fee_min_multiplier: None,
                 },
-                quantity: QuantityFilters {
+                quantity: QuantityFilter {
                     min_quantity: dec!(0.01),
                     max_quantity: None,
                     step_size: dec!(0.01),
