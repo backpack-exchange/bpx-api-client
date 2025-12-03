@@ -34,7 +34,6 @@ impl BpxClient {
                 query.append_pair("marketType", market_type.as_ref());
             }
         }
-        println!("{:?}", url);
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
     }
