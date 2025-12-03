@@ -24,4 +24,3 @@ jobs:
 
       - name: Audit
         run: cargo audit
-        working-directory: rust
