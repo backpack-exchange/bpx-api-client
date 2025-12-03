@@ -18,7 +18,7 @@ on:
 
 jobs:
   release:
-    runs-on: ubuntu-latest-arm-64
+    runs-on: depot-ubuntu-24.04-64
     permissions:
       contents: write  # Required for pushing commits and tags
 
