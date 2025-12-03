@@ -1,3 +1,8 @@
+## [0.11.2] - 2025-12-03
+
+### 🚀 Features
+
+- *(rfq)* Add endpoints for refresh, cancel ([#83](https://github.com/backpack-exchange/bpx-api-client/issues/83))
 ## [0.11.1] - 2025-12-03
 
 ### 🚀 Features
