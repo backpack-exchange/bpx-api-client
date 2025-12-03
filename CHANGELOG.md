@@ -1,3 +1,8 @@
+## [0.13.0] - 2025-12-03
+
+### 🐛 Bug Fixes
+
+- Get_markets function ([#85](https://github.com/backpack-exchange/bpx-api-client/issues/85))
 ## [0.12.0] - 2025-12-03
 
 ### 🐛 Bug Fixes
