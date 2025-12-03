@@ -11,7 +11,7 @@ on:
 
 jobs:
   audit:
-    runs-on: depot-ubuntu-24.04-64
+    runs-on: ubuntu-latest-64
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
