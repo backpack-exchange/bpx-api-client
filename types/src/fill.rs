@@ -1,4 +1,4 @@
-use super::{history::SortDirection, markets::MarketType, order::Side};
+use super::{history::SortDirection, order::Side};
 use rust_decimal::Decimal;
 
 #[derive(
@@ -54,7 +54,7 @@ pub struct FillsHistoryParams {
     /// Filter by fill type
     pub fill_type: Option<FillType>,
     /// Filter by market type
-    pub market_type: Option<MarketType>,
+    pub market_type: Option<String>,
     /// Filter by order ID
     pub order_id: Option<String>,
     /// Filter by strategy ID
@@ -88,7 +88,7 @@ impl FillsHistoryParams {
         self
     }
 
-    pub fn with_market_type(mut self, market_type: MarketType) -> Self {
+    pub fn with_market_type(mut self, market_type: String) -> Self {
         self.market_type = Some(market_type);
         self
     }

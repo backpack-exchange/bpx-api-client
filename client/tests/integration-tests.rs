@@ -68,7 +68,7 @@ mod tests {
         #[tokio::test]
         async fn test_get_markets() -> Result<()> {
             let client = BpxClient::builder().build().unwrap();
-            let markets = client.get_markets().await?;
+            let markets = client.get_markets(Some(vec!["SPOT"])).await?;
 
             // Should return at least some markets
             assert!(!markets.is_empty());
