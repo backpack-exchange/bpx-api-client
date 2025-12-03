@@ -1,3 +1,12 @@
+## [0.11.1] - 2025-12-03
+
+### 🚀 Features
+
+- Add MarketType filter to get_markets ([#80](https://github.com/backpack-exchange/bpx-api-client/issues/80))
+
+### ⚡ Performance
+
+- Use depot runners
 ## [0.11.0] - 2025-12-02
 
 ### 🚀 Features
