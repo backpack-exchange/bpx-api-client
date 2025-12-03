@@ -1,3 +1,8 @@
+## [0.12.0] - 2025-12-03
+
+### 🐛 Bug Fixes
+
+- *(markets)* Remove unnecessary print statement ([#84](https://github.com/backpack-exchange/bpx-api-client/issues/84))
 ## [0.11.2] - 2025-12-03
 
 ### 🚀 Features
