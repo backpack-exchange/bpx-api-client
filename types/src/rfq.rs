@@ -34,6 +34,31 @@ pub struct RequestForQuotePayload {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct RequestForQuoteCancelPayload {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rfq_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub client_id: Option<u32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RequestForQuoteRefreshPayload {
+    pub rfq_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct QuoteAcceptPayload {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rfq_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub client_id: Option<u32>,
+    pub quote_id: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct QuotePayload {
     pub rfq_id: String,
     pub bid_price: Decimal,
