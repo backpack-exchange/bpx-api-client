@@ -1,5 +1,5 @@
 use bpx_api_types::markets::{
-    Asset, FundingRate, Kline, MarkPrice, Market, OrderBookDepth, Ticker,
+    Asset, FundingRate, Kline, MarkPrice, Market, OrderBookDepth, OrderBookDepthLimit, Ticker,
 };
 
 use crate::BpxClient;
@@ -62,9 +62,16 @@ impl BpxClient {
     }
 
     /// Retrieves the order book depth for a given symbol.
-    pub async fn get_order_book_depth(&self, symbol: &str) -> Result<OrderBookDepth> {
+    pub async fn get_order_book_depth(
+        &self,
+        symbol: &str,
+        limit: Option<OrderBookDepthLimit>,
+    ) -> Result<OrderBookDepth> {
         let mut url = self.base_url.join(API_DEPTH)?;
         url.query_pairs_mut().append_pair("symbol", symbol);
+        if let Some(limit) = limit {
+            url.query_pairs_mut().append_pair("limit", limit.as_ref());
+        }
         let res = self.get(url).await?;
         res.json().await.map_err(Into::into)
     }

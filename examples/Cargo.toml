@@ -12,6 +12,7 @@ publish.workspace = true
 anyhow = { workspace = true }
 bpx-api-client = { path = "../client", version = "0.11.3", features = ["ws"] }
 bpx-api-types = { path = "../types", version = "0.11.3" }
+clap = { workspace = true, features = ["derive"] }
 dotenv = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
@@ -22,6 +23,10 @@ tracing-subscriber = { workspace = true }
 [[bin]]
 name = "account"
 path = "src/bin/account.rs"
+
+[[bin]]
+name = "depth"
+path = "src/bin/depth.rs"
 
 [[bin]]
 name = "markets"

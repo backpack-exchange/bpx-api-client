@@ -18,6 +18,16 @@ async fn main() {
 
     let params = MaxOrderQuery::new("BTC_USDC_PERP", Side::Bid);
 
+    match client.get_account().await {
+        Ok(account) => {
+            let account_json = serde_json::to_string_pretty(&account).unwrap();
+            println!("{account_json}");
+        }
+        Err(err) => {
+            println!("Error: {err:?}");
+        }
+    }
+
     match client.get_account_max_order(params).await {
         Ok(max_order) => {
             let max_order_json = serde_json::to_string_pretty(&max_order).unwrap();

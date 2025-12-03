@@ -13,3 +13,8 @@ rfq:
 #  Run the example to retrieve markets
 markets:
     cargo -q run --bin markets
+
+
+#  Run the example to retrieve depth
+depth symbol="SOL_USDC_PERP" limit="5":
+    cargo -q run --bin depth -- --symbol {{symbol}} --limit {{limit}}

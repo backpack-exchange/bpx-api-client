@@ -201,6 +201,31 @@ pub struct Token {
     pub withdrawal_fee: Decimal,
 }
 
+#[derive(Debug, Serialize, Deserialize, strum::AsRefStr)]
+pub enum OrderBookDepthLimit {
+    #[serde(rename = "5")]
+    #[strum(serialize = "5")]
+    Five,
+    #[serde(rename = "10")]
+    #[strum(serialize = "10")]
+    Ten,
+    #[serde(rename = "20")]
+    #[strum(serialize = "20")]
+    Twenty,
+    #[serde(rename = "50")]
+    #[strum(serialize = "50")]
+    Fifty,
+    #[serde(rename = "100")]
+    #[strum(serialize = "100")]
+    OneHundred,
+    #[serde(rename = "500")]
+    #[strum(serialize = "500")]
+    FiveHundred,
+    #[serde(rename = "1000")]
+    #[strum(serialize = "1000")]
+    OneThousand,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderBookDepth {
@@ -371,6 +396,23 @@ pub struct MarkPriceUpdate {
     /// Engine timestamp in microseconds
     #[serde(rename = "T")]
     pub engine_timestamp: i64,
+}
+
+impl TryFrom<u32> for OrderBookDepthLimit {
+    type Error = &'static str;
+
+    fn try_from(value: u32) -> Result<Self, Self::Error> {
+        match value {
+            5 => Ok(OrderBookDepthLimit::Five),
+            10 => Ok(OrderBookDepthLimit::Ten),
+            20 => Ok(OrderBookDepthLimit::Twenty),
+            50 => Ok(OrderBookDepthLimit::Fifty),
+            100 => Ok(OrderBookDepthLimit::OneHundred),
+            500 => Ok(OrderBookDepthLimit::FiveHundred),
+            1000 => Ok(OrderBookDepthLimit::OneThousand),
+            _ => Err("Invalid OrderBookDepthLimit value"),
+        }
+    }
 }
 
 /// Deserializes a value that can be either a string or an i64 into an i64.
