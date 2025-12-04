@@ -61,6 +61,9 @@ pub mod error;
 
 mod routes;
 
+// Re-export request builders.
+pub use routes::markets::GetMarketsRequest;
+
 #[cfg(feature = "ws")]
 mod ws;
 
@@ -448,4 +451,54 @@ fn now_millis() -> u64 {
         .duration_since(UNIX_EPOCH)
         .expect("Time went backwards")
         .as_millis() as u64
+}
+
+pub trait BpxClientRequest {
+    const PATH: &'static str;
+    const METHOD: Method;
+    type Body: Serialize;
+
+    fn query_params(&self) -> Vec<(Cow<'_, str>, Cow<'_, str>)>;
+
+    fn body(&self) -> Option<&Self::Body>;
+
+    fn validate(&self) -> Result<()>;
+
+    fn send(self, client: &BpxClient) -> impl Future<Output = Result<Response>>
+    where
+        Self: Sized,
+    {
+        async move {
+            self.validate()?;
+            let mut url = client.base_url.join(Self::PATH)?;
+            for (key, value) in self.query_params() {
+                url.query_pairs_mut().append_pair(&key, &value);
+            }
+
+            match Self::METHOD.as_str() {
+                "GET" => client.get(url).await,
+                "POST" => {
+                    let body = self.body().ok_or_else(|| {
+                        Error::InvalidRequest("POST request must have a body".into())
+                    })?;
+                    client.post(url, body).await
+                }
+                "DELETE" => {
+                    let body = self.body().ok_or_else(|| {
+                        Error::InvalidRequest("DELETE request must have a body".into())
+                    })?;
+                    client.delete(url, body).await
+                }
+                "PATCH" => {
+                    let body = self.body().ok_or_else(|| {
+                        Error::InvalidRequest("DELETE request must have a body".into())
+                    })?;
+                    client.patch(url, body).await
+                }
+                _ => Err(Error::InvalidRequest(
+                    format!("unsupported HTTP method: {}", Self::METHOD.as_str()).into(),
+                )),
+            }
+        }
+    }
 }
