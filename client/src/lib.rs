@@ -180,7 +180,7 @@ impl BpxClient {
     /// if deserialization fails, making it easier to debug API changes.
     pub async fn json_with_context<T: serde::de::DeserializeOwned>(res: Response) -> Result<T> {
         let body = res.text().await?;
-        serde_json::from_str(&body).map_err(|e| {
+        serde_json::from_str(&body).map_err(|error| {
             // Truncate very long responses for readability in logs
             let body_preview = if body.len() > 2000 {
                 format!(
@@ -192,9 +192,11 @@ impl BpxClient {
                 body
             };
             tracing::error!(
-                "Failed to deserialize API response: {e}\nResponse body: {body_preview}"
+                %error,
+                body_preview, 
+                "Failed to deserialize API response"
             );
-            e.into()
+            error.into()
         })
     }
 
