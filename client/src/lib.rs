@@ -193,7 +193,7 @@ impl BpxClient {
             };
             tracing::error!(
                 %error,
-                body_preview, 
+                body_preview,
                 "Failed to deserialize API response"
             );
             error.into()
