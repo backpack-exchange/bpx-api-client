@@ -19,21 +19,21 @@ impl BpxClient {
     pub async fn get_assets(&self) -> Result<Vec<Asset>> {
         let url = self.base_url.join(API_ASSETS)?;
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 
     /// Retrieves a list of available markets.
     pub async fn get_markets(&self) -> Result<Vec<Market>> {
         let url = self.base_url.join(API_MARKETS)?;
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 
     /// Retrieves mark price, index price and the funding rate for the current interval for all symbols, or the symbol specified.
     pub async fn get_all_mark_prices(&self) -> Result<Vec<MarkPrice>> {
         let url = self.base_url.join(API_MARK_PRICES)?;
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 
     /// Fetches the ticker information for a given symbol.
@@ -41,14 +41,14 @@ impl BpxClient {
         let mut url = self.base_url.join(API_TICKER)?;
         url.query_pairs_mut().append_pair("symbol", symbol);
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 
     /// Fetches the ticker information for all symbols.
     pub async fn get_tickers(&self) -> Result<Vec<Ticker>> {
         let url = self.base_url.join(API_TICKERS)?;
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 
     /// Retrieves the order book depth for a given symbol.
@@ -63,7 +63,7 @@ impl BpxClient {
             url.query_pairs_mut().append_pair("limit", limit.as_ref());
         }
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 
     /// Funding interval rate history for futures.
@@ -71,7 +71,7 @@ impl BpxClient {
         let mut url = self.base_url.join(API_FUNDING)?;
         url.query_pairs_mut().append_pair("symbol", symbol);
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 
     /// Fetches historical K-line (candlestick) data for a given symbol and interval.
@@ -93,6 +93,6 @@ impl BpxClient {
             }
         }
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 }
