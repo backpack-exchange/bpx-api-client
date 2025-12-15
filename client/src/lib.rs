@@ -70,6 +70,8 @@ pub use bpx_api_types as types;
 /// Re-export of the custom `Error` type and `Result` alias for error handling.
 pub use error::{Error, Result};
 
+use crate::routes::rfq::{API_RFQ_ACCEPT, API_RFQ_CANCEL, API_RFQ_REFRESH};
+
 const API_USER_AGENT: &str = "bpx-rust-client";
 const API_KEY_HEADER: &str = "X-API-Key";
 
@@ -246,6 +248,9 @@ impl BpxClient {
             API_ORDERS if method == Method::DELETE => "orderCancelAll",
             API_RFQ if method == Method::POST => "rfqSubmit",
             API_RFQ_QUOTE if method == Method::POST => "quoteSubmit",
+            API_RFQ_ACCEPT if method == Method::POST => "quoteAccept",
+            API_RFQ_CANCEL if method == Method::POST => "rfqCancel",
+            API_RFQ_REFRESH if method == Method::POST => "rfqRefresh",
             API_FUTURES_POSITION if method == Method::GET => "positionQuery",
             API_BORROW_LEND_POSITIONS if method == Method::GET => "borrowLendPositionQuery",
             API_COLLATERAL if method == Method::GET => "collateralQuery",
