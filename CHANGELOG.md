@@ -1,3 +1,8 @@
+## [0.15.1] - 2025-12-15
+
+### 🐛 Bug Fixes
+
+- Use correct auto_lend parameter ([#90](https://github.com/backpack-exchange/bpx-api-client/issues/90))
 ## [0.15.0] - 2025-12-15
 
 ### 🐛 Bug Fixes
