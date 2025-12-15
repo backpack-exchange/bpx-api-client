@@ -1,3 +1,8 @@
+## [0.14.0] - 2025-12-15
+
+### 🐛 Bug Fixes
+
+- *(rfq)* Correctly add signatures for rfq operations ([#87](https://github.com/backpack-exchange/bpx-api-client/issues/87))
 ## [0.13.0] - 2025-12-03
 
 ### 🐛 Bug Fixes
