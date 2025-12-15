@@ -66,7 +66,7 @@ pub struct QuotePayload {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub client_id: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub auto_end: Option<bool>,
+    pub auto_lend: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub auto_lend_redeem: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -314,7 +314,7 @@ impl QuotePayload {
             bid_price,
             ask_price,
             client_id: None,
-            auto_end: None,
+            auto_lend: None,
             auto_lend_redeem: None,
             auto_borrow: None,
             auto_borrow_repay: None,
@@ -326,8 +326,8 @@ impl QuotePayload {
         self
     }
 
-    pub fn with_auto_end(mut self, auto_end: bool) -> Self {
-        self.auto_end = Some(auto_end);
+    pub fn with_auto_lend(mut self, auto_lend: bool) -> Self {
+        self.auto_lend = Some(auto_lend);
         self
     }
 
