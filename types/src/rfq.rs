@@ -63,6 +63,16 @@ pub struct QuotePayload {
     pub rfq_id: String,
     pub bid_price: Decimal,
     pub ask_price: Decimal,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub client_id: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub auto_end: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub auto_lend_redeem: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub auto_borrow: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub auto_borrow_repay: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -295,4 +305,44 @@ pub struct RequestForQuote {
     pub status: OrderStatus,
     pub execution_mode: RfqExecutionMode,
     pub created_at: i64,
+}
+
+impl QuotePayload {
+    pub fn new(rfq_id: String, bid_price: Decimal, ask_price: Decimal) -> Self {
+        Self {
+            rfq_id,
+            bid_price,
+            ask_price,
+            client_id: None,
+            auto_end: None,
+            auto_lend_redeem: None,
+            auto_borrow: None,
+            auto_borrow_repay: None,
+        }
+    }
+
+    pub fn with_client_id(mut self, client_id: u32) -> Self {
+        self.client_id = Some(client_id);
+        self
+    }
+
+    pub fn with_auto_end(mut self, auto_end: bool) -> Self {
+        self.auto_end = Some(auto_end);
+        self
+    }
+
+    pub fn with_auto_lend_redeem(mut self, auto_lend_redeem: bool) -> Self {
+        self.auto_lend_redeem = Some(auto_lend_redeem);
+        self
+    }
+
+    pub fn with_auto_borrow(mut self, auto_borrow: bool) -> Self {
+        self.auto_borrow = Some(auto_borrow);
+        self
+    }
+
+    pub fn with_auto_borrow_repay(mut self, auto_borrow_repay: bool) -> Self {
+        self.auto_borrow_repay = Some(auto_borrow_repay);
+        self
+    }
 }
