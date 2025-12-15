@@ -1,3 +1,8 @@
+## [0.15.0] - 2025-12-15
+
+### 🐛 Bug Fixes
+
+- *(ci)* Remove the incorrect working directory for the CI ([#88](https://github.com/backpack-exchange/bpx-api-client/issues/88))
 ## [0.14.0] - 2025-12-15
 
 ### 🐛 Bug Fixes
