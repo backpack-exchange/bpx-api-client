@@ -54,7 +54,7 @@ use serde_json::Value;
 use std::{
     borrow::Cow,
     collections::BTreeMap,
-    time::{SystemTime, UNIX_EPOCH},
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
 pub mod error;
@@ -335,6 +335,7 @@ pub struct BpxClientBuilder {
     ws_url: Option<String>,
     secret: Option<String>,
     headers: Option<BpxHeaders>,
+    timeout: Option<u64>,
 }
 
 impl BpxClientBuilder {
@@ -395,6 +396,19 @@ impl BpxClientBuilder {
         self
     }
 
+    /// Sets a custom Timeout for the underlying http client
+    /// If not set, a default of 30 seconds is used.
+    ///
+    /// # Arguments
+    /// * `timeout` - The timeout in seconds
+    ///
+    /// # Returns
+    /// * `Self` - The updated builder instance
+    pub fn timeout(mut self, timeout: u64) -> Self {
+        self.timeout = Some(timeout);
+        self
+    }
+
     /// Builds the `BpxClient` instance with the configured parameters.
     ///
     /// # Returns
@@ -440,6 +454,7 @@ impl BpxClientBuilder {
             client: reqwest::Client::builder()
                 .user_agent(API_USER_AGENT)
                 .default_headers(header_map)
+                .timeout(Duration::from_secs(self.timeout.unwrap_or(30)))
                 .build()?,
         };
 
