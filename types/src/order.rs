@@ -371,7 +371,7 @@ pub struct OrderUpdate {
 
     /// Trigger quantity
     #[serde(rename = "Y")]
-    pub trigger_quantity: Option<Decimal>,
+    pub trigger_quantity: Option<TriggerQuantity>,
 
     /// Order State
     #[serde(rename = "X")]
@@ -492,7 +492,10 @@ mod tests {
         let order_update: OrderUpdate = serde_json::from_str(data).unwrap();
         assert_eq!(order_update.price.unwrap(), dec!(178.15));
         assert_eq!(order_update.trigger_price.unwrap(), dec!(178.05));
-        assert_eq!(order_update.trigger_quantity.unwrap(), dec!(20.03));
+        assert_eq!(
+            order_update.trigger_quantity.unwrap(),
+            TriggerQuantity::Amount(dec!(20.03))
+        );
         assert_eq!(order_update.quantity_in_quote.unwrap(), dec!(0));
 
         let data = r#"
@@ -506,9 +509,13 @@ mod tests {
         assert_eq!(order_update.quantity, dec!(20.03));
 
         let data = r#"
-        {"B":"LastPrice","E":1748289564405220,"O":"USER","P":"178.55","S":"Ask","T":1748289564404373,"V":"RejectTaker","X":"Cancelled","Y":"1","Z":"0","e":"orderCancelled","f":"GTC","i":"114575904705282048","o":"MARKET","q":"0","r":false,"s":"SOL_USDC","t":null,"z":"0"}
+        {"B":"LastPrice","E":1748289564405220,"O":"USER","P":"178.55","S":"Ask","T":1748289564404373,"V":"RejectTaker","X":"Cancelled","Y":"80%","Z":"0","e":"orderCancelled","f":"GTC","i":"114575904705282048","o":"MARKET","q":"0","r":false,"s":"SOL_USDC","t":null,"z":"0"}
         "#;
         let order_update: OrderUpdate = serde_json::from_str(data).unwrap();
         assert_eq!(order_update.trigger_price.unwrap(), dec!(178.55));
+        assert_eq!(
+            order_update.trigger_quantity.unwrap(),
+            TriggerQuantity::Percent(dec!(80))
+        );
     }
 }
