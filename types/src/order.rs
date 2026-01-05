@@ -224,6 +224,14 @@ pub enum Side {
     Ask,
 }
 
+#[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, EnumString, PartialEq, Eq, Hash)]
+#[strum(serialize_all = "PascalCase")]
+#[serde(rename_all = "PascalCase")]
+pub enum SlippageToleranceType {
+    TickSize,
+    Percent,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ExecuteOrderPayload {
@@ -272,6 +280,12 @@ pub struct ExecuteOrderPayload {
     pub trigger_price: Option<Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub trigger_quantity: Option<TriggerQuantity>,
+    /// Slippage tolerance allowed for the order.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub slippage_tolerance: Option<Decimal>,
+    /// Slippage tolerance type.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub slippage_tolerance_type: Option<SlippageToleranceType>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
