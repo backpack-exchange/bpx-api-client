@@ -39,3 +39,7 @@ path = "src/bin/orders.rs"
 [[bin]]
 name = "rfq"
 path = "src/bin/rfq.rs"
+
+[[bin]]
+name = "user"
+path = "src/bin/user.rs"

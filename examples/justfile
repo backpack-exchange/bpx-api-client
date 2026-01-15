@@ -18,3 +18,7 @@ markets:
 #  Run the example to retrieve depth
 depth symbol="SOL_USDC_PERP" limit="5":
     cargo -q run --bin depth -- --symbol {{symbol}} --limit {{limit}}
+
+#  Run the example to retrieve user information and permissions
+user:
+    cargo -q run --bin user
