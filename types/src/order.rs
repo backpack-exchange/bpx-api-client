@@ -224,6 +224,14 @@ pub enum Side {
     Ask,
 }
 
+#[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, EnumString, PartialEq, Eq, Hash)]
+#[strum(serialize_all = "PascalCase")]
+#[serde(rename_all = "PascalCase")]
+pub enum SlippageToleranceType {
+    TickSize,
+    Percent,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ExecuteOrderPayload {
@@ -272,6 +280,12 @@ pub struct ExecuteOrderPayload {
     pub trigger_price: Option<Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub trigger_quantity: Option<TriggerQuantity>,
+    /// Slippage tolerance allowed for the order.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub slippage_tolerance: Option<Decimal>,
+    /// Slippage tolerance type.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub slippage_tolerance_type: Option<SlippageToleranceType>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -371,7 +385,7 @@ pub struct OrderUpdate {
 
     /// Trigger quantity
     #[serde(rename = "Y")]
-    pub trigger_quantity: Option<Decimal>,
+    pub trigger_quantity: Option<TriggerQuantity>,
 
     /// Order State
     #[serde(rename = "X")]
@@ -492,7 +506,10 @@ mod tests {
         let order_update: OrderUpdate = serde_json::from_str(data).unwrap();
         assert_eq!(order_update.price.unwrap(), dec!(178.15));
         assert_eq!(order_update.trigger_price.unwrap(), dec!(178.05));
-        assert_eq!(order_update.trigger_quantity.unwrap(), dec!(20.03));
+        assert_eq!(
+            order_update.trigger_quantity.unwrap(),
+            TriggerQuantity::Amount(dec!(20.03))
+        );
         assert_eq!(order_update.quantity_in_quote.unwrap(), dec!(0));
 
         let data = r#"
@@ -506,9 +523,13 @@ mod tests {
         assert_eq!(order_update.quantity, dec!(20.03));
 
         let data = r#"
-        {"B":"LastPrice","E":1748289564405220,"O":"USER","P":"178.55","S":"Ask","T":1748289564404373,"V":"RejectTaker","X":"Cancelled","Y":"1","Z":"0","e":"orderCancelled","f":"GTC","i":"114575904705282048","o":"MARKET","q":"0","r":false,"s":"SOL_USDC","t":null,"z":"0"}
+        {"B":"LastPrice","E":1748289564405220,"O":"USER","P":"178.55","S":"Ask","T":1748289564404373,"V":"RejectTaker","X":"Cancelled","Y":"80%","Z":"0","e":"orderCancelled","f":"GTC","i":"114575904705282048","o":"MARKET","q":"0","r":false,"s":"SOL_USDC","t":null,"z":"0"}
         "#;
         let order_update: OrderUpdate = serde_json::from_str(data).unwrap();
         assert_eq!(order_update.trigger_price.unwrap(), dec!(178.55));
+        assert_eq!(
+            order_update.trigger_quantity.unwrap(),
+            TriggerQuantity::Percent(dec!(80))
+        );
     }
 }
