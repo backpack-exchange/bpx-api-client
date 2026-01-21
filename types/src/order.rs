@@ -448,6 +448,23 @@ pub struct OrderUpdate {
     pub related_order_id: Option<u64>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OrderError {
+    code: String,
+    message: String,
+    operation: String,
+}
+
+/// An item in the response for a batch order execution
+/// which can be either a successful order or an error.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+#[allow(clippy::large_enum_variant)]
+pub enum BatchOrderResponse {
+    Order(Order),
+    Error(OrderError),
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

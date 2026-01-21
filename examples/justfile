@@ -2,6 +2,10 @@
 default:
     @just --list --unsorted
 
+#  Run the example placing two limit orders (one post only and one regular)
+execute_orders symbol="SOL_USDC_PERP" price="100.0" quantity="0.1" side="Bid":
+    cargo -q run --bin place_orders -- --symbol {{symbol}} --price {{price}} --quantity {{quantity}} --side {{side}}
+
 #  Run the example retrieving all the open orders
 orders:
     cargo -q run --bin orders
