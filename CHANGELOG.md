@@ -1,3 +1,8 @@
+## [0.16.0] - 2026-01-21
+
+### 🐛 Bug Fixes
+
+- Fix incorrect type on trigger_quantity field on OrderUpdate struct ([#93](https://github.com/backpack-exchange/bpx-api-client/issues/93))
 ## [0.15.1] - 2025-12-15
 
 ### 🐛 Bug Fixes
