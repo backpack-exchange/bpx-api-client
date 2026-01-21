@@ -450,9 +450,9 @@ pub struct OrderUpdate {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OrderError {
-    code: String,
-    message: String,
-    operation: String,
+    pub code: String,
+    pub message: String,
+    pub operation: String,
 }
 
 /// An item in the response for a batch order execution
