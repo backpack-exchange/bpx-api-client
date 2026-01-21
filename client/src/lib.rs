@@ -52,6 +52,7 @@ use routes::{
 use serde::Serialize;
 use serde_json::Value;
 use std::{
+    borrow::Cow,
     collections::BTreeMap,
     time::{SystemTime, UNIX_EPOCH},
 };
@@ -275,11 +276,15 @@ impl BpxClient {
             return Err(Error::NotAuthenticated);
         };
 
+        let query_params = url
+            .query_pairs()
+            .collect::<BTreeMap<Cow<'_, str>, Cow<'_, str>>>();
+
         let mut signee = if let Some(payload) = payload {
             let value = serde_json::to_value(payload)?;
-            build_signee(instruction, value)?
+            build_signee_query_and_payload(instruction, value, &query_params)?
         } else {
-            format!("instruction={instruction}")
+            build_signee_query(instruction, &query_params)
         };
 
         let timestamp = now_millis();
@@ -308,14 +313,18 @@ impl BpxClient {
     }
 }
 
-fn build_signee(instruction: &str, payload: serde_json::Value) -> Result<String> {
+fn build_signee_query_and_payload(
+    instruction: &str,
+    payload: serde_json::Value,
+    query_params: &BTreeMap<Cow<'_, str>, Cow<'_, str>>,
+) -> Result<String> {
     match payload {
         Value::Object(map) => {
             let body_params = map
                 .into_iter()
                 .map(|(k, v)| (k, v.to_string()))
                 .collect::<BTreeMap<_, _>>();
-            let mut signee = format!("instruction={instruction}");
+            let mut signee = build_signee_query(instruction, query_params);
             for (k, v) in body_params {
                 let v = v.trim_start_matches('"').trim_end_matches('"');
                 signee.push_str(&format!("&{k}={v}"));
@@ -324,13 +333,24 @@ fn build_signee(instruction: &str, payload: serde_json::Value) -> Result<String>
         }
         Value::Array(array) => array
             .into_iter()
-            .map(|item| build_signee(instruction, item))
+            .map(|item| build_signee_query_and_payload(instruction, item, query_params))
             .collect::<Result<Vec<_>>>()
             .map(|parts| parts.join("&")),
         _ => Err(Error::InvalidRequest(
             "payload must be a JSON object".into(),
         )),
     }
+}
+
+fn build_signee_query(
+    instruction: &str,
+    query_params: &BTreeMap<Cow<'_, str>, Cow<'_, str>>,
+) -> String {
+    let mut signee = format!("instruction={instruction}");
+    for (k, v) in query_params {
+        signee.push_str(&format!("&{k}={v}"));
+    }
+    signee
 }
 
 #[derive(Debug, Default)]
