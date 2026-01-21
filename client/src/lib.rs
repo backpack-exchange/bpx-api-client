@@ -52,7 +52,6 @@ use routes::{
 use serde::Serialize;
 use serde_json::Value;
 use std::{
-    borrow::Cow,
     collections::BTreeMap,
     time::{SystemTime, UNIX_EPOCH},
 };
@@ -245,6 +244,7 @@ impl BpxClient {
             API_ORDER if method == Method::POST => "orderExecute",
             API_ORDER if method == Method::DELETE => "orderCancel",
             API_ORDERS if method == Method::GET => "orderQueryAll",
+            API_ORDERS if method == Method::POST => "orderExecute",
             API_ORDERS if method == Method::DELETE => "orderCancelAll",
             API_RFQ if method == Method::POST => "rfqSubmit",
             API_RFQ_QUOTE if method == Method::POST => "quoteSubmit",
@@ -275,35 +275,14 @@ impl BpxClient {
             return Err(Error::NotAuthenticated);
         };
 
-        let query_params = url
-            .query_pairs()
-            .collect::<BTreeMap<Cow<'_, str>, Cow<'_, str>>>();
-        let body_params = if let Some(payload) = payload {
-            let s = serde_json::to_value(payload)?;
-            match s {
-                Value::Object(map) => map
-                    .into_iter()
-                    .map(|(k, v)| (k, v.to_string()))
-                    .collect::<BTreeMap<_, _>>(),
-                _ => {
-                    return Err(Error::InvalidRequest(
-                        "payload must be a JSON object".into(),
-                    ));
-                }
-            }
+        let mut signee = if let Some(payload) = payload {
+            let value = serde_json::to_value(payload)?;
+            build_signee(instruction, value)?
         } else {
-            BTreeMap::new()
+            format!("instruction={instruction}")
         };
 
         let timestamp = now_millis();
-        let mut signee = format!("instruction={instruction}");
-        for (k, v) in query_params {
-            signee.push_str(&format!("&{k}={v}"));
-        }
-        for (k, v) in body_params {
-            let v = v.trim_start_matches('"').trim_end_matches('"');
-            signee.push_str(&format!("&{k}={v}"));
-        }
         signee.push_str(&format!("&timestamp={timestamp}&window={DEFAULT_WINDOW}"));
         tracing::debug!("signee: {}", signee);
 
@@ -326,6 +305,31 @@ impl BpxClient {
                 .insert(CONTENT_TYPE, JSON_CONTENT.parse()?);
         }
         Ok(req)
+    }
+}
+
+fn build_signee(instruction: &str, payload: serde_json::Value) -> Result<String> {
+    match payload {
+        Value::Object(map) => {
+            let body_params = map
+                .into_iter()
+                .map(|(k, v)| (k, v.to_string()))
+                .collect::<BTreeMap<_, _>>();
+            let mut signee = format!("instruction={instruction}");
+            for (k, v) in body_params {
+                let v = v.trim_start_matches('"').trim_end_matches('"');
+                signee.push_str(&format!("&{k}={v}"));
+            }
+            Ok(signee)
+        }
+        Value::Array(array) => array
+            .into_iter()
+            .map(|item| build_signee(instruction, item))
+            .collect::<Result<Vec<_>>>()
+            .map(|parts| parts.join("&")),
+        _ => Err(Error::InvalidRequest(
+            "payload must be a JSON object".into(),
+        )),
     }
 }
 
