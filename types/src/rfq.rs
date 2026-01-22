@@ -358,3 +358,39 @@ impl QuotePayload {
         self
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn rfq_active_without_system_order_type() {
+        let data = r#"{"e":"rfqActive","E":1234567890,"R":123,"s":"BTC_USDC","q":"1.5","w":1234567890,"W":1234567899,"X":"New","T":1234567890}"#;
+        let update: RequestForQuoteUpdate = serde_json::from_str(data).unwrap();
+        match update {
+            RequestForQuoteUpdate::RfqActive {
+                system_order_type, ..
+            } => {
+                assert!(system_order_type.is_none());
+            }
+            _ => panic!("Expected RfqActive"),
+        }
+    }
+
+    #[test]
+    fn rfq_active_with_system_order_type() {
+        let data = r#"{"e":"rfqActive","E":1234567890,"R":123,"s":"BTC_USDC","q":"1.5","w":1234567890,"W":1234567899,"X":"New","T":1234567890,"o":"CollateralConversion"}"#;
+        let update: RequestForQuoteUpdate = serde_json::from_str(data).unwrap();
+        match update {
+            RequestForQuoteUpdate::RfqActive {
+                system_order_type, ..
+            } => {
+                assert_eq!(
+                    system_order_type,
+                    Some(SystemOrderType::CollateralConversion)
+                );
+            }
+            _ => panic!("Expected RfqActive"),
+        }
+    }
+}
