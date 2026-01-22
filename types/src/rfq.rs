@@ -106,6 +106,8 @@ pub enum RequestForQuoteUpdate {
         order_status: OrderStatus,
         #[serde(rename = "T")]
         timestamp: i64,
+        #[serde(rename = "o", default)]
+        system_order_type: Option<SystemOrderType>,
     },
     RfqRefreshed {
         #[serde(rename = "E")]
@@ -130,6 +132,8 @@ pub enum RequestForQuoteUpdate {
         order_status: OrderStatus,
         #[serde(rename = "T")]
         timestamp: i64,
+        #[serde(rename = "o", default)]
+        system_order_type: Option<SystemOrderType>,
     },
     RfqAccepted {
         #[serde(rename = "E")]
@@ -154,6 +158,8 @@ pub enum RequestForQuoteUpdate {
         order_status: OrderStatus,
         #[serde(rename = "T")]
         timestamp: i64,
+        #[serde(rename = "o", default)]
+        system_order_type: Option<SystemOrderType>,
     },
     RfqCancelled {
         #[serde(rename = "E")]
@@ -178,6 +184,8 @@ pub enum RequestForQuoteUpdate {
         order_status: OrderStatus,
         #[serde(rename = "T")]
         timestamp: i64,
+        #[serde(rename = "o", default)]
+        system_order_type: Option<SystemOrderType>,
     },
     QuoteAccepted {
         #[serde(rename = "E")]
@@ -262,6 +270,8 @@ pub enum RequestForQuoteUpdate {
         order_status: OrderStatus,
         #[serde(rename = "T")]
         timestamp: i64,
+        #[serde(rename = "o", default)]
+        system_order_type: Option<SystemOrderType>,
     },
 }
 
