@@ -2,7 +2,7 @@ use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
 
-use crate::order::{OrderStatus, Side};
+use crate::order::{OrderStatus, Side, SystemOrderType};
 
 #[derive(
     Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash,
@@ -305,6 +305,8 @@ pub struct RequestForQuote {
     pub status: OrderStatus,
     pub execution_mode: RfqExecutionMode,
     pub created_at: i64,
+    #[serde(default)]
+    pub system_order_type: Option<SystemOrderType>,
 }
 
 impl QuotePayload {

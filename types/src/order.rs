@@ -218,6 +218,21 @@ pub enum OrderStatus {
 )]
 #[strum(serialize_all = "PascalCase")]
 #[serde(rename_all = "PascalCase")]
+pub enum SystemOrderType {
+    #[default]
+    LiquidatePositionOnBook,
+    LiquidatePositionOnBackstop,
+    LiquidatePositionOnAdl,
+    CollateralConversion,
+    FutureExpiry,
+    OrderBookClosed,
+}
+
+#[derive(
+    Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash,
+)]
+#[strum(serialize_all = "PascalCase")]
+#[serde(rename_all = "PascalCase")]
 pub enum Side {
     #[default]
     Bid,
