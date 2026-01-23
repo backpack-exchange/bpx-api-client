@@ -8,7 +8,7 @@ keywords = ["backpack", "exchange"]
 license = "Apache-2.0"
 publish = false
 repository = "https://github.com/backpack-exchange/bpx-api-client"
-version = "0.17.0"
+version = "0.17.1"
 
 [workspace.dependencies]
 anyhow = "1"

@@ -1,3 +1,8 @@
+## [0.17.1] - 2026-01-23
+
+### 🚀 Features
+
+- Parse system order type on RFQs ([#97](https://github.com/backpack-exchange/bpx-api-client/issues/97))
 ## [0.16.0] - 2026-01-21
 
 ### 🐛 Bug Fixes
