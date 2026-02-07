@@ -10,8 +10,8 @@ publish.workspace = true
 
 [dependencies]
 anyhow = { workspace = true }
-bpx-api-client = { path = "../client", version = "0.17.2", features = ["ws"] }
-bpx-api-types = { path = "../types", version = "0.17.2" }
+bpx-api-client = { path = "../client", version = "0.17.3", features = ["ws"] }
+bpx-api-types = { path = "../types", version = "0.17.3" }
 clap = { workspace = true, features = ["derive"] }
 dotenv = { workspace = true }
 rust_decimal = { workspace = true, features = ["serde"] }
