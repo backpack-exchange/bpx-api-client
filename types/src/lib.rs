@@ -65,4 +65,5 @@ pub enum Blockchain {
     ZeroG,
     Eclipse,
     Monad,
+    Stable,
 }
