@@ -68,7 +68,7 @@ mod tests {
         #[tokio::test]
         async fn test_get_markets() -> Result<()> {
             let client = BpxClient::builder().build().unwrap();
-            let markets = client.get_markets(Some(vec!["SPOT"])).await?;
+            let markets = client.get_markets().await?;
 
             // Should return at least some markets
             assert!(!markets.is_empty());
@@ -113,7 +113,7 @@ mod tests {
         #[tokio::test]
         async fn test_get_order_book_depth() -> Result<()> {
             let client = BpxClient::builder().build().unwrap();
-            let _depth = client.get_order_book_depth(BTC_USDC).await?;
+            let _depth = client.get_order_book_depth(BTC_USDC, None).await?;
 
             Ok(())
         }
