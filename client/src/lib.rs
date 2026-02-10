@@ -48,6 +48,7 @@ use routes::{
     order::{API_ORDER, API_ORDERS},
     rfq::{API_RFQ, API_RFQ_QUOTE},
     user::API_USER_2FA,
+    vault::API_VAULT_PENDING_REDEEMS,
 };
 use serde::Serialize;
 use serde_json::Value;
@@ -262,6 +263,7 @@ impl BpxClient {
             API_ACCOUNT if method == Method::PATCH => "accountUpdate",
             API_ACCOUNT_CONVERT_DUST if method == Method::POST => "convertDust",
             API_FILLS_HISTORY if method == Method::GET => "fillHistoryQueryAll",
+            API_VAULT_PENDING_REDEEMS if method == Method::GET => "vaultPendingRedeemsQuery",
             _ => {
                 let req = self.client().request(method, url);
                 if let Some(payload) = payload {
