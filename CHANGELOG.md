@@ -1,3 +1,8 @@
+## [0.17.4] - 2026-02-10
+
+### 🚀 Features
+
+- Vault pending redeems query ([#100](https://github.com/backpack-exchange/bpx-api-client/issues/100))
 ## [0.17.1] - 2026-01-23
 
 ### 🚀 Features
