@@ -18,6 +18,7 @@ pub mod order;
 pub mod rfq;
 pub mod trade;
 pub mod user;
+pub mod vault;
 
 #[derive(
     Debug,
