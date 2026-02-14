@@ -60,6 +60,7 @@ pub enum Blockchain {
     Optimism,
     Aptos,
     Sei,
+    Stable,
     Tron,
     #[strum(serialize = "0G")]
     #[serde(rename = "0G")]
