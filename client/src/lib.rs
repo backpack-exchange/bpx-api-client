@@ -219,6 +219,10 @@ impl BpxClient {
     pub const fn client(&self) -> &reqwest::Client {
         &self.client
     }
+
+    pub fn base_url(&self) -> &Url {
+        &self.base_url
+    }
 }
 
 // Private functions.
