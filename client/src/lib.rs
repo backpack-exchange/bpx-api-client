@@ -277,9 +277,23 @@ impl BpxClient {
             }
         };
 
-        let Some(signing_key) = &self.signing_key else {
-            return Err(Error::NotAuthenticated);
-        };
+        self.build_signed_request(url, method, instruction, payload)
+    }
+
+    /// Builds an authenticated request with signing headers.
+    ///
+    /// Use this to create signed requests for custom endpoints. The `instruction`
+    /// must match the Backpack API's expected instruction string for the endpoint.
+    pub fn build_signed_request<P: Serialize, U: IntoUrl>(
+        &self,
+        url: U,
+        method: Method,
+        instruction: &str,
+        payload: Option<&P>,
+    ) -> Result<Request> {
+        let url = url.into_url()?;
+
+        let signing_key = self.signing_key.as_ref().ok_or(Error::NotAuthenticated)?;
 
         let query_params = url
             .query_pairs()
