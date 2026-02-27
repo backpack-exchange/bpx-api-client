@@ -181,31 +181,32 @@ impl BpxClient {
     pub async fn get<U: IntoUrl>(&self, url: U) -> Result<Response> {
         let req = self.build_and_maybe_sign_request::<(), _>(url, Method::GET, None)?;
         tracing::debug!(?req, "GET request");
-        let res = self.client.execute(req).await?;
-        Self::process_response(res).await
+        self.execute(req).await
     }
 
     /// Sends a POST request with a JSON payload to the specified URL and signs it.
     pub async fn post<P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<Response> {
         let req = self.build_and_maybe_sign_request(url, Method::POST, Some(&payload))?;
         tracing::debug!(?req, "POST request");
-        let res = self.client.execute(req).await?;
-        Self::process_response(res).await
+        self.execute(req).await
     }
 
     /// Sends a DELETE request with a JSON payload to the specified URL and signs it.
     pub async fn delete<P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<Response> {
         let req = self.build_and_maybe_sign_request(url, Method::DELETE, Some(&payload))?;
         tracing::debug!(?req, "DELETE request");
-        let res = self.client.execute(req).await?;
-        Self::process_response(res).await
+        self.execute(req).await
     }
 
     /// Sends a PATCH request with a JSON payload to the specified URL and signs it.
     pub async fn patch<P: Serialize, U: IntoUrl>(&self, url: U, payload: P) -> Result<Response> {
         let req = self.build_and_maybe_sign_request(url, Method::PATCH, Some(&payload))?;
         tracing::debug!(?req, "PATCH request");
-        let res = self.client.execute(req).await?;
+        self.execute(req).await
+    }
+
+    pub async fn execute(&self, request: Request) -> Result<Response> {
+        let res = self.client.execute(request).await?;
         Self::process_response(res).await
     }
 
