@@ -55,6 +55,28 @@ pub struct VaultRedeemRequest {
     pub vault_token_quantity: Option<Decimal>,
 }
 
+/// Vault mint event from history.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VaultMint {
+    /// Unique identifier for the mint event.
+    pub id: String,
+    /// Vault ID.
+    pub vault_id: u32,
+    /// The vault token asset.
+    pub vault_token: String,
+    /// The symbol used for minting.
+    pub symbol: String,
+    /// Amount deposited.
+    pub quantity: Decimal,
+    /// Number of vault tokens received.
+    pub vault_tokens_minted: Decimal,
+    /// NAV at time of mint.
+    pub nav: Decimal,
+    /// Timestamp of the mint in milliseconds.
+    pub timestamp: i64,
+}
+
 /// Request payload for canceling a vault redeem request.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -102,6 +124,42 @@ pub struct VaultHistoryParams {
     /// Optional vault ID to filter by.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub vault_id: Option<u32>,
+}
+
+/// Parameters for fetching vault mint history.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VaultMintHistoryParams {
+    /// Filter for a subaccount.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub subaccount_id: Option<i32>,
+    /// Filter to a specific vault.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub vault_id: Option<u32>,
+    /// Maximum number to return. Default 100, maximum 1000.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub limit: Option<u64>,
+    /// Offset. Default 0.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub offset: Option<u64>,
+}
+
+/// Parameters for fetching vault redeem history.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VaultRedeemHistoryParams {
+    /// Filter for a subaccount.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub subaccount_id: Option<i32>,
+    /// Filter to a specific vault.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub vault_id: Option<u32>,
+    /// Maximum number to return. Default 100, maximum 1000.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub limit: Option<u64>,
+    /// Offset. Default 0.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub offset: Option<u64>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

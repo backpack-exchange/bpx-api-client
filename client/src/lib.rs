@@ -48,7 +48,10 @@ use routes::{
     order::{API_ORDER, API_ORDERS},
     rfq::{API_RFQ, API_RFQ_QUOTE},
     user::API_USER_2FA,
-    vault::{API_VAULT_MINT, API_VAULT_PENDING_REDEEMS, API_VAULT_REDEEM},
+    vault::{
+        API_VAULT_MINT, API_VAULT_MINTS_HISTORY, API_VAULT_PENDING_REDEEMS, API_VAULT_REDEEM,
+        API_VAULT_REDEEMS_HISTORY,
+    },
 };
 use serde::Serialize;
 use serde_json::Value;
@@ -272,6 +275,8 @@ impl BpxClient {
             API_VAULT_MINT if method == Method::POST => "vaultMint",
             API_VAULT_REDEEM if method == Method::POST => "vaultRedeemRequest",
             API_VAULT_REDEEM if method == Method::DELETE => "vaultRedeemCancel",
+            API_VAULT_MINTS_HISTORY if method == Method::GET => "vaultMintHistoryQueryAll",
+            API_VAULT_REDEEMS_HISTORY if method == Method::GET => "vaultRedeemHistoryQueryAll",
             _ => {
                 let req = self.client().request(method, url);
                 if let Some(payload) = payload {
