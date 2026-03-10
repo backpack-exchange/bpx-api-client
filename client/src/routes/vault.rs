@@ -14,8 +14,6 @@ pub const API_VAULT_MINT: &str = "/api/v1/vault/mint";
 #[doc(hidden)]
 pub const API_VAULT_REDEEM: &str = "/api/v1/vault/redeem";
 #[doc(hidden)]
-pub const API_VAULT_PENDING_REDEEMS: &str = "/api/v1/vault/redeems/pending";
-#[doc(hidden)]
 pub const API_VAULTS_HISTORY: &str = "/api/v1/vaults/history";
 #[doc(hidden)]
 pub const API_VAULT_MINTS_HISTORY: &str = "/wapi/v1/history/vault/mint";
@@ -52,15 +50,6 @@ impl BpxClient {
         let res = self.delete(url, request).await?;
         let _ = res.bytes().await?;
         Ok(())
-    }
-
-    /// Fetches pending redeem requests for a vault.
-    pub async fn get_vault_pending_redeems(&self, vault_id: u32) -> Result<Vec<VaultRedeem>> {
-        let mut url = self.base_url.join(API_VAULT_PENDING_REDEEMS)?;
-        url.query_pairs_mut()
-            .append_pair("vaultId", &vault_id.to_string());
-        let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
     }
 
     /// Fetches historical vault data (NAV, equity, circulating supply).
