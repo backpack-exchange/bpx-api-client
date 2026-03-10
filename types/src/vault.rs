@@ -24,6 +24,8 @@ pub struct Vault {
     pub redeem_delay_ms: i64,
     /// Step size for vault token quantities.
     pub token_step_size: Decimal,
+    /// Remaining vault tokens available to mint.
+    pub remaining_mint_quantity: Decimal,
 }
 
 /// Request payload for minting vault tokens.
