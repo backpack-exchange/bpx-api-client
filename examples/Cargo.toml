@@ -10,11 +10,12 @@ publish.workspace = true
 
 [dependencies]
 anyhow = { workspace = true }
-bpx-api-client = { path = "../client", version = "0.17.4", features = ["ws"] }
-bpx-api-types = { path = "../types", version = "0.17.4" }
+bpx-api-client = { path = "../client", version = "0.20.0", features = ["ws"] }
+bpx-api-types = { path = "../types", version = "0.20.0" }
 clap = { workspace = true, features = ["derive"] }
 dotenv = { workspace = true }
 rust_decimal = { workspace = true, features = ["serde"] }
+rust_decimal_macros = { workspace = true }
 serde_json = { workspace = true }
 tokio = { workspace = true }
 tokio-tungstenite = { workspace = true }
@@ -40,3 +41,11 @@ path = "src/bin/orders.rs"
 [[bin]]
 name = "rfq"
 path = "src/bin/rfq.rs"
+
+[[bin]]
+name = "vault"
+path = "src/bin/vault.rs"
+
+[[bin]]
+name = "vault_operations"
+path = "src/bin/vault_operations.rs"

@@ -1,3 +1,14 @@
+## [0.18.0] - 2026-03-02
+
+### 🚀 Features
+
+- Add support for current vault endpoints
+- Add public method base_url to BpxClient
+- Add public method execute to BpxClient
+
+### 🚜 Refactor
+
+- Expose public method build_signed_request
 ## [0.17.4] - 2026-02-10
 
 ### 🚀 Features
