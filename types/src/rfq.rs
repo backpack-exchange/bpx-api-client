@@ -187,6 +187,33 @@ pub enum RequestForQuoteUpdate {
         #[serde(rename = "o", default)]
         system_order_type: Option<SystemOrderType>,
     },
+    /// Sent to the quoter whose quote has been binding-accepted in the deferred-settlement
+    /// RFQ flow. Serialised as `"rfqAcceptedBinding"` by the exchange.
+    RfqAcceptedBinding {
+        #[serde(rename = "E")]
+        event_time: i64,
+        #[serde(rename = "R")]
+        rfq_id: u64,
+        #[serde(rename = "u")]
+        quote_id: u64,
+        #[serde(rename = "C", skip_serializing_if = "Option::is_none")]
+        client_id: Option<u32>,
+        #[serde(rename = "s")]
+        symbol: String,
+        /// Side of the taker.
+        #[serde(rename = "S", skip_serializing_if = "Option::is_none")]
+        side: Option<Side>,
+        #[serde(rename = "q", skip_serializing_if = "Option::is_none")]
+        quantity: Option<Decimal>,
+        #[serde(rename = "Q", skip_serializing_if = "Option::is_none")]
+        quote_quantity: Option<Decimal>,
+        #[serde(rename = "p", skip_serializing_if = "Option::is_none")]
+        price: Option<Decimal>,
+        #[serde(rename = "X")]
+        order_status: OrderStatus,
+        #[serde(rename = "T")]
+        timestamp: i64,
+    },
     RfqFillPending {
         #[serde(rename = "E")]
         event_time: i64,
