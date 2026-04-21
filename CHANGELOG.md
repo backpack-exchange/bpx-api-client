@@ -1,3 +1,15 @@
+## [0.20.1] - 2026-04-14
+
+### 🚀 Features
+
+- Add remaining_mint_quantity to Vault struct
+- Added get_vault_mints and get_vault_redeems
+- Add the option to set a timeout in the BpxClientBuilder ([#92](https://github.com/backpack-exchange/bpx-api-client/issues/92))
+- Add security endpoints ([#105](https://github.com/backpack-exchange/bpx-api-client/issues/105))
+
+### 🚜 Refactor
+
+- Remove get_vault_pending_redeems which is admin-only
 ## [0.18.0] - 2026-03-02
 
 ### 🚀 Features
