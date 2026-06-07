@@ -404,16 +404,26 @@ pub struct MarkPriceUpdate {
 pub struct Security {
     /// Asset symbol.
     pub asset: String,
-    /// Name.
-    pub name: String,
-    /// Minimum order quantity.
-    pub min_quantity: Decimal,
-    /// Maximum order quantity.
-    pub max_quantity: Option<Decimal>,
-    /// Minimum quantity increment.
-    pub step_size: Decimal,
     /// CUSIP identifier for the security.
     pub cusip: Option<String>,
+    /// Name.
+    pub name: String,
+    /// Trading sessions, each with their own quantity limits.
+    pub sessions: Vec<SecuritySession>,
+}
+
+/// Trading session limits for a [`Security`].
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SecuritySession {
+    /// Session name (e.g. `US_EQUITIES_REGULAR`).
+    pub name: String,
+    /// Minimum order quantity for this session.
+    pub min_quantity: Decimal,
+    /// Maximum order quantity for this session.
+    pub max_quantity: Option<Decimal>,
+    /// Minimum quantity increment for this session.
+    pub step_size: Decimal,
 }
 
 impl TryFrom<u32> for OrderBookDepthLimit {
