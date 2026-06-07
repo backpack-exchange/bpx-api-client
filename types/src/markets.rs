@@ -398,6 +398,24 @@ pub struct MarkPriceUpdate {
     pub engine_timestamp: i64,
 }
 
+/// A tradable equity security.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Security {
+    /// Asset symbol.
+    pub asset: String,
+    /// Name.
+    pub name: String,
+    /// Minimum order quantity.
+    pub min_quantity: Decimal,
+    /// Maximum order quantity.
+    pub max_quantity: Option<Decimal>,
+    /// Minimum quantity increment.
+    pub step_size: Decimal,
+    /// CUSIP identifier for the security.
+    pub cusip: Option<String>,
+}
+
 impl TryFrom<u32> for OrderBookDepthLimit {
     type Error = &'static str;
 
