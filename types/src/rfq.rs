@@ -187,8 +187,7 @@ pub enum RequestForQuoteUpdate {
         #[serde(rename = "o", default)]
         system_order_type: Option<SystemOrderType>,
     },
-    /// Sent to the quoter whose quote has been binding-accepted in the deferred-settlement
-    /// RFQ flow. Serialised as `"rfqAcceptedBinding"` by the exchange.
+    // Sent to quoters. Deferred settlement RFQs only.
     RfqAcceptedBinding {
         #[serde(rename = "E")]
         event_time: i64,
