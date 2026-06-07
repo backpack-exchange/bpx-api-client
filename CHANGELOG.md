@@ -1,3 +1,8 @@
+## [0.20.3] - 2026-06-07
+
+### 🐛 Bug Fixes
+
+- Updates to the securities endpoint ([#106](https://github.com/backpack-exchange/bpx-api-client/issues/106))
 ## [0.20.1] - 2026-04-21
 
 ### 🚀 Features
