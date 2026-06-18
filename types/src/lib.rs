@@ -34,8 +34,6 @@ pub mod vault;
     Hash,
     EnumIter,
 )]
-#[strum(serialize_all = "PascalCase")]
-#[serde(rename_all = "PascalCase")]
 pub enum Blockchain {
     #[default]
     Solana,
