@@ -1,3 +1,13 @@
+## [0.20.4] - 2026-06-18
+
+### 🚀 Features
+
+- Add dependabot ([#91](https://github.com/backpack-exchange/bpx-api-client/issues/91))
+
+### ⚙️ Miscellaneous Tasks
+
+- *(types)* Remove serde and strum rename attributes for blockchain ([#107](https://github.com/backpack-exchange/bpx-api-client/issues/107))
+- Bump reqwest, tokio-tungstenite, serde_qs and strum versions ([#104](https://github.com/backpack-exchange/bpx-api-client/issues/104))
 ## [0.20.3] - 2026-06-07
 
 ### 🐛 Bug Fixes
