@@ -44,6 +44,8 @@ pub enum DepositSource {
     Ethereum,
     Bitcoin,
     Nuvei,
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, EnumString, PartialEq, Eq, Hash)]
@@ -52,6 +54,8 @@ pub enum DepositSource {
 pub enum DepositStatus {
     Pending,
     Confirmed,
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -106,6 +110,8 @@ pub enum WithdrawalStatus {
     Confirmed,
     Verifying,
     Void,
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
