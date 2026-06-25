@@ -85,6 +85,10 @@ pub struct Market {
     pub market_type: String,
     /// See [`MarketFilters`].
     pub filters: MarketFilters,
+    /// Current state of the market's order book.
+    pub order_book_state: OrderBookState,
+    /// Whether the market is currently listed/visible on the exchange.
+    pub visible: bool,
 }
 
 impl Market {
@@ -101,6 +105,40 @@ impl Market {
     pub const fn quantity_decimal_places(&self) -> u32 {
         self.filters.quantity.step_size.scale()
     }
+}
+
+/// The state of a market's order book.
+///
+/// New states may be added by the exchange in the future; unrecognized values
+/// deserialize to [`OrderBookState::Unknown`].
+#[derive(
+    Debug,
+    strum::Display,
+    Clone,
+    Copy,
+    serde::Serialize,
+    serde::Deserialize,
+    strum::EnumString,
+    PartialEq,
+    Eq,
+    Hash,
+)]
+#[strum(serialize_all = "PascalCase")]
+#[serde(rename_all = "PascalCase")]
+pub enum OrderBookState {
+    /// Normal operation: accepting and matching orders.
+    Open,
+    /// Not accepting any orders.
+    Closed,
+    /// Only cancellation of existing orders; no execution.
+    CancelOnly,
+    /// Only accepting limit orders.
+    LimitOnly,
+    /// Only accepting orders that would not immediately match.
+    PostOnly,
+    /// Any state not recognized by this client version.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -517,6 +555,8 @@ mod test {
                 },
                 leverage: None,
             },
+            order_book_state: OrderBookState::Open,
+            visible: true,
         }
     }
 
@@ -609,5 +649,32 @@ mod test {
 
         let depth: OrderBookDepth = serde_json::from_str(data).unwrap();
         assert_eq!(depth.last_update_id, 94978271);
+    }
+
+    #[test]
+    fn test_market_order_book_state_and_visible_parse() {
+        let data = r#"
+{
+  "symbol": "WEN_USDC",
+  "baseSymbol": "WEN",
+  "quoteSymbol": "USDC",
+  "marketType": "SPOT",
+  "filters": {
+    "price": { "minPrice": "0.0001", "tickSize": "0.0001" },
+    "quantity": { "minQuantity": "0.01", "stepSize": "0.01" }
+  },
+  "orderBookState": "Closed",
+  "visible": false
+}
+        "#;
+
+        let market: Market = serde_json::from_str(data).unwrap();
+        assert_eq!(market.order_book_state, OrderBookState::Closed);
+        assert!(!market.visible);
+
+        // Unrecognized states fall back to `Unknown` rather than failing the parse.
+        let unknown = data.replace("\"Closed\"", "\"SomeFutureState\"");
+        let market: Market = serde_json::from_str(&unknown).unwrap();
+        assert_eq!(market.order_book_state, OrderBookState::Unknown);
     }
 }
