@@ -1,3 +1,8 @@
+## [0.20.5] - 2026-06-29
+
+### 🚀 Features
+
+- *(types)* Expose market order book state and add unknown enum fallbacks ([#108](https://github.com/backpack-exchange/bpx-api-client/issues/108))
 ## [0.20.4] - 2026-06-18
 
 ### 🚀 Features
