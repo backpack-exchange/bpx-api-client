@@ -1,4 +1,9 @@
-## [0.20.5] - 2026-06-29
+## [0.20.6] - 2026-07-01
+
+### 🐛 Bug Fixes
+
+- *(types)* Skip None fields in FillsHistoryParams query serialization ([#109](https://github.com/backpack-exchange/bpx-api-client/issues/109))
+## [0.20.5] - 2026-06-30
 
 ### 🚀 Features
 
