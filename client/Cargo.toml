@@ -37,4 +37,11 @@ ws = ["futures-util", "tokio", "tokio-tungstenite"]
 integration-tests = []
 
 [dev-dependencies]
-tokio = { workspace = true, features = ["macros", "rt"] }
+base64ct = { workspace = true }
+ed25519-dalek = { workspace = true, features = ["rand_core"] }
+rand = { workspace = true }
+rust_decimal = { workspace = true }
+rust_decimal_macros = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+wiremock = { workspace = true }
