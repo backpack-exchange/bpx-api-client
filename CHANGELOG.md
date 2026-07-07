@@ -1,3 +1,8 @@
+## [0.21.0] - 2026-07-06
+
+### 🚀 Features
+
+- *(types)* Add rwaMarketType to Market ([#111](https://github.com/backpack-exchange/bpx-api-client/issues/111))
 ## [0.20.6] - 2026-07-01
 
 ### 🐛 Bug Fixes
