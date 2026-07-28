@@ -83,8 +83,17 @@ pub struct Market {
     /// The type of the market. Can be `SPOT`, `PERP`, `IPERP`, `DATED`, `PREDICTION`, `RFQ` or `MONAD`.
     /// New market types may also be added in the future.
     pub market_type: String,
+    /// The real-world-asset type backing the market, when the market is a
+    /// tokenized RWA (e.g. `STOCK` for tokenized equities such as
+    /// `SPCX.US_USDC`). `None` for regular crypto markets.
+    #[serde(default)]
+    pub rwa_market_type: Option<RwaMarketType>,
     /// See [`MarketFilters`].
     pub filters: MarketFilters,
+    /// Current state of the market's order book.
+    pub order_book_state: OrderBookState,
+    /// Whether the market is currently listed/visible on the exchange.
+    pub visible: bool,
 }
 
 impl Market {
@@ -101,6 +110,72 @@ impl Market {
     pub const fn quantity_decimal_places(&self) -> u32 {
         self.filters.quantity.step_size.scale()
     }
+}
+
+/// The state of a market's order book.
+///
+/// New states may be added by the exchange in the future; unrecognized values
+/// deserialize to [`OrderBookState::Unknown`].
+#[derive(
+    Debug,
+    strum::Display,
+    Clone,
+    Copy,
+    serde::Serialize,
+    serde::Deserialize,
+    strum::EnumString,
+    PartialEq,
+    Eq,
+    Hash,
+)]
+#[strum(serialize_all = "PascalCase")]
+#[serde(rename_all = "PascalCase")]
+pub enum OrderBookState {
+    /// Normal operation: accepting and matching orders.
+    Open,
+    /// Not accepting any orders.
+    Closed,
+    /// Only cancellation of existing orders; no execution.
+    CancelOnly,
+    /// Only accepting limit orders.
+    LimitOnly,
+    /// Only accepting orders that would not immediately match.
+    PostOnly,
+    /// Any state not recognized by this client version.
+    #[serde(other)]
+    Unknown,
+}
+
+/// The type of real-world asset backing a tokenized RWA market.
+///
+/// New types may be added by the exchange in the future; unrecognized values
+/// deserialize to [`RwaMarketType::Unknown`].
+#[derive(
+    Debug,
+    strum::Display,
+    Clone,
+    Copy,
+    serde::Serialize,
+    serde::Deserialize,
+    strum::EnumString,
+    PartialEq,
+    Eq,
+    Hash,
+)]
+#[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum RwaMarketType {
+    /// A tokenized equity.
+    Stock,
+    /// A tokenized index.
+    Index,
+    /// A tokenized commodity.
+    Commodity,
+    /// A tokenized foreign-exchange pair.
+    Fx,
+    /// Any type not recognized by this client version.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -404,16 +479,26 @@ pub struct MarkPriceUpdate {
 pub struct Security {
     /// Asset symbol.
     pub asset: String,
-    /// Name.
-    pub name: String,
-    /// Minimum order quantity.
-    pub min_quantity: Decimal,
-    /// Maximum order quantity.
-    pub max_quantity: Option<Decimal>,
-    /// Minimum quantity increment.
-    pub step_size: Decimal,
     /// CUSIP identifier for the security.
     pub cusip: Option<String>,
+    /// Name.
+    pub name: String,
+    /// Trading sessions, each with their own quantity limits.
+    pub sessions: Vec<SecuritySession>,
+}
+
+/// Trading session limits for a [`Security`].
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SecuritySession {
+    /// Session name (e.g. `US_EQUITIES_REGULAR`).
+    pub name: String,
+    /// Minimum order quantity for this session.
+    pub min_quantity: Decimal,
+    /// Maximum order quantity for this session.
+    pub max_quantity: Option<Decimal>,
+    /// Minimum quantity increment for this session.
+    pub step_size: Decimal,
 }
 
 impl TryFrom<u32> for OrderBookDepthLimit {
@@ -486,6 +571,7 @@ mod test {
             base_symbol: "TEST".to_string(),
             quote_symbol: "MARKET".to_string(),
             market_type: "SPOT".to_string(),
+            rwa_market_type: None,
             filters: super::MarketFilters {
                 price: PriceFilter {
                     min_price: dec!(0.0001),
@@ -507,6 +593,8 @@ mod test {
                 },
                 leverage: None,
             },
+            order_book_state: OrderBookState::Open,
+            visible: true,
         }
     }
 
@@ -599,5 +687,80 @@ mod test {
 
         let depth: OrderBookDepth = serde_json::from_str(data).unwrap();
         assert_eq!(depth.last_update_id, 94978271);
+    }
+
+    #[test]
+    fn test_market_order_book_state_and_visible_parse() {
+        let data = r#"
+{
+  "symbol": "WEN_USDC",
+  "baseSymbol": "WEN",
+  "quoteSymbol": "USDC",
+  "marketType": "SPOT",
+  "filters": {
+    "price": { "minPrice": "0.0001", "tickSize": "0.0001" },
+    "quantity": { "minQuantity": "0.01", "stepSize": "0.01" }
+  },
+  "orderBookState": "Closed",
+  "visible": false
+}
+        "#;
+
+        let market: Market = serde_json::from_str(data).unwrap();
+        assert_eq!(market.order_book_state, OrderBookState::Closed);
+        assert!(!market.visible);
+
+        // Unrecognized states fall back to `Unknown` rather than failing the parse.
+        let unknown = data.replace("\"Closed\"", "\"SomeFutureState\"");
+        let market: Market = serde_json::from_str(&unknown).unwrap();
+        assert_eq!(market.order_book_state, OrderBookState::Unknown);
+    }
+
+    #[test]
+    fn test_market_rwa_market_type_parse() {
+        let data = r#"
+{
+  "symbol": "SPCX.US_USDC",
+  "baseSymbol": "SPCX.US",
+  "quoteSymbol": "USDC",
+  "marketType": "SPOT",
+  "rwaMarketType": "STOCK",
+  "filters": {
+    "price": { "minPrice": "0.01", "tickSize": "0.01" },
+    "quantity": { "minQuantity": "0.01", "stepSize": "0.01" }
+  },
+  "orderBookState": "PostOnly",
+  "visible": false
+}
+        "#;
+
+        let market: Market = serde_json::from_str(data).unwrap();
+        assert_eq!(market.rwa_market_type, Some(RwaMarketType::Stock));
+
+        // The exchange's full RWA set: STOCK, INDEX, COMMODITY, FX.
+        for (wire, expected) in [
+            ("INDEX", RwaMarketType::Index),
+            ("COMMODITY", RwaMarketType::Commodity),
+            ("FX", RwaMarketType::Fx),
+        ] {
+            let payload = data.replace("STOCK", wire);
+            let market: Market = serde_json::from_str(&payload).unwrap();
+            assert_eq!(market.rwa_market_type, Some(expected));
+        }
+
+        // Explicit null parses to `None`, as the API sends for crypto markets.
+        let null = data.replace("\"STOCK\"", "null");
+        let market: Market = serde_json::from_str(&null).unwrap();
+        assert_eq!(market.rwa_market_type, None);
+
+        // An absent key parses to `None` for responses predating the field.
+        let absent = data.replace("\"rwaMarketType\": \"STOCK\",", "");
+        let market: Market = serde_json::from_str(&absent).unwrap();
+        assert_eq!(market.rwa_market_type, None);
+
+        // Unrecognized types fall back to `Unknown` rather than failing the parse.
+        let unknown = data.replace("\"STOCK\"", "\"SOME_FUTURE_RWA\"");
+        let market: Market = serde_json::from_str(&unknown).unwrap();
+        assert_eq!(market.rwa_market_type, Some(RwaMarketType::Unknown));
     }
 }

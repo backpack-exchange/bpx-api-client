@@ -26,7 +26,7 @@ pub enum FillType {
     CollateralConversionAndSpotLiquidation,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Fill {
     pub trade_id: Option<i64>,
@@ -46,24 +46,34 @@ pub struct Fill {
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct FillsHistoryParams {
     /// Filter by symbol
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub symbol: Option<String>,
     /// From timestamp in milliseconds
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub from: Option<i64>,
     /// To timestamp in milliseconds
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub to: Option<i64>,
     /// Filter by fill type
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub fill_type: Option<FillType>,
     /// Filter by market type
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub market_type: Option<String>,
     /// Filter by order ID
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub order_id: Option<String>,
     /// Filter by strategy ID
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub strategy_id: Option<String>,
     /// Maximum number of results to return
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u64>,
     /// Offset for pagination - default to 0
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub offset: Option<u64>,
     /// Sort direction
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub sort_direction: Option<SortDirection>,
 }
 
@@ -116,5 +126,44 @@ impl FillsHistoryParams {
     pub fn with_sort_direction(mut self, sort_direction: SortDirection) -> Self {
         self.sort_direction = Some(sort_direction);
         self
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn fills_history_params_omits_none_fields_in_query_string() {
+        let params = FillsHistoryParams::default()
+            .with_from(1000)
+            .with_to(2000)
+            .with_limit(1000)
+            .with_offset(0)
+            .with_sort_direction(SortDirection::Asc);
+
+        let query = serde_qs::to_string(&params).unwrap();
+
+        for segment in query.split('&') {
+            assert!(
+                segment.contains('='),
+                "bare query key emitted for unset option: {segment:?} in {query:?}"
+            );
+        }
+
+        let pairs: Vec<_> = query
+            .split('&')
+            .map(|segment| segment.split_once('=').unwrap())
+            .collect();
+        assert_eq!(
+            pairs,
+            [
+                ("from", "1000"),
+                ("to", "2000"),
+                ("limit", "1000"),
+                ("offset", "0"),
+                ("sort_direction", "Asc"),
+            ]
+        );
     }
 }
