@@ -146,4 +146,46 @@ mod tests {
             Ok(())
         }
     }
+
+    mod borrow_lend {
+        use super::*;
+        use bpx_api_types::borrow_lend::BorrowLendMarketHistoryParams;
+
+        const USDC: &str = "USDC";
+
+        #[tokio::test]
+        async fn test_get_borrow_lend_markets() -> Result<()> {
+            let client = BpxClient::builder().build().unwrap();
+            let markets = client.get_borrow_lend_markets().await?;
+
+            assert!(!markets.is_empty());
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn test_get_borrow_lend_markets_history() -> Result<()> {
+            let client = BpxClient::builder().build().unwrap();
+            let history = client
+                .get_borrow_lend_markets_history(BorrowLendMarketHistoryParams {
+                    interval: "1d".to_string(),
+                    symbol: Some(USDC.to_string()),
+                })
+                .await?;
+
+            assert!(!history.is_empty());
+
+            Ok(())
+        }
+
+        #[tokio::test]
+        async fn test_get_apy_rates() -> Result<()> {
+            let client = BpxClient::builder().build().unwrap();
+            let rates = client.get_apy_rates(None).await?;
+
+            assert!(!rates.borrow_lend.is_empty());
+
+            Ok(())
+        }
+    }
 }
