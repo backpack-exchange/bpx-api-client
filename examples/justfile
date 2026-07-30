@@ -18,6 +18,10 @@ rfq:
 markets:
     cargo -q run --bin markets
 
+#  Run the example to retrieve borrow/lend markets, history, and APY rates
+borrow-lend-markets:
+    cargo -q run --bin borrow_lend_markets
+
 
 #  Run the example to retrieve depth
 depth symbol="SOL_USDC_PERP" limit="5":
