@@ -19,7 +19,10 @@ dotenv = "0.15"
 ed25519-dalek = "3"
 futures-util = { default-features = false, version = "0.3" }
 rand = "0.10"
-reqwest = { version = "0.13.2", default-features = false, features = ["json"] }
+reqwest = { version = "0.13.2", default-features = false, features = [
+    "json",
+    "rustls",
+] }
 rust_decimal = "1"
 rust_decimal_macros = "1"
 serde = { version = "1", features = ["derive"] }
