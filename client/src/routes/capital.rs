@@ -24,7 +24,7 @@ impl BpxClient {
     pub async fn get_balances(&self) -> Result<HashMap<String, Balance>> {
         let url = self.base_url.join(API_CAPITAL)?;
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 
     /// Retrieves a list of deposits with optional pagination.
@@ -44,7 +44,7 @@ impl BpxClient {
             }
         }
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 
     /// Fetches the deposit address for a specified blockchain.
@@ -53,7 +53,7 @@ impl BpxClient {
         url.query_pairs_mut()
             .append_pair("blockchain", &blockchain.to_string());
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 
     /// Retrieves a list of withdrawals with optional pagination.
@@ -73,7 +73,7 @@ impl BpxClient {
             }
         }
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 
     /// Submits a withdrawal request for the specified payload.
@@ -83,13 +83,13 @@ impl BpxClient {
     ) -> Result<Withdrawal> {
         let endpoint = self.base_url.join(API_WITHDRAWALS)?;
         let res = self.post(endpoint, payload).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 
     /// Fetches the subaccount's collateral information.
     pub async fn get_collateral(&self) -> Result<Collateral> {
         let url = self.base_url.join(API_COLLATERAL)?;
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 }

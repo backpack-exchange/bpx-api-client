@@ -36,14 +36,14 @@ impl BpxClient {
             }
         }
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 
     /// Executes a new order with the given payload.
     pub async fn execute_order(&self, payload: ExecuteOrderPayload) -> Result<Order> {
         let endpoint = self.base_url.join(API_ORDER)?;
         let res = self.post(endpoint, payload).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 
     /// Cancels a specific order by symbol and either order ID or client ID.
@@ -61,7 +61,7 @@ impl BpxClient {
         };
 
         let res = self.delete(url, payload).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 
     /// Retrieves all open orders, optionally filtered by symbol.
@@ -71,7 +71,7 @@ impl BpxClient {
             url.query_pairs_mut().append_pair("symbol", s);
         }
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 
     /// Executes a new order with the given payload.
@@ -88,6 +88,6 @@ impl BpxClient {
     pub async fn cancel_open_orders(&self, payload: CancelOpenOrdersPayload) -> Result<Vec<Order>> {
         let url = self.base_url.join(API_ORDERS)?;
         let res = self.delete(url, payload).await?;
-        res.json().await.map_err(Into::into)
+        Self::json_with_context(res).await
     }
 }
