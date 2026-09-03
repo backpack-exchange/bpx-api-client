@@ -1,7 +1,7 @@
 use rust_decimal::Decimal;
 use serde::{Deserialize, Deserializer, Serialize};
 
-use crate::{Blockchain, margin::MarginFunction, serde_via_strum};
+use crate::{Blockchain, margin::MarginFunction};
 
 /// An asset is most of the time a crypto coin that can have multiple representations
 /// across different blockchains. For example, USDT.
@@ -132,7 +132,17 @@ impl Market {
 ///
 /// New states may be added by the exchange in the future; unrecognized values
 /// deserialize to [`OrderBookState::Unknown`].
-#[derive(Debug, strum::Display, Clone, strum::EnumString, PartialEq, Eq, Hash)]
+#[derive(
+    Debug,
+    strum::Display,
+    Clone,
+    strum::EnumString,
+    PartialEq,
+    Eq,
+    Hash,
+    serde_with::SerializeDisplay,
+    serde_with::DeserializeFromStr,
+)]
 #[strum(serialize_all = "PascalCase")]
 #[non_exhaustive]
 pub enum OrderBookState {
@@ -150,13 +160,22 @@ pub enum OrderBookState {
     #[strum(default)]
     Unknown(String),
 }
-serde_via_strum!(OrderBookState);
 
 /// The type of real-world asset backing a tokenized RWA market.
 ///
 /// New types may be added by the exchange in the future; unrecognized values
 /// deserialize to [`RwaMarketType::Unknown`].
-#[derive(Debug, strum::Display, Clone, strum::EnumString, PartialEq, Eq, Hash)]
+#[derive(
+    Debug,
+    strum::Display,
+    Clone,
+    strum::EnumString,
+    PartialEq,
+    Eq,
+    Hash,
+    serde_with::SerializeDisplay,
+    serde_with::DeserializeFromStr,
+)]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 #[non_exhaustive]
 pub enum RwaMarketType {
@@ -172,7 +191,6 @@ pub enum RwaMarketType {
     #[strum(default)]
     Unknown(String),
 }
-serde_via_strum!(RwaMarketType);
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

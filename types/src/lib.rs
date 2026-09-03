@@ -3,6 +3,7 @@
 //! This module contains various types used across the Backpack Exchange API,
 //! including enums and structs for capital, markets, orders, trades, and user data.
 
+use serde_with::{DeserializeFromStr, SerializeDisplay};
 use strum::{Display, EnumIter, EnumString};
 
 pub mod account;
@@ -19,27 +20,19 @@ pub mod trade;
 pub mod user;
 pub mod vault;
 
-/// Serde via the strum `Display` / `FromStr` impls, so the wire strings live in one place.
-/// Every enum using this has a `#[strum(default)] Unknown(String)` variant, so parsing never
-/// fails: an unrecognised value lands in `Unknown` carrying the raw string.
-macro_rules! serde_via_strum {
-    ($($ty:ty),* $(,)?) => {$(
-        impl serde::Serialize for $ty {
-            fn serialize<S: serde::Serializer>(&self, s: S) -> Result<S::Ok, S::Error> {
-                s.collect_str(self)
-            }
-        }
-        impl<'de> serde::Deserialize<'de> for $ty {
-            fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
-                let raw = <std::borrow::Cow<'de, str>>::deserialize(d)?;
-                raw.parse().map_err(serde::de::Error::custom)
-            }
-        }
-    )*};
-}
-pub(crate) use serde_via_strum;
-
-#[derive(Debug, Display, Clone, Default, EnumString, PartialEq, Eq, Hash, EnumIter)]
+#[derive(
+    Debug,
+    Display,
+    Clone,
+    Default,
+    EnumString,
+    PartialEq,
+    Eq,
+    Hash,
+    EnumIter,
+    SerializeDisplay,
+    DeserializeFromStr,
+)]
 #[non_exhaustive]
 pub enum Blockchain {
     #[default]
@@ -83,7 +76,6 @@ pub enum Blockchain {
     #[strum(default)]
     Unknown(String),
 }
-serde_via_strum!(Blockchain);
 
 #[cfg(test)]
 mod tests {

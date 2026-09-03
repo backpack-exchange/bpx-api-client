@@ -1,9 +1,8 @@
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
+use serde_with::{DeserializeFromStr, SerializeDisplay};
 use strum::{Display, EnumString};
-
-use crate::serde_via_strum;
 
 /// Public vault information.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -165,7 +164,9 @@ pub struct VaultRedeemHistoryParams {
     pub offset: Option<u64>,
 }
 
-#[derive(Debug, Display, Clone, EnumString, PartialEq, Eq, Hash)]
+#[derive(
+    Debug, Display, Clone, EnumString, PartialEq, Eq, Hash, SerializeDisplay, DeserializeFromStr,
+)]
 #[non_exhaustive]
 pub enum VaultRedeemStatus {
     Requested,
@@ -175,7 +176,6 @@ pub enum VaultRedeemStatus {
     #[strum(default)]
     Unknown(String),
 }
-serde_via_strum!(VaultRedeemStatus);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

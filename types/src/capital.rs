@@ -1,11 +1,9 @@
-// The strum derives on `DepositSource` and `WithdrawalStatus` name their deprecated variants.
-#![allow(deprecated)]
-
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
+use serde_with::{DeserializeFromStr, SerializeDisplay};
 use strum::{Display, EnumString};
 
-use crate::{Blockchain, serde_via_strum};
+use crate::Blockchain;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -38,7 +36,9 @@ pub struct Deposit {
     pub created_at: chrono::NaiveDateTime,
 }
 
-#[derive(Debug, Display, Clone, EnumString, PartialEq, Eq, Hash)]
+#[derive(
+    Debug, Display, Clone, EnumString, PartialEq, Eq, Hash, SerializeDisplay, DeserializeFromStr,
+)]
 #[strum(serialize_all = "camelCase")]
 #[non_exhaustive]
 pub enum DepositSource {
@@ -83,17 +83,16 @@ pub enum DepositSource {
     // Payment processors.
     EqualsMoney,
     Banxa,
-    #[deprecated(note = "the exchange no longer reports this source")]
-    Nuvei,
     // Internal transfer.
     Internal,
     /// A source this client version does not know. Carries the wire string.
     #[strum(default)]
     Unknown(String),
 }
-serde_via_strum!(DepositSource);
 
-#[derive(Debug, Display, Clone, EnumString, PartialEq, Eq, Hash)]
+#[derive(
+    Debug, Display, Clone, EnumString, PartialEq, Eq, Hash, SerializeDisplay, DeserializeFromStr,
+)]
 #[strum(serialize_all = "camelCase")]
 #[non_exhaustive]
 pub enum DepositStatus {
@@ -119,7 +118,6 @@ pub enum DepositStatus {
     #[strum(default)]
     Unknown(String),
 }
-serde_via_strum!(DepositStatus);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -165,7 +163,9 @@ pub struct Withdrawal {
     pub created_at: chrono::NaiveDateTime,
 }
 
-#[derive(Debug, Display, Clone, EnumString, PartialEq, Eq, Hash)]
+#[derive(
+    Debug, Display, Clone, EnumString, PartialEq, Eq, Hash, SerializeDisplay, DeserializeFromStr,
+)]
 #[strum(serialize_all = "camelCase")]
 #[non_exhaustive]
 pub enum WithdrawalStatus {
@@ -173,8 +173,6 @@ pub enum WithdrawalStatus {
     Pending,
     /// Confirmed withdrawal.
     Confirmed,
-    #[deprecated(note = "the exchange reports this state as `pending`")]
-    Verifying,
     /// Voided by administrators.
     Void,
     /// Ownership verification required.
@@ -183,7 +181,6 @@ pub enum WithdrawalStatus {
     #[strum(default)]
     Unknown(String),
 }
-serde_via_strum!(WithdrawalStatus);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]

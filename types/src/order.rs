@@ -2,11 +2,12 @@ use std::{fmt, str::FromStr};
 
 use rust_decimal::{Decimal, prelude::FromPrimitive};
 use serde::{Deserialize, Deserializer, Serialize, de::Visitor};
+use serde_with::{DeserializeFromStr, SerializeDisplay};
 use strum::{Display, EnumString};
 
-use crate::serde_via_strum;
-
-#[derive(Debug, Display, Clone, EnumString, PartialEq, Eq, Hash)]
+#[derive(
+    Debug, Display, Clone, EnumString, PartialEq, Eq, Hash, SerializeDisplay, DeserializeFromStr,
+)]
 #[non_exhaustive]
 pub enum TriggerBy {
     LastPrice,
@@ -16,7 +17,6 @@ pub enum TriggerBy {
     #[strum(default)]
     Unknown(String),
 }
-serde_via_strum!(TriggerBy);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TriggerQuantity {
@@ -179,36 +179,43 @@ pub enum Order {
     Limit(LimitOrder),
 }
 
-#[derive(Debug, Display, Clone, Default, EnumString, PartialEq, Eq, Hash)]
+#[derive(
+    Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash,
+)]
 #[strum(serialize_all = "UPPERCASE")]
-#[non_exhaustive]
+#[serde(rename_all = "UPPERCASE")]
 pub enum TimeInForce {
     #[default]
     GTC,
     IOC,
     FOK,
-    /// A value this client version does not know. Carries the wire string.
-    #[strum(default)]
-    Unknown(String),
 }
-serde_via_strum!(TimeInForce);
 
-#[derive(Debug, Display, Clone, Default, EnumString, PartialEq, Eq, Hash)]
+#[derive(
+    Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash,
+)]
 #[strum(serialize_all = "PascalCase")]
-#[non_exhaustive]
+#[serde(rename_all = "PascalCase")]
 pub enum SelfTradePrevention {
     #[default]
     RejectTaker,
     RejectMaker,
     RejectBoth,
     Allow,
-    /// A value this client version does not know. Carries the wire string.
-    #[strum(default)]
-    Unknown(String),
 }
-serde_via_strum!(SelfTradePrevention);
 
-#[derive(Debug, Display, Clone, Default, EnumString, PartialEq, Eq, Hash)]
+#[derive(
+    Debug,
+    Display,
+    Clone,
+    Default,
+    EnumString,
+    PartialEq,
+    Eq,
+    Hash,
+    SerializeDisplay,
+    DeserializeFromStr,
+)]
 #[strum(serialize_all = "PascalCase")]
 #[non_exhaustive]
 pub enum OrderStatus {
@@ -222,15 +229,23 @@ pub enum OrderStatus {
     TriggerPending,
     /// The trigger order failed to trigger.
     TriggerFailed,
-    /// The engine accepted the order and will release it after the speedbump.
-    PendingRelease,
     /// A status this client version does not know. Carries the wire string.
     #[strum(default)]
     Unknown(String),
 }
-serde_via_strum!(OrderStatus);
 
-#[derive(Debug, Display, Clone, Default, EnumString, PartialEq, Eq, Hash)]
+#[derive(
+    Debug,
+    Display,
+    Clone,
+    Default,
+    EnumString,
+    PartialEq,
+    Eq,
+    Hash,
+    SerializeDisplay,
+    DeserializeFromStr,
+)]
 #[strum(serialize_all = "PascalCase")]
 #[non_exhaustive]
 pub enum SystemOrderType {
@@ -245,20 +260,17 @@ pub enum SystemOrderType {
     #[strum(default)]
     Unknown(String),
 }
-serde_via_strum!(SystemOrderType);
 
-#[derive(Debug, Display, Clone, Default, EnumString, PartialEq, Eq, Hash)]
+#[derive(
+    Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash,
+)]
 #[strum(serialize_all = "PascalCase")]
-#[non_exhaustive]
+#[serde(rename_all = "PascalCase")]
 pub enum Side {
     #[default]
     Bid,
     Ask,
-    /// A value this client version does not know. Carries the wire string.
-    #[strum(default)]
-    Unknown(String),
 }
-serde_via_strum!(Side);
 
 #[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, EnumString, PartialEq, Eq, Hash)]
 #[strum(serialize_all = "PascalCase")]
@@ -340,7 +352,9 @@ pub struct CancelOpenOrdersPayload {
     pub symbol: String,
 }
 
-#[derive(Debug, Display, Clone, EnumString, PartialEq, Eq, Hash)]
+#[derive(
+    Debug, Display, Clone, EnumString, PartialEq, Eq, Hash, SerializeDisplay, DeserializeFromStr,
+)]
 #[strum(serialize_all = "camelCase")]
 #[non_exhaustive]
 pub enum OrderUpdateType {
@@ -351,15 +365,10 @@ pub enum OrderUpdateType {
     OrderModified,
     TriggerPlaced,
     TriggerFailed,
-    /// The order was accepted and is held behind the speedbump.
-    SpeedbumpPlaced,
-    /// The order was expired while held behind the speedbump.
-    SpeedbumpFailed,
     /// An event type this client version does not know. Carries the wire string.
     #[strum(default)]
     Unknown(String),
 }
-serde_via_strum!(OrderUpdateType);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -527,28 +536,9 @@ mod tests {
     }
 
     #[test]
-    fn time_in_force_wire() {
-        assert_wire(&TimeInForce::GTC, "GTC");
-        assert_wire(
-            &TimeInForce::Unknown("SOMEFUTURETIF".into()),
-            "SOMEFUTURETIF",
-        );
-    }
-
-    #[test]
-    fn self_trade_prevention_wire() {
-        assert_wire(&SelfTradePrevention::RejectTaker, "RejectTaker");
-        assert_wire(
-            &SelfTradePrevention::Unknown("SomeFutureMode".into()),
-            "SomeFutureMode",
-        );
-    }
-
-    #[test]
     fn order_status_wire() {
         assert_wire(&OrderStatus::PartiallyFilled, "PartiallyFilled");
         assert_wire(&OrderStatus::TriggerFailed, "TriggerFailed");
-        assert_wire(&OrderStatus::PendingRelease, "PendingRelease");
         assert_wire(
             &OrderStatus::Unknown("SomeFutureStatus".into()),
             "SomeFutureStatus",
@@ -568,16 +558,8 @@ mod tests {
     }
 
     #[test]
-    fn side_wire() {
-        assert_wire(&Side::Bid, "Bid");
-        assert_wire(&Side::Unknown("SomeFutureSide".into()), "SomeFutureSide");
-    }
-
-    #[test]
     fn order_update_type_wire() {
         assert_wire(&OrderUpdateType::TriggerPlaced, "triggerPlaced");
-        assert_wire(&OrderUpdateType::SpeedbumpPlaced, "speedbumpPlaced");
-        assert_wire(&OrderUpdateType::SpeedbumpFailed, "speedbumpFailed");
         assert_wire(
             &OrderUpdateType::Unknown("someFutureEvent".into()),
             "someFutureEvent",
@@ -628,25 +610,7 @@ mod tests {
     }
 
     #[test]
-    fn test_order_update_speedbump_and_trigger_failed() {
-        let data = r#"
-        {"E":1748288615134547,"O":"USER","Q":"3568.3445","S":"Ask","T":1748288615133255,"V":"RejectTaker","X":"PendingRelease","Z":"0","e":"speedbumpPlaced","f":"GTC","i":"114575842681290753","o":"LIMIT","p":"178.15","q":"20.03","r":false,"s":"SOL_USDC","t":null,"z":"0"}
-        "#;
-        let order_update: OrderUpdate = serde_json::from_str(data).unwrap();
-        assert_eq!(order_update.event_type, OrderUpdateType::SpeedbumpPlaced);
-        assert_eq!(order_update.order_status, OrderStatus::PendingRelease);
-
-        let data = r#"
-        {"E":1748288615134547,"O":"USER","Q":"3568.3445","R":"PriceBandBreach","S":"Ask","T":1748288615133255,"V":"RejectTaker","X":"Expired","Z":"0","e":"speedbumpFailed","f":"GTC","i":"114575842681290753","o":"LIMIT","p":"178.15","q":"20.03","r":false,"s":"SOL_USDC","t":null,"z":"0"}
-        "#;
-        let order_update: OrderUpdate = serde_json::from_str(data).unwrap();
-        assert_eq!(order_update.event_type, OrderUpdateType::SpeedbumpFailed);
-        assert_eq!(order_update.order_status, OrderStatus::Expired);
-        assert_eq!(
-            order_update.order_expiry_reason.as_deref(),
-            Some("PriceBandBreach")
-        );
-
+    fn test_order_update_trigger_failed_and_unknown() {
         let data = r#"
         {"E":1748288167010366,"O":"USER","P":"178.05","Q":"0","R":"InsufficientMargin","S":"Ask","T":1748288167009460,"V":"RejectTaker","X":"TriggerFailed","Y":"20.03","Z":"0","e":"triggerFailed","f":"GTC","i":"114575813313101824","o":"LIMIT","p":"178.15","q":"0","r":false,"s":"SOL_USDC","t":null,"z":"0"}
         "#;

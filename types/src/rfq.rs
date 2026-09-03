@@ -1,13 +1,22 @@
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
+use serde_with::{DeserializeFromStr, SerializeDisplay};
 use strum::{Display, EnumString};
 
-use crate::{
-    order::{OrderStatus, Side, SystemOrderType},
-    serde_via_strum,
-};
+use crate::order::{OrderStatus, Side, SystemOrderType};
 
-#[derive(Debug, Display, Clone, Default, EnumString, PartialEq, Eq, Hash)]
+#[derive(
+    Debug,
+    Display,
+    Clone,
+    Default,
+    EnumString,
+    PartialEq,
+    Eq,
+    Hash,
+    SerializeDisplay,
+    DeserializeFromStr,
+)]
 #[strum(serialize_all = "PascalCase")]
 #[non_exhaustive]
 pub enum RfqExecutionMode {
@@ -18,7 +27,6 @@ pub enum RfqExecutionMode {
     #[strum(default)]
     Unknown(String),
 }
-serde_via_strum!(RfqExecutionMode);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
