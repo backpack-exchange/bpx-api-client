@@ -10,6 +10,6 @@ impl BpxClient {
     pub async fn get_open_future_positions(&self) -> Result<Vec<FuturePosition>> {
         let url = self.base_url.join(API_FUTURES_POSITION)?;
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::deserialize_json(res).await
     }
 }

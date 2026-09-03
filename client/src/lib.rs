@@ -177,6 +177,24 @@ impl BpxClient {
         Ok(res)
     }
 
+    /// Deserializes the response body as JSON.
+    ///
+    /// Unlike `Response::json()`, this reads the body as text first so that a
+    /// deserialization failure can carry the body in [`Error::Deserialize`],
+    /// making it easier to debug API changes.
+    pub(crate) async fn deserialize_json<T: serde::de::DeserializeOwned>(
+        res: Response,
+    ) -> Result<T> {
+        let body = res.text().await?;
+        serde_json::from_str(&body).map_err(|source| {
+            tracing::debug!(%source, body, "Failed to deserialize API response");
+            Error::Deserialize {
+                source,
+                body: body.into(),
+            }
+        })
+    }
+
     /// Sends a GET request to the specified URL and signs it before execution.
     pub async fn get<U: IntoUrl>(&self, url: U) -> Result<Response> {
         let req = self.build_and_maybe_sign_request::<(), _>(url, Method::GET, None)?;
