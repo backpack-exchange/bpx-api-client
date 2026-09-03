@@ -73,6 +73,12 @@ pub enum Blockchain {
     Monad,
     Stable,
     Zcash,
+    Avalanche,
+    BitcoinCash,
+    Linea,
+    Near,
+    Robinhood,
+    Tempo,
     /// A blockchain this client version does not know. Carries the wire string.
     #[strum(default)]
     Unknown(String),
@@ -88,6 +94,9 @@ mod tests {
     fn blockchain_wire() {
         assert_wire(&Blockchain::Solana, "Solana");
         assert_wire(&Blockchain::ZeroG, "0G");
+        assert_wire(&Blockchain::HyperEVM, "HyperEVM");
+        assert_wire(&Blockchain::XRP, "XRP");
+        assert_wire(&Blockchain::BitcoinCash, "BitcoinCash");
         assert_wire(
             &Blockchain::Unknown("SomeFutureChain".into()),
             "SomeFutureChain",

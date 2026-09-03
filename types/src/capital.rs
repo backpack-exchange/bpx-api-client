@@ -1,3 +1,6 @@
+// The strum derives on `DepositSource` and `WithdrawalStatus` name their deprecated variants.
+#![allow(deprecated)]
+
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
@@ -40,10 +43,50 @@ pub struct Deposit {
 #[non_exhaustive]
 pub enum DepositSource {
     Administrator,
-    Solana,
-    Ethereum,
+    // Blockchains.
+    #[strum(serialize = "0G")]
+    ZeroG,
+    Aptos,
+    Arbitrum,
+    Avalanche,
+    Base,
+    Berachain,
     Bitcoin,
+    BitcoinCash,
+    Bsc,
+    Cardano,
+    Dogecoin,
+    Eclipse,
+    Ethereum,
+    Fogo,
+    #[strum(serialize = "hyperEVM")]
+    HyperEVM,
+    Hyperliquid,
+    Linea,
+    Litecoin,
+    Monad,
+    Near,
+    Polygon,
+    Optimism,
+    Plasma,
+    Robinhood,
+    Sei,
+    Stable,
+    Sui,
+    Solana,
+    Story,
+    Tempo,
+    Tron,
+    #[strum(serialize = "xRP")]
+    XRP,
+    Zcash,
+    // Payment processors.
+    EqualsMoney,
+    Banxa,
+    #[deprecated(note = "the exchange no longer reports this source")]
     Nuvei,
+    // Internal transfer.
+    Internal,
     /// A source this client version does not know. Carries the wire string.
     #[strum(default)]
     Unknown(String),
@@ -54,8 +97,24 @@ serde_via_strum!(DepositSource);
 #[strum(serialize_all = "camelCase")]
 #[non_exhaustive]
 pub enum DepositStatus {
+    /// Waiting for confirmation, compliance or processing.
     Pending,
+    /// Confirmed deposit.
     Confirmed,
+    /// Cancelled deposit.
+    Cancelled,
+    /// Declined payment. Fiat deposits only.
+    Declined,
+    /// Payment expired. Fiat deposits only.
+    Expired,
+    /// Payment initiated.
+    Initiated,
+    /// Payment refunded.
+    Refunded,
+    /// Ownership verification required.
+    OwnershipVerificationRequired,
+    /// Sender verification required.
+    SenderVerificationRequired,
     /// A status this client version does not know. Carries the wire string.
     #[strum(default)]
     Unknown(String),
@@ -110,10 +169,16 @@ pub struct Withdrawal {
 #[strum(serialize_all = "camelCase")]
 #[non_exhaustive]
 pub enum WithdrawalStatus {
+    /// Waiting for compliance, signing, confirmation or processing.
     Pending,
+    /// Confirmed withdrawal.
     Confirmed,
+    #[deprecated(note = "the exchange reports this state as `pending`")]
     Verifying,
+    /// Voided by administrators.
     Void,
+    /// Ownership verification required.
+    OwnershipVerificationRequired,
     /// A status this client version does not know. Carries the wire string.
     #[strum(default)]
     Unknown(String),
@@ -160,6 +225,13 @@ mod tests {
     #[test]
     fn deposit_source_wire() {
         assert_wire(&DepositSource::Administrator, "administrator");
+        assert_wire(&DepositSource::ZeroG, "0G");
+        assert_wire(&DepositSource::HyperEVM, "hyperEVM");
+        assert_wire(&DepositSource::XRP, "xRP");
+        assert_wire(&DepositSource::BitcoinCash, "bitcoinCash");
+        assert_wire(&DepositSource::EqualsMoney, "equalsMoney");
+        assert_wire(&DepositSource::Banxa, "banxa");
+        assert_wire(&DepositSource::Internal, "internal");
         assert_wire(
             &DepositSource::Unknown("someFutureSource".into()),
             "someFutureSource",
@@ -170,6 +242,14 @@ mod tests {
     fn deposit_status_wire() {
         assert_wire(&DepositStatus::Confirmed, "confirmed");
         assert_wire(
+            &DepositStatus::OwnershipVerificationRequired,
+            "ownershipVerificationRequired",
+        );
+        assert_wire(
+            &DepositStatus::SenderVerificationRequired,
+            "senderVerificationRequired",
+        );
+        assert_wire(
             &DepositStatus::Unknown("someFutureStatus".into()),
             "someFutureStatus",
         );
@@ -178,6 +258,10 @@ mod tests {
     #[test]
     fn withdrawal_status_wire() {
         assert_wire(&WithdrawalStatus::Void, "void");
+        assert_wire(
+            &WithdrawalStatus::OwnershipVerificationRequired,
+            "ownershipVerificationRequired",
+        );
         assert_wire(
             &WithdrawalStatus::Unknown("someFutureStatus".into()),
             "someFutureStatus",
