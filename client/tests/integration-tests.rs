@@ -149,7 +149,9 @@ mod tests {
 
     mod borrow_lend {
         use super::*;
-        use bpx_api_types::borrow_lend::BorrowLendMarketHistoryParams;
+        use bpx_api_types::borrow_lend::{
+            BorrowLendMarketHistoryInterval, BorrowLendMarketHistoryParams,
+        };
 
         const USDC: &str = "USDC";
 
@@ -168,7 +170,7 @@ mod tests {
             let client = BpxClient::builder().build().unwrap();
             let history = client
                 .get_borrow_lend_markets_history(BorrowLendMarketHistoryParams {
-                    interval: "1d".to_string(),
+                    interval: BorrowLendMarketHistoryInterval::OneDay,
                     symbol: Some(USDC.to_string()),
                 })
                 .await?;

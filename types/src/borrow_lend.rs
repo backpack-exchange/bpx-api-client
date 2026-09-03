@@ -1,15 +1,34 @@
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
+use serde_with::{DeserializeFromStr, SerializeDisplay};
+use strum::{Display, EnumString};
 
 use crate::margin::MarginFunction;
+
+/// State of a borrow/lend book.
+#[derive(
+    Debug, Display, Clone, EnumString, PartialEq, Eq, Hash, SerializeDisplay, DeserializeFromStr,
+)]
+#[non_exhaustive]
+pub enum BorrowLendBookState {
+    /// Normal operation.
+    Open,
+    /// Not accepting any orders.
+    Closed,
+    /// Only accepting repayment of outstanding borrows and redemption of lends.
+    RepayOnly,
+    /// A state this client version does not know. Carries the wire string.
+    #[strum(default)]
+    Unknown(String),
+}
 
 /// Summary of a borrow/lend market.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BorrowLendMarket {
-    /// State of the borrow/lend market (e.g. `Open`, `Closed`, `RepayOnly`).
-    pub state: String,
+    /// State of the borrow/lend market.
+    pub state: BorrowLendBookState,
     /// Mark price of the spot instrument.
     pub asset_mark_price: Decimal,
     /// The rate borrowers pay.
@@ -62,12 +81,25 @@ pub struct BorrowLendHistory {
     pub utilization: Decimal,
 }
 
+/// Time interval for borrow/lend market history data.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+pub enum BorrowLendMarketHistoryInterval {
+    #[serde(rename = "1d")]
+    OneDay,
+    #[serde(rename = "1w")]
+    OneWeek,
+    #[serde(rename = "1month")]
+    OneMonth,
+    #[serde(rename = "1year")]
+    OneYear,
+}
+
 /// Parameters for fetching borrow/lend market history.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BorrowLendMarketHistoryParams {
-    /// Time interval for historical data (e.g. `1d`, `1w`, `1month`, `1year`).
-    pub interval: String,
+    /// Time interval for historical data.
+    pub interval: BorrowLendMarketHistoryInterval,
     /// Optional asset symbol to filter by.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub symbol: Option<String>,
@@ -118,7 +150,26 @@ pub struct BorrowLendPosition {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::test_support::assert_wire;
     use rust_decimal_macros::dec;
+
+    #[test]
+    fn borrow_lend_book_state_wire() {
+        assert_wire(&BorrowLendBookState::Open, "Open");
+        assert_wire(&BorrowLendBookState::RepayOnly, "RepayOnly");
+        assert_wire(
+            &BorrowLendBookState::Unknown("SomeFutureState".into()),
+            "SomeFutureState",
+        );
+    }
+
+    #[test]
+    fn borrow_lend_market_history_interval_wire() {
+        assert_wire(&BorrowLendMarketHistoryInterval::OneDay, "1d");
+        assert_wire(&BorrowLendMarketHistoryInterval::OneWeek, "1w");
+        assert_wire(&BorrowLendMarketHistoryInterval::OneMonth, "1month");
+        assert_wire(&BorrowLendMarketHistoryInterval::OneYear, "1year");
+    }
 
     #[test]
     fn test_borrow_lend_market_parse() {
@@ -145,7 +196,7 @@ mod test {
         "#;
 
         let market: BorrowLendMarket = serde_json::from_str(data).unwrap();
-        assert_eq!(market.state, "Open");
+        assert_eq!(market.state, BorrowLendBookState::Open);
         assert_eq!(market.symbol, "USDC");
         assert_eq!(market.borrow_interest_rate, dec!(0.0523));
         assert_eq!(market.lend_interest_rate, dec!(0.0470));
@@ -177,7 +228,10 @@ mod test {
         "#;
 
         let market: BorrowLendMarket = serde_json::from_str(data).unwrap();
-        assert_eq!(market.state, "SomeFutureState");
+        assert_eq!(
+            market.state,
+            BorrowLendBookState::Unknown("SomeFutureState".into())
+        );
     }
 
     #[test]
@@ -223,7 +277,7 @@ mod test {
     #[test]
     fn test_borrow_lend_market_history_interval_query() {
         let params = BorrowLendMarketHistoryParams {
-            interval: "1d".to_string(),
+            interval: BorrowLendMarketHistoryInterval::OneDay,
             symbol: Some("USDC".to_string()),
         };
         let query = serde_qs::to_string(&params).unwrap();

@@ -70,3 +70,21 @@ pub enum Blockchain {
     #[serde(other)]
     Unknown,
 }
+
+#[cfg(test)]
+pub(crate) mod test_support {
+    use std::fmt::Debug;
+
+    use serde::{Serialize, de::DeserializeOwned};
+
+    /// Asserts that `value` serializes to the JSON string `wire` and that `wire` parses back
+    /// to `value`.
+    pub(crate) fn assert_wire<T>(value: &T, wire: &str)
+    where
+        T: Serialize + DeserializeOwned + PartialEq + Debug,
+    {
+        let json = format!("\"{wire}\"");
+        assert_eq!(serde_json::to_string(value).unwrap(), json);
+        assert_eq!(serde_json::from_str::<T>(&json).unwrap(), *value);
+    }
+}

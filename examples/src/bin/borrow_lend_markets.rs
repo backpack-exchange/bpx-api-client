@@ -1,5 +1,5 @@
 use bpx_api_client::{BACKPACK_API_BASE_URL, BpxClient};
-use bpx_api_types::borrow_lend::BorrowLendMarketHistoryParams;
+use bpx_api_types::borrow_lend::{BorrowLendMarketHistoryInterval, BorrowLendMarketHistoryParams};
 use std::env;
 
 #[tokio::main]
@@ -21,7 +21,7 @@ async fn main() {
     }
 
     let history_params = BorrowLendMarketHistoryParams {
-        interval: "1d".to_string(),
+        interval: BorrowLendMarketHistoryInterval::OneDay,
         symbol: Some("USDC".to_string()),
     };
     match client.get_borrow_lend_markets_history(history_params).await {
