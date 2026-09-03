@@ -2,18 +2,23 @@ use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
 
-use crate::order::{OrderStatus, Side, SystemOrderType};
+use crate::{
+    order::{OrderStatus, Side, SystemOrderType},
+    serde_via_strum,
+};
 
-#[derive(
-    Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash,
-)]
+#[derive(Debug, Display, Clone, Default, EnumString, PartialEq, Eq, Hash)]
 #[strum(serialize_all = "PascalCase")]
-#[serde(rename_all = "PascalCase")]
+#[non_exhaustive]
 pub enum RfqExecutionMode {
     #[default]
     AwaitAccept,
     Immediate,
+    /// A value this client version does not know. Carries the wire string.
+    #[strum(default)]
+    Unknown(String),
 }
+serde_via_strum!(RfqExecutionMode);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -388,6 +393,16 @@ impl QuotePayload {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_support::assert_wire;
+
+    #[test]
+    fn rfq_execution_mode_wire() {
+        assert_wire(&RfqExecutionMode::AwaitAccept, "AwaitAccept");
+        assert_wire(
+            &RfqExecutionMode::Unknown("SomeFutureMode".into()),
+            "SomeFutureMode",
+        );
+    }
 
     #[test]
     fn rfq_active_without_system_order_type() {

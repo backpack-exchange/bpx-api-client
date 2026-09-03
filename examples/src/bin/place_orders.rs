@@ -49,7 +49,7 @@ async fn main() {
     let orders = vec![
         ExecuteOrderPayload {
             symbol: args.symbol.clone(),
-            side: args.side,
+            side: args.side.clone(),
             order_type: OrderType::Limit,
             quantity: Some(quantity),
             price: Some(price),
