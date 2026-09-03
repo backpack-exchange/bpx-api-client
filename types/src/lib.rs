@@ -3,7 +3,6 @@
 //! This module contains various types used across the Backpack Exchange API,
 //! including enums and structs for capital, markets, orders, trades, and user data.
 
-use serde::{Deserialize, Serialize};
 use strum::{Display, EnumIter, EnumString};
 
 pub mod account;
@@ -40,20 +39,8 @@ macro_rules! serde_via_strum {
 }
 pub(crate) use serde_via_strum;
 
-#[derive(
-    Debug,
-    Display,
-    Clone,
-    Copy,
-    Serialize,
-    Deserialize,
-    Default,
-    EnumString,
-    PartialEq,
-    Eq,
-    Hash,
-    EnumIter,
-)]
+#[derive(Debug, Display, Clone, Default, EnumString, PartialEq, Eq, Hash, EnumIter)]
+#[non_exhaustive]
 pub enum Blockchain {
     #[default]
     Solana,
@@ -80,15 +67,32 @@ pub enum Blockchain {
     Sei,
     Tron,
     #[strum(serialize = "0G")]
-    #[serde(rename = "0G")]
     ZeroG,
     Eclipse,
     Fogo,
     Monad,
     Stable,
     Zcash,
-    #[serde(other)]
-    Unknown,
+    /// A blockchain this client version does not know. Carries the wire string.
+    #[strum(default)]
+    Unknown(String),
+}
+serde_via_strum!(Blockchain);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_support::assert_wire;
+
+    #[test]
+    fn blockchain_wire() {
+        assert_wire(&Blockchain::Solana, "Solana");
+        assert_wire(&Blockchain::ZeroG, "0G");
+        assert_wire(
+            &Blockchain::Unknown("SomeFutureChain".into()),
+            "SomeFutureChain",
+        );
+    }
 }
 
 #[cfg(test)]

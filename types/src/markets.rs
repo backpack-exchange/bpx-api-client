@@ -1,7 +1,7 @@
 use rust_decimal::Decimal;
 use serde::{Deserialize, Deserializer, Serialize};
 
-use crate::{Blockchain, margin::MarginFunction};
+use crate::{Blockchain, margin::MarginFunction, serde_via_strum};
 
 /// An asset is most of the time a crypto coin that can have multiple representations
 /// across different blockchains. For example, USDT.
@@ -132,20 +132,9 @@ impl Market {
 ///
 /// New states may be added by the exchange in the future; unrecognized values
 /// deserialize to [`OrderBookState::Unknown`].
-#[derive(
-    Debug,
-    strum::Display,
-    Clone,
-    Copy,
-    serde::Serialize,
-    serde::Deserialize,
-    strum::EnumString,
-    PartialEq,
-    Eq,
-    Hash,
-)]
+#[derive(Debug, strum::Display, Clone, strum::EnumString, PartialEq, Eq, Hash)]
 #[strum(serialize_all = "PascalCase")]
-#[serde(rename_all = "PascalCase")]
+#[non_exhaustive]
 pub enum OrderBookState {
     /// Normal operation: accepting and matching orders.
     Open,
@@ -157,29 +146,19 @@ pub enum OrderBookState {
     LimitOnly,
     /// Only accepting orders that would not immediately match.
     PostOnly,
-    /// Any state not recognized by this client version.
-    #[serde(other)]
-    Unknown,
+    /// A state this client version does not know. Carries the wire string.
+    #[strum(default)]
+    Unknown(String),
 }
+serde_via_strum!(OrderBookState);
 
 /// The type of real-world asset backing a tokenized RWA market.
 ///
 /// New types may be added by the exchange in the future; unrecognized values
 /// deserialize to [`RwaMarketType::Unknown`].
-#[derive(
-    Debug,
-    strum::Display,
-    Clone,
-    Copy,
-    serde::Serialize,
-    serde::Deserialize,
-    strum::EnumString,
-    PartialEq,
-    Eq,
-    Hash,
-)]
+#[derive(Debug, strum::Display, Clone, strum::EnumString, PartialEq, Eq, Hash)]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[non_exhaustive]
 pub enum RwaMarketType {
     /// A tokenized equity.
     Stock,
@@ -189,10 +168,11 @@ pub enum RwaMarketType {
     Commodity,
     /// A tokenized foreign-exchange pair.
     Fx,
-    /// Any type not recognized by this client version.
-    #[serde(other)]
-    Unknown,
+    /// A type this client version does not know. Carries the wire string.
+    #[strum(default)]
+    Unknown(String),
 }
+serde_via_strum!(RwaMarketType);
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -597,7 +577,26 @@ where
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::test_support::assert_wire;
     use rust_decimal_macros::dec;
+
+    #[test]
+    fn order_book_state_wire() {
+        assert_wire(&OrderBookState::CancelOnly, "CancelOnly");
+        assert_wire(
+            &OrderBookState::Unknown("SomeFutureState".into()),
+            "SomeFutureState",
+        );
+    }
+
+    #[test]
+    fn rwa_market_type_wire() {
+        assert_wire(&RwaMarketType::Commodity, "COMMODITY");
+        assert_wire(
+            &RwaMarketType::Unknown("SOME_FUTURE_RWA".into()),
+            "SOME_FUTURE_RWA",
+        );
+    }
 
     fn get_test_market() -> Market {
         Market {
@@ -763,7 +762,10 @@ mod test {
         // Unrecognized states fall back to `Unknown` rather than failing the parse.
         let unknown = data.replace("\"Closed\"", "\"SomeFutureState\"");
         let market: Market = serde_json::from_str(&unknown).unwrap();
-        assert_eq!(market.order_book_state, OrderBookState::Unknown);
+        assert_eq!(
+            market.order_book_state,
+            OrderBookState::Unknown("SomeFutureState".into())
+        );
     }
 
     #[test]
@@ -812,7 +814,10 @@ mod test {
         // Unrecognized types fall back to `Unknown` rather than failing the parse.
         let unknown = data.replace("\"STOCK\"", "\"SOME_FUTURE_RWA\"");
         let market: Market = serde_json::from_str(&unknown).unwrap();
-        assert_eq!(market.rwa_market_type, Some(RwaMarketType::Unknown));
+        assert_eq!(
+            market.rwa_market_type,
+            Some(RwaMarketType::Unknown("SOME_FUTURE_RWA".into()))
+        );
     }
 
     #[test]

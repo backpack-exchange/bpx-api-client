@@ -2,7 +2,7 @@ use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use strum::{Display, EnumString};
 
-use crate::Blockchain;
+use crate::{Blockchain, serde_via_strum};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -35,28 +35,32 @@ pub struct Deposit {
     pub created_at: chrono::NaiveDateTime,
 }
 
-#[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, EnumString, PartialEq, Eq, Hash)]
+#[derive(Debug, Display, Clone, EnumString, PartialEq, Eq, Hash)]
 #[strum(serialize_all = "camelCase")]
-#[serde(rename_all = "camelCase")]
+#[non_exhaustive]
 pub enum DepositSource {
     Administrator,
     Solana,
     Ethereum,
     Bitcoin,
     Nuvei,
-    #[serde(other)]
-    Unknown,
+    /// A source this client version does not know. Carries the wire string.
+    #[strum(default)]
+    Unknown(String),
 }
+serde_via_strum!(DepositSource);
 
-#[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, EnumString, PartialEq, Eq, Hash)]
+#[derive(Debug, Display, Clone, EnumString, PartialEq, Eq, Hash)]
 #[strum(serialize_all = "camelCase")]
-#[serde(rename_all = "camelCase")]
+#[non_exhaustive]
 pub enum DepositStatus {
     Pending,
     Confirmed,
-    #[serde(other)]
-    Unknown,
+    /// A status this client version does not know. Carries the wire string.
+    #[strum(default)]
+    Unknown(String),
 }
+serde_via_strum!(DepositStatus);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -102,17 +106,19 @@ pub struct Withdrawal {
     pub created_at: chrono::NaiveDateTime,
 }
 
-#[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, EnumString, PartialEq, Eq, Hash)]
+#[derive(Debug, Display, Clone, EnumString, PartialEq, Eq, Hash)]
 #[strum(serialize_all = "camelCase")]
-#[serde(rename_all = "camelCase")]
+#[non_exhaustive]
 pub enum WithdrawalStatus {
     Pending,
     Confirmed,
     Verifying,
     Void,
-    #[serde(other)]
-    Unknown,
+    /// A status this client version does not know. Carries the wire string.
+    #[strum(default)]
+    Unknown(String),
 }
+serde_via_strum!(WithdrawalStatus);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -144,4 +150,37 @@ pub struct CollateralItem {
     pub open_order_quantity: Decimal,
     pub lend_quantity: Decimal,
     pub available_quantity: Decimal,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_support::assert_wire;
+
+    #[test]
+    fn deposit_source_wire() {
+        assert_wire(&DepositSource::Administrator, "administrator");
+        assert_wire(
+            &DepositSource::Unknown("someFutureSource".into()),
+            "someFutureSource",
+        );
+    }
+
+    #[test]
+    fn deposit_status_wire() {
+        assert_wire(&DepositStatus::Confirmed, "confirmed");
+        assert_wire(
+            &DepositStatus::Unknown("someFutureStatus".into()),
+            "someFutureStatus",
+        );
+    }
+
+    #[test]
+    fn withdrawal_status_wire() {
+        assert_wire(&WithdrawalStatus::Void, "void");
+        assert_wire(
+            &WithdrawalStatus::Unknown("someFutureStatus".into()),
+            "someFutureStatus",
+        );
+    }
 }
