@@ -87,8 +87,12 @@ pub struct RequestForQuoteStream {
 }
 
 /// RequestForQuote updates received from the websocket.
+///
+/// An event type this client version does not know parses to
+/// [`RequestForQuoteUpdate::Unknown`] rather than failing.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "e", rename_all = "camelCase")] // Discriminates based on "e" field
+#[non_exhaustive]
 pub enum RequestForQuoteUpdate {
     RfqActive {
         #[serde(rename = "E")]
@@ -304,6 +308,10 @@ pub enum RequestForQuoteUpdate {
         #[serde(rename = "o", default)]
         system_order_type: Option<SystemOrderType>,
     },
+    /// An event type this client version does not know. Unlike the string enums, the raw
+    /// `e` tag is not preserved: serde discards it while matching the tagged variants.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -402,6 +410,13 @@ mod tests {
             &RfqExecutionMode::Unknown("SomeFutureMode".into()),
             "SomeFutureMode",
         );
+    }
+
+    #[test]
+    fn rfq_update_unknown_event_type() {
+        let data = r#"{"e":"someFutureEvent","E":1234567890,"R":123,"s":"BTC_USDC","q":"1.5","w":1234567890,"W":1234567899,"X":"New","T":1234567890}"#;
+        let update: RequestForQuoteUpdate = serde_json::from_str(data).unwrap();
+        assert!(matches!(update, RequestForQuoteUpdate::Unknown));
     }
 
     #[test]
