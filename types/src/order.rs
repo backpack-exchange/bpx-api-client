@@ -229,6 +229,8 @@ pub enum OrderStatus {
     TriggerPending,
     /// The trigger order failed to trigger.
     TriggerFailed,
+    /// The engine accepted the order and will release it after the speedbump.
+    PendingRelease,
     /// A status this client version does not know. Carries the wire string.
     #[strum(default)]
     Unknown(String),
@@ -365,6 +367,10 @@ pub enum OrderUpdateType {
     OrderModified,
     TriggerPlaced,
     TriggerFailed,
+    /// The order was accepted and is held behind the speedbump.
+    SpeedbumpPlaced,
+    /// The order was expired while held behind the speedbump.
+    SpeedbumpFailed,
     /// An event type this client version does not know. Carries the wire string.
     #[strum(default)]
     Unknown(String),
@@ -539,6 +545,7 @@ mod tests {
     fn order_status_wire() {
         assert_wire(&OrderStatus::PartiallyFilled, "PartiallyFilled");
         assert_wire(&OrderStatus::TriggerFailed, "TriggerFailed");
+        assert_wire(&OrderStatus::PendingRelease, "PendingRelease");
         assert_wire(
             &OrderStatus::Unknown("SomeFutureStatus".into()),
             "SomeFutureStatus",
@@ -560,6 +567,8 @@ mod tests {
     #[test]
     fn order_update_type_wire() {
         assert_wire(&OrderUpdateType::TriggerPlaced, "triggerPlaced");
+        assert_wire(&OrderUpdateType::SpeedbumpPlaced, "speedbumpPlaced");
+        assert_wire(&OrderUpdateType::SpeedbumpFailed, "speedbumpFailed");
         assert_wire(
             &OrderUpdateType::Unknown("someFutureEvent".into()),
             "someFutureEvent",
@@ -607,6 +616,27 @@ mod tests {
         let trigger_by_index = TriggerBy::IndexPrice;
         let trigger_by_index_str = serde_json::to_string(&trigger_by_index).unwrap();
         assert_eq!(trigger_by_index_str, "\"IndexPrice\"");
+    }
+
+    #[test]
+    fn test_order_update_speedbump() {
+        let data = r#"
+        {"E":1748288615134547,"O":"USER","Q":"3568.3445","S":"Ask","T":1748288615133255,"V":"RejectTaker","X":"PendingRelease","Z":"0","e":"speedbumpPlaced","f":"GTC","i":"114575842681290753","o":"LIMIT","p":"178.15","q":"20.03","r":false,"s":"SOL_USDC","t":null,"z":"0"}
+        "#;
+        let order_update: OrderUpdate = serde_json::from_str(data).unwrap();
+        assert_eq!(order_update.event_type, OrderUpdateType::SpeedbumpPlaced);
+        assert_eq!(order_update.order_status, OrderStatus::PendingRelease);
+
+        let data = r#"
+        {"E":1748288615134547,"O":"USER","Q":"3568.3445","R":"PriceBandBreach","S":"Ask","T":1748288615133255,"V":"RejectTaker","X":"Expired","Z":"0","e":"speedbumpFailed","f":"GTC","i":"114575842681290753","o":"LIMIT","p":"178.15","q":"20.03","r":false,"s":"SOL_USDC","t":null,"z":"0"}
+        "#;
+        let order_update: OrderUpdate = serde_json::from_str(data).unwrap();
+        assert_eq!(order_update.event_type, OrderUpdateType::SpeedbumpFailed);
+        assert_eq!(order_update.order_status, OrderStatus::Expired);
+        assert_eq!(
+            order_update.order_expiry_reason.as_deref(),
+            Some("PriceBandBreach")
+        );
     }
 
     #[test]
