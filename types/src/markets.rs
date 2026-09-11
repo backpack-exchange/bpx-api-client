@@ -300,7 +300,7 @@ pub struct LeverageFilter {
 #[serde(rename_all = "camelCase")]
 pub struct Token {
     pub blockchain: Blockchain,
-    pub contract_address: String,
+    pub contract_address: Option<String>,
     pub deposit_enabled: bool,
     pub display_name: String,
     pub minimum_deposit: Decimal,
