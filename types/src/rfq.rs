@@ -1,18 +1,31 @@
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
+use serde_with::{DeserializeFromStr, SerializeDisplay};
 use strum::{Display, EnumString};
 
 use crate::order::{OrderStatus, Side, SystemOrderType};
 
 #[derive(
-    Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash,
+    Debug,
+    Display,
+    Clone,
+    Default,
+    EnumString,
+    PartialEq,
+    Eq,
+    Hash,
+    SerializeDisplay,
+    DeserializeFromStr,
 )]
 #[strum(serialize_all = "PascalCase")]
-#[serde(rename_all = "PascalCase")]
+#[non_exhaustive]
 pub enum RfqExecutionMode {
     #[default]
     AwaitAccept,
     Immediate,
+    /// A value this client version does not know. Carries the wire string.
+    #[strum(default)]
+    Unknown(String),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -82,8 +95,12 @@ pub struct RequestForQuoteStream {
 }
 
 /// RequestForQuote updates received from the websocket.
+///
+/// An event type this client version does not know parses to
+/// [`RequestForQuoteUpdate::Unknown`] rather than failing.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "e", rename_all = "camelCase")] // Discriminates based on "e" field
+#[non_exhaustive]
 pub enum RequestForQuoteUpdate {
     RfqActive {
         #[serde(rename = "E")]
@@ -299,6 +316,10 @@ pub enum RequestForQuoteUpdate {
         #[serde(rename = "o", default)]
         system_order_type: Option<SystemOrderType>,
     },
+    /// An event type this client version does not know. Unlike the string enums, the raw
+    /// `e` tag is not preserved: serde discards it while matching the tagged variants.
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -388,6 +409,23 @@ impl QuotePayload {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_support::assert_wire;
+
+    #[test]
+    fn rfq_execution_mode_wire() {
+        assert_wire(&RfqExecutionMode::AwaitAccept, "AwaitAccept");
+        assert_wire(
+            &RfqExecutionMode::Unknown("SomeFutureMode".into()),
+            "SomeFutureMode",
+        );
+    }
+
+    #[test]
+    fn rfq_update_unknown_event_type() {
+        let data = r#"{"e":"someFutureEvent","E":1234567890,"R":123,"s":"BTC_USDC","q":"1.5","w":1234567890,"W":1234567899,"X":"New","T":1234567890}"#;
+        let update: RequestForQuoteUpdate = serde_json::from_str(data).unwrap();
+        assert!(matches!(update, RequestForQuoteUpdate::Unknown));
+    }
 
     #[test]
     fn rfq_active_without_system_order_type() {
