@@ -9,7 +9,9 @@ repository.workspace = true
 publish = true
 
 [package.metadata.docs.rs]
-all-features = true
+# Not all-features: `permessage-deflate` only compiles against the patched
+# tungstenite forks, which docs.rs does not have.
+features = ["ws"]
 
 [package.metadata.release]
 release = true
@@ -34,6 +36,10 @@ tokio-tungstenite = { workspace = true, optional = true }
 [features]
 default = []
 ws = ["futures-util", "tokio", "tokio-tungstenite"]
+# Offers RFC 7692 permessage-deflate on the WebSocket handshake (5-7x less
+# wire traffic on market-data streams). Needs the forked tungstenite crates;
+# see the README section "WebSocket compression".
+permessage-deflate = ["ws"]
 integration-tests = []
 
 [dev-dependencies]

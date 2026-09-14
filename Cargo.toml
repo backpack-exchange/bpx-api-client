@@ -38,10 +38,18 @@ tokio = { version = "1", features = [
     "sync",
     "time",
 ] }
-tokio-tungstenite = { version = "0.30.0", features = [
+tokio-tungstenite = { version = ">=0.28, <0.31", features = [
     "rustls-tls-native-roots",
 ] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
 url = "2"
 wiremock = "0.6.5"
+
+# These patches serve repository builds and CI only: they let the
+# `permessage-deflate` feature compile and run in tests. Published releases
+# do not carry patch sections — consumers who want the feature add the same
+# two patches to their own workspace (see README).
+[patch.crates-io]
+tungstenite = { git = "https://github.com/openai-oss-forks/tungstenite-rs", rev = "4fffad30fe373adbdcffab9545e9e9bf4f2fc19f" }
+tokio-tungstenite = { git = "https://github.com/openai-oss-forks/tokio-tungstenite", rev = "0e5b2d73aa18dd9f0a50ee9ff199d5aef7594186" }

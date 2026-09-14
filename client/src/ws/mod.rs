@@ -6,7 +6,15 @@ use serde::de::DeserializeOwned;
 use serde_json::{Value, json};
 use tokio::sync::mpsc::Sender;
 use tokio_tungstenite::tungstenite::protocol::Message;
+#[cfg(not(feature = "permessage-deflate"))]
 use tokio_tungstenite::{connect_async, tungstenite::Utf8Bytes};
+#[cfg(feature = "permessage-deflate")]
+use tokio_tungstenite::{
+    connect_async_with_config,
+    tungstenite::{
+        Utf8Bytes, extensions::compression::deflate::DeflateConfig, protocol::WebSocketConfig,
+    },
+};
 
 use crate::{BpxClient, DEFAULT_WINDOW, Error, now_millis};
 
@@ -56,9 +64,18 @@ impl BpxClient {
         };
 
         let ws_url = self.ws_url.as_str();
-        let (mut ws_stream, _) = connect_async(ws_url)
-            .await
-            .expect("Error connecting to WebSocket");
+        #[cfg(not(feature = "permessage-deflate"))]
+        let connect = connect_async(ws_url);
+        // Offer permessage-deflate on the handshake. The server selects the
+        // extension when it supports it and falls back to an uncompressed
+        // connection when it does not, so the offer is always safe.
+        #[cfg(feature = "permessage-deflate")]
+        let connect = {
+            let mut config = WebSocketConfig::default();
+            config.extensions.permessage_deflate = Some(DeflateConfig::default());
+            connect_async_with_config(ws_url, Some(config), false)
+        };
+        let (mut ws_stream, _) = connect.await.expect("Error connecting to WebSocket");
         ws_stream
             .send(Message::Text(Utf8Bytes::from(
                 subscribe_message.to_string(),

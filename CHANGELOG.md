@@ -1,3 +1,5 @@
+- Added an opt-in `permessage-deflate` feature: the WebSocket client offers RFC 7692 compression on the handshake (requires the patched tungstenite forks; see README).
+
 ## [0.21.0] - 2026-07-06
 
 ### 🚀 Features
