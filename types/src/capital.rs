@@ -83,6 +83,8 @@ pub enum DepositSource {
     // Payment processors.
     EqualsMoney,
     Banxa,
+    Moonpay,
+    Onramper,
     // Internal transfer.
     Internal,
     /// A source this client version does not know. Carries the wire string.
@@ -228,6 +230,8 @@ mod tests {
         assert_wire(&DepositSource::BitcoinCash, "bitcoinCash");
         assert_wire(&DepositSource::EqualsMoney, "equalsMoney");
         assert_wire(&DepositSource::Banxa, "banxa");
+        assert_wire(&DepositSource::Moonpay, "moonpay");
+        assert_wire(&DepositSource::Onramper, "onramper");
         assert_wire(&DepositSource::Internal, "internal");
         assert_wire(
             &DepositSource::Unknown("someFutureSource".into()),
