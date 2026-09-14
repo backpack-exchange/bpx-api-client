@@ -23,6 +23,10 @@ tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 
 [[bin]]
+name = "borrow_lend_markets"
+path = "src/bin/borrow_lend_markets.rs"
+
+[[bin]]
 name = "account"
 path = "src/bin/account.rs"
 
