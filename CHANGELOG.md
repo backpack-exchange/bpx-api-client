@@ -1,6 +1,15 @@
-- Added an opt-in `permessage-deflate` feature: the WebSocket client offers RFC 7692 compression on the handshake (requires the patched tungstenite forks; see README).
+## [0.22.0] - 2026-09-14
 
-## [0.21.0] - 2026-07-06
+### 🚀 Features
+
+- *(types)* Align Market with API fields ([#114](https://github.com/backpack-exchange/bpx-api-client/issues/114))
+- Add borrow/lend market endpoints ([#117](https://github.com/backpack-exchange/bpx-api-client/issues/117))
+- *(ws)* Opt-in permessage-deflate offer on the WebSocket handshake ([#124](https://github.com/backpack-exchange/bpx-api-client/issues/124))
+
+### 🐛 Bug Fixes
+
+- *(client)* Re-enable reqwest TLS for HTTPS requests ([#115](https://github.com/backpack-exchange/bpx-api-client/issues/115))
+## [0.21.0] - 2026-07-07
 
 ### 🚀 Features
 

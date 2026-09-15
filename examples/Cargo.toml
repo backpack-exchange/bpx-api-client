@@ -10,12 +10,12 @@ publish.workspace = true
 
 [dependencies]
 anyhow = { workspace = true }
-bpx-api-client = { path = "../client", version = "0.21.0", features = ["ws"] }
+bpx-api-client = { path = "../client", version = "0.22.0", features = ["ws"] }
 # Repository-only activator for the compression feature: the workspace patch
 # supplies the forked tungstenite, and this dependency turns its `deflate`
 # feature on so the gated client code compiles in CI.
 tungstenite = { version = "0.27", default-features = false, features = ["deflate"] }
-bpx-api-types = { path = "../types", version = "0.21.0" }
+bpx-api-types = { path = "../types", version = "0.22.0" }
 clap = { workspace = true, features = ["derive"] }
 dotenv = { workspace = true }
 rust_decimal = { workspace = true, features = ["serde"] }
