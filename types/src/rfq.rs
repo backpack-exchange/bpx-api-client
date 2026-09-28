@@ -132,10 +132,10 @@ pub enum RequestForQuoteUpdate {
         quantity: Option<Decimal>,
         #[serde(rename = "Q", skip_serializing_if = "Option::is_none")]
         quote_quantity: Option<Decimal>,
-        #[serde(rename = "w", default, skip_serializing_if = "Option::is_none")]
-        submission_time: Option<i64>,
-        #[serde(rename = "W", default, skip_serializing_if = "Option::is_none")]
-        expiry_time: Option<i64>,
+        #[serde(rename = "w")]
+        submission_time: i64,
+        #[serde(rename = "W")]
+        expiry_time: i64,
         #[serde(rename = "X")]
         order_status: OrderStatus,
         #[serde(rename = "T")]
@@ -174,10 +174,10 @@ pub enum RequestForQuoteUpdate {
         quote_quantity: Option<Decimal>,
         #[serde(rename = "p", default, skip_serializing_if = "Option::is_none")]
         price: Option<Decimal>,
-        #[serde(rename = "w", default, skip_serializing_if = "Option::is_none")]
-        submission_time: Option<i64>,
-        #[serde(rename = "W", default, skip_serializing_if = "Option::is_none")]
-        expiry_time: Option<i64>,
+        #[serde(rename = "w")]
+        submission_time: i64,
+        #[serde(rename = "W")]
+        expiry_time: i64,
         #[serde(rename = "O", default, skip_serializing_if = "Option::is_none")]
         order_expiry_time: Option<i64>,
         #[serde(rename = "z", default, skip_serializing_if = "Option::is_none")]
@@ -208,10 +208,10 @@ pub enum RequestForQuoteUpdate {
         quote_quantity: Option<Decimal>,
         #[serde(rename = "p", default, skip_serializing_if = "Option::is_none")]
         price: Option<Decimal>,
-        #[serde(rename = "w", default, skip_serializing_if = "Option::is_none")]
-        submission_time: Option<i64>,
-        #[serde(rename = "W", default, skip_serializing_if = "Option::is_none")]
-        expiry_time: Option<i64>,
+        #[serde(rename = "w")]
+        submission_time: i64,
+        #[serde(rename = "W")]
+        expiry_time: i64,
         #[serde(rename = "O", default, skip_serializing_if = "Option::is_none")]
         order_expiry_time: Option<i64>,
         #[serde(rename = "z", default, skip_serializing_if = "Option::is_none")]
@@ -242,10 +242,10 @@ pub enum RequestForQuoteUpdate {
         quote_quantity: Option<Decimal>,
         #[serde(rename = "p", default, skip_serializing_if = "Option::is_none")]
         price: Option<Decimal>,
-        #[serde(rename = "w", default, skip_serializing_if = "Option::is_none")]
-        submission_time: Option<i64>,
-        #[serde(rename = "W", default, skip_serializing_if = "Option::is_none")]
-        expiry_time: Option<i64>,
+        #[serde(rename = "w")]
+        submission_time: i64,
+        #[serde(rename = "W")]
+        expiry_time: i64,
         #[serde(rename = "O", default, skip_serializing_if = "Option::is_none")]
         order_expiry_time: Option<i64>,
         #[serde(rename = "z", default, skip_serializing_if = "Option::is_none")]
