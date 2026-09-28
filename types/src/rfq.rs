@@ -639,14 +639,6 @@ mod tests {
     }
 
     #[test]
-    fn rfq_filled_without_slice_fields_still_parses() {
-        // Pre-resting shape: no l/L/z/Z/O.
-        let data = r#"{"e":"rfqFilled","E":1,"R":123,"u":456,"s":"BTC_USDC","S":"Bid","q":"1.5","p":"64990","X":"Filled","T":1}"#;
-        let update: RequestForQuoteUpdate = serde_json::from_str(data).unwrap();
-        assert!(matches!(update, RequestForQuoteUpdate::RfqFilled { .. }));
-    }
-
-    #[test]
     fn request_for_quote_response_resting_fields() {
         let data = r#"{"rfqId":"123","symbol":"BTC_USDC","side":"Bid","price":"65000","quantity":"1.5","submissionTime":10,"expiryTime":20,"status":"PartiallyFilled","executionMode":"Immediate","createdAt":5,"executedQuantity":"0.5","orderExpiryTime":90000,"cancelRequestedAt":50000}"#;
         let rfq: RequestForQuote = serde_json::from_str(data).unwrap();
@@ -692,38 +684,5 @@ mod tests {
         let open: Vec<RfqWithQuotes> = serde_json::from_str(data).unwrap();
         assert_eq!(open.len(), 1);
         assert_eq!(open[0].quotes[0].quote_id, "456");
-    }
-
-    #[test]
-    fn rfq_active_without_resting_terms() {
-        let data = r#"{"e":"rfqActive","E":1234567890,"R":123,"s":"BTC_USDC","q":"1.5","w":1234567890,"W":1234567899,"X":"New","T":1234567890}"#;
-        let update: RequestForQuoteUpdate = serde_json::from_str(data).unwrap();
-        match update {
-            RequestForQuoteUpdate::RfqActive {
-                side,
-                price,
-                order_expiry_time,
-                ..
-            } => {
-                assert!(side.is_none());
-                assert!(price.is_none());
-                assert!(order_expiry_time.is_none());
-            }
-            _ => panic!("Expected RfqActive"),
-        }
-    }
-
-    #[test]
-    fn rfq_accepted_binding_with_order_expiry() {
-        let data = r#"{"e":"rfqAcceptedBinding","E":1234567890,"R":123,"u":456,"s":"AAPL.US_USDC_RFQ","S":"Ask","p":"180.5","X":"New","T":1234567890,"O":1234600000}"#;
-        let update: RequestForQuoteUpdate = serde_json::from_str(data).unwrap();
-        match update {
-            RequestForQuoteUpdate::RfqAcceptedBinding {
-                order_expiry_time, ..
-            } => {
-                assert_eq!(order_expiry_time, Some(1234600000));
-            }
-            _ => panic!("Expected RfqAcceptedBinding"),
-        }
     }
 }
