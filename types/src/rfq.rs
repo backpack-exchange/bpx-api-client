@@ -30,24 +30,18 @@ pub struct RequestForQuotePayload {
     pub side: Side,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub execution_mode: Option<RfqExecutionMode>,
-    /// Whether to lend proceeds.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub auto_lend: Option<bool>,
-    /// Whether to redeem lends if required to fulfill the RFQ.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub auto_lend_redeem: Option<bool>,
-    /// Whether to borrow assets if required to fulfill the RFQ.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub auto_borrow: Option<bool>,
-    /// Whether to use proceeds to repay borrows.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub auto_borrow_repay: Option<bool>,
-    /// Order expiry (ms). Makes this a resting RFQ; requires `Immediate` and a `price`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub order_expiry_time: Option<i64>,
 }
 
-/// Query parameters for listing open RFQs.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OpenRfqsQuery {
@@ -142,14 +136,10 @@ pub enum RequestForQuoteUpdate {
         timestamp: i64,
         #[serde(rename = "o", default)]
         system_order_type: Option<SystemOrderType>,
-        /// Side of the requester. Only a resting RFQ discloses it.
         #[serde(rename = "S", default, skip_serializing_if = "Option::is_none")]
         side: Option<Side>,
-        /// All-in limit price of the requester. Only a resting RFQ discloses it.
         #[serde(rename = "p", default, skip_serializing_if = "Option::is_none")]
         price: Option<Decimal>,
-        /// Order expiry of a resting RFQ, in milliseconds. A bound resting RFQ
-        /// stays open until this time.
         #[serde(rename = "O", default, skip_serializing_if = "Option::is_none")]
         order_expiry_time: Option<i64>,
         #[serde(rename = "z", default, skip_serializing_if = "Option::is_none")]
@@ -284,8 +274,6 @@ pub enum RequestForQuoteUpdate {
         order_status: OrderStatus,
         #[serde(rename = "T")]
         timestamp: i64,
-        /// Order expiry of a resting RFQ, in milliseconds. The quoter works
-        /// the order until this time.
         #[serde(rename = "O", default, skip_serializing_if = "Option::is_none")]
         order_expiry_time: Option<i64>,
         #[serde(rename = "z", default, skip_serializing_if = "Option::is_none")]
@@ -295,15 +283,11 @@ pub enum RequestForQuoteUpdate {
         #[serde(rename = "o", default)]
         system_order_type: Option<SystemOrderType>,
     },
-    /// Sent to the requester and to the quoter of a bound resting RFQ when the
-    /// requester asks to cancel it. The quoter settles what filled and then
-    /// cancels the remainder.
     RfqCancelRequested {
         #[serde(rename = "E")]
         event_time: i64,
         #[serde(rename = "R")]
         rfq_id: u64,
-        /// Set on the quoter update only.
         #[serde(rename = "u", default, skip_serializing_if = "Option::is_none")]
         quote_id: Option<u64>,
         #[serde(rename = "C", skip_serializing_if = "Option::is_none")]
@@ -324,10 +308,8 @@ pub enum RequestForQuoteUpdate {
         order_status: OrderStatus,
         #[serde(rename = "T")]
         timestamp: i64,
-        /// Set on the requester update only.
         #[serde(rename = "w", default, skip_serializing_if = "Option::is_none")]
         submission_time: Option<i64>,
-        /// Set on the requester update only.
         #[serde(rename = "W", default, skip_serializing_if = "Option::is_none")]
         expiry_time: Option<i64>,
         #[serde(rename = "z", default, skip_serializing_if = "Option::is_none")]
@@ -405,7 +387,6 @@ pub enum RequestForQuoteUpdate {
         #[serde(rename = "o", default)]
         system_order_type: Option<SystemOrderType>,
     },
-    /// A fill. Resting RFQs fill in slices (`l`/`L`) with `PartiallyFilled` until done.
     RfqFilled {
         #[serde(rename = "E")]
         event_time: i64,
@@ -486,16 +467,12 @@ pub struct RequestForQuote {
     pub created_at: i64,
     #[serde(default)]
     pub system_order_type: Option<SystemOrderType>,
-    /// Cumulative settled base quantity (base-denominated RFQs).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub executed_quantity: Option<Decimal>,
-    /// Cumulative settled quote quantity (quote-denominated RFQs).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub executed_quote_quantity: Option<Decimal>,
-    /// Order expiry (ms). Set only on resting RFQs.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub order_expiry_time: Option<i64>,
-    /// When a cancel was requested (ms). The RFQ stays active until the quoter settles it.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub cancel_requested_at: Option<i64>,
 }
