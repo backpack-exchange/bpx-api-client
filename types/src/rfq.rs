@@ -128,30 +128,34 @@ pub enum RequestForQuoteUpdate {
         client_id: Option<u32>,
         #[serde(rename = "s")]
         symbol: String,
-        #[serde(rename = "S", default, skip_serializing_if = "Option::is_none")]
-        side: Option<Side>,
         #[serde(rename = "q", skip_serializing_if = "Option::is_none")]
         quantity: Option<Decimal>,
         #[serde(rename = "Q", skip_serializing_if = "Option::is_none")]
         quote_quantity: Option<Decimal>,
-        #[serde(rename = "p", default, skip_serializing_if = "Option::is_none")]
-        price: Option<Decimal>,
         #[serde(rename = "w", default, skip_serializing_if = "Option::is_none")]
         submission_time: Option<i64>,
         #[serde(rename = "W", default, skip_serializing_if = "Option::is_none")]
         expiry_time: Option<i64>,
-        #[serde(rename = "O", default, skip_serializing_if = "Option::is_none")]
-        order_expiry_time: Option<i64>,
-        #[serde(rename = "z", default, skip_serializing_if = "Option::is_none")]
-        executed_quantity: Option<Decimal>,
-        #[serde(rename = "Z", default, skip_serializing_if = "Option::is_none")]
-        executed_quote_quantity: Option<Decimal>,
         #[serde(rename = "X")]
         order_status: OrderStatus,
         #[serde(rename = "T")]
         timestamp: i64,
         #[serde(rename = "o", default)]
         system_order_type: Option<SystemOrderType>,
+        /// Side of the requester. Only a resting RFQ discloses it.
+        #[serde(rename = "S", default, skip_serializing_if = "Option::is_none")]
+        side: Option<Side>,
+        /// All-in limit price of the requester. Only a resting RFQ discloses it.
+        #[serde(rename = "p", default, skip_serializing_if = "Option::is_none")]
+        price: Option<Decimal>,
+        /// Order expiry of a resting RFQ, in milliseconds. A bound resting RFQ
+        /// stays open until this time.
+        #[serde(rename = "O", default, skip_serializing_if = "Option::is_none")]
+        order_expiry_time: Option<i64>,
+        #[serde(rename = "z", default, skip_serializing_if = "Option::is_none")]
+        executed_quantity: Option<Decimal>,
+        #[serde(rename = "Z", default, skip_serializing_if = "Option::is_none")]
+        executed_quote_quantity: Option<Decimal>,
     },
     RfqRefreshed {
         #[serde(rename = "E")]
@@ -255,44 +259,6 @@ pub enum RequestForQuoteUpdate {
         #[serde(rename = "o", default)]
         system_order_type: Option<SystemOrderType>,
     },
-    /// A cancel was requested on a bound resting RFQ. Sent to both parties;
-    /// the quoter's copy has `u` and lacks `w`/`W`/`O`.
-    RfqCancelRequested {
-        #[serde(rename = "E")]
-        event_time: i64,
-        #[serde(rename = "R")]
-        rfq_id: u64,
-        #[serde(rename = "u", default, skip_serializing_if = "Option::is_none")]
-        quote_id: Option<u64>,
-        #[serde(rename = "C", skip_serializing_if = "Option::is_none")]
-        client_id: Option<u32>,
-        #[serde(rename = "s")]
-        symbol: String,
-        #[serde(rename = "S", default, skip_serializing_if = "Option::is_none")]
-        side: Option<Side>,
-        #[serde(rename = "q", skip_serializing_if = "Option::is_none")]
-        quantity: Option<Decimal>,
-        #[serde(rename = "Q", skip_serializing_if = "Option::is_none")]
-        quote_quantity: Option<Decimal>,
-        #[serde(rename = "p", default, skip_serializing_if = "Option::is_none")]
-        price: Option<Decimal>,
-        #[serde(rename = "w", default, skip_serializing_if = "Option::is_none")]
-        submission_time: Option<i64>,
-        #[serde(rename = "W", default, skip_serializing_if = "Option::is_none")]
-        expiry_time: Option<i64>,
-        #[serde(rename = "O", default, skip_serializing_if = "Option::is_none")]
-        order_expiry_time: Option<i64>,
-        #[serde(rename = "z", default, skip_serializing_if = "Option::is_none")]
-        executed_quantity: Option<Decimal>,
-        #[serde(rename = "Z", default, skip_serializing_if = "Option::is_none")]
-        executed_quote_quantity: Option<Decimal>,
-        #[serde(rename = "X")]
-        order_status: OrderStatus,
-        #[serde(rename = "T")]
-        timestamp: i64,
-        #[serde(rename = "o", default)]
-        system_order_type: Option<SystemOrderType>,
-    },
     // Sent to quoters. Deferred settlement RFQs only.
     RfqAcceptedBinding {
         #[serde(rename = "E")]
@@ -314,16 +280,60 @@ pub enum RequestForQuoteUpdate {
         quote_quantity: Option<Decimal>,
         #[serde(rename = "p", skip_serializing_if = "Option::is_none")]
         price: Option<Decimal>,
+        #[serde(rename = "X")]
+        order_status: OrderStatus,
+        #[serde(rename = "T")]
+        timestamp: i64,
+        /// Order expiry of a resting RFQ, in milliseconds. The quoter works
+        /// the order until this time.
         #[serde(rename = "O", default, skip_serializing_if = "Option::is_none")]
         order_expiry_time: Option<i64>,
         #[serde(rename = "z", default, skip_serializing_if = "Option::is_none")]
         executed_quantity: Option<Decimal>,
         #[serde(rename = "Z", default, skip_serializing_if = "Option::is_none")]
         executed_quote_quantity: Option<Decimal>,
+        #[serde(rename = "o", default)]
+        system_order_type: Option<SystemOrderType>,
+    },
+    /// Sent to the requester and to the quoter of a bound resting RFQ when the
+    /// requester asks to cancel it. The quoter settles what filled and then
+    /// cancels the remainder.
+    RfqCancelRequested {
+        #[serde(rename = "E")]
+        event_time: i64,
+        #[serde(rename = "R")]
+        rfq_id: u64,
+        /// Set on the quoter update only.
+        #[serde(rename = "u", default, skip_serializing_if = "Option::is_none")]
+        quote_id: Option<u64>,
+        #[serde(rename = "C", skip_serializing_if = "Option::is_none")]
+        client_id: Option<u32>,
+        #[serde(rename = "s")]
+        symbol: String,
+        #[serde(rename = "S", default, skip_serializing_if = "Option::is_none")]
+        side: Option<Side>,
+        #[serde(rename = "q", default, skip_serializing_if = "Option::is_none")]
+        quantity: Option<Decimal>,
+        #[serde(rename = "Q", default, skip_serializing_if = "Option::is_none")]
+        quote_quantity: Option<Decimal>,
+        #[serde(rename = "p", default, skip_serializing_if = "Option::is_none")]
+        price: Option<Decimal>,
+        #[serde(rename = "O", default, skip_serializing_if = "Option::is_none")]
+        order_expiry_time: Option<i64>,
         #[serde(rename = "X")]
         order_status: OrderStatus,
         #[serde(rename = "T")]
         timestamp: i64,
+        /// Set on the requester update only.
+        #[serde(rename = "w", default, skip_serializing_if = "Option::is_none")]
+        submission_time: Option<i64>,
+        /// Set on the requester update only.
+        #[serde(rename = "W", default, skip_serializing_if = "Option::is_none")]
+        expiry_time: Option<i64>,
+        #[serde(rename = "z", default, skip_serializing_if = "Option::is_none")]
+        executed_quantity: Option<Decimal>,
+        #[serde(rename = "Z", default, skip_serializing_if = "Option::is_none")]
+        executed_quote_quantity: Option<Decimal>,
         #[serde(rename = "o", default)]
         system_order_type: Option<SystemOrderType>,
     },
@@ -705,5 +715,38 @@ mod tests {
         let open: Vec<RfqWithQuotes> = serde_json::from_str(data).unwrap();
         assert_eq!(open.len(), 1);
         assert_eq!(open[0].quotes[0].quote_id, "456");
+    }
+
+    #[test]
+    fn rfq_active_without_resting_terms() {
+        let data = r#"{"e":"rfqActive","E":1234567890,"R":123,"s":"BTC_USDC","q":"1.5","w":1234567890,"W":1234567899,"X":"New","T":1234567890}"#;
+        let update: RequestForQuoteUpdate = serde_json::from_str(data).unwrap();
+        match update {
+            RequestForQuoteUpdate::RfqActive {
+                side,
+                price,
+                order_expiry_time,
+                ..
+            } => {
+                assert!(side.is_none());
+                assert!(price.is_none());
+                assert!(order_expiry_time.is_none());
+            }
+            _ => panic!("Expected RfqActive"),
+        }
+    }
+
+    #[test]
+    fn rfq_accepted_binding_with_order_expiry() {
+        let data = r#"{"e":"rfqAcceptedBinding","E":1234567890,"R":123,"u":456,"s":"AAPL.US_USDC_RFQ","S":"Ask","p":"180.5","X":"New","T":1234567890,"O":1234600000}"#;
+        let update: RequestForQuoteUpdate = serde_json::from_str(data).unwrap();
+        match update {
+            RequestForQuoteUpdate::RfqAcceptedBinding {
+                order_expiry_time, ..
+            } => {
+                assert_eq!(order_expiry_time, Some(1234600000));
+            }
+            _ => panic!("Expected RfqAcceptedBinding"),
+        }
     }
 }
