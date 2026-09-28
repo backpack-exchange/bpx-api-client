@@ -30,6 +30,8 @@ pub struct RequestForQuotePayload {
     pub side: Side,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub execution_mode: Option<RfqExecutionMode>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub order_expiry_time: Option<i64>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
