@@ -3,7 +3,7 @@
 //! This module contains various types used across the Backpack Exchange API,
 //! including enums and structs for capital, markets, orders, trades, and user data.
 
-use serde::{Deserialize, Serialize};
+use serde_with::{DeserializeFromStr, SerializeDisplay};
 use strum::{Display, EnumIter, EnumString};
 
 pub mod account;
@@ -24,16 +24,16 @@ pub mod vault;
     Debug,
     Display,
     Clone,
-    Copy,
-    Serialize,
-    Deserialize,
     Default,
     EnumString,
     PartialEq,
     Eq,
     Hash,
     EnumIter,
+    SerializeDisplay,
+    DeserializeFromStr,
 )]
+#[non_exhaustive]
 pub enum Blockchain {
     #[default]
     Solana,
@@ -60,15 +60,40 @@ pub enum Blockchain {
     Sei,
     Tron,
     #[strum(serialize = "0G")]
-    #[serde(rename = "0G")]
     ZeroG,
     Eclipse,
     Fogo,
     Monad,
     Stable,
     Zcash,
-    #[serde(other)]
-    Unknown,
+    Avalanche,
+    BitcoinCash,
+    Linea,
+    Near,
+    Robinhood,
+    Tempo,
+    /// A blockchain this client version does not know. Carries the wire string.
+    #[strum(default)]
+    Unknown(String),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_support::assert_wire;
+
+    #[test]
+    fn blockchain_wire() {
+        assert_wire(&Blockchain::Solana, "Solana");
+        assert_wire(&Blockchain::ZeroG, "0G");
+        assert_wire(&Blockchain::HyperEVM, "HyperEVM");
+        assert_wire(&Blockchain::XRP, "XRP");
+        assert_wire(&Blockchain::BitcoinCash, "BitcoinCash");
+        assert_wire(
+            &Blockchain::Unknown("SomeFutureChain".into()),
+            "SomeFutureChain",
+        );
+    }
 }
 
 #[cfg(test)]

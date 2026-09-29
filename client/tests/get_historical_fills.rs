@@ -41,7 +41,7 @@ async fn get_historical_fills_omits_none_query_params() {
 
     let client = BpxClient::builder()
         .base_url(mock_server.uri())
-        .secret(&common::test_secret())
+        .secret(common::test_secret())
         .build()
         .expect("client should build");
 
