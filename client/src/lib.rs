@@ -46,7 +46,7 @@ use routes::{
     futures::API_FUTURES_POSITION,
     history::API_FILLS_HISTORY,
     order::{API_ORDER, API_ORDERS},
-    rfq::{API_RFQ, API_RFQ_QUOTE},
+    rfq::{API_RFQ, API_RFQ_QUOTE, API_RFQS},
     user::API_USER_2FA,
     vault::{API_VAULT_MINT, API_VAULT_MINTS_HISTORY, API_VAULT_REDEEM, API_VAULT_REDEEMS_HISTORY},
 };
@@ -253,6 +253,7 @@ impl BpxClient {
             API_ORDERS if method == Method::GET => "orderQueryAll",
             API_ORDERS if method == Method::POST => "orderExecute",
             API_ORDERS if method == Method::DELETE => "orderCancelAll",
+            API_RFQS if method == Method::GET => "rfqQuery",
             API_RFQ if method == Method::POST => "rfqSubmit",
             API_RFQ_QUOTE if method == Method::POST => "quoteSubmit",
             API_RFQ_ACCEPT if method == Method::POST => "quoteAccept",
