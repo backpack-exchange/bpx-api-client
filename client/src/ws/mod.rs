@@ -1,3 +1,4 @@
+// Modified to return connection and subscription-send errors instead of panicking.
 use crate::error::Result;
 use base64ct::{Base64, Encoding};
 use ed25519_dalek::Signer;
@@ -20,6 +21,9 @@ use crate::{BpxClient, DEFAULT_WINDOW, Error, now_millis};
 
 impl BpxClient {
     /// Subscribes to a private WebSocket stream and sends messages of type `T` through a transmitter channel.
+    ///
+    /// # Errors
+    /// Returns [`Error::WebSocket`] if connecting or sending the subscription fails.
     pub async fn subscribe<T>(&self, stream: &str, tx: Sender<T>) -> Result<()>
     where
         T: DeserializeOwned + Send + 'static,
@@ -28,6 +32,9 @@ impl BpxClient {
     }
 
     /// Subscribes to multiple private WebSocket streams and sends messages of type `T` through a transmitter channel.
+    ///
+    /// # Errors
+    /// Returns [`Error::WebSocket`] if connecting or sending the subscription fails.
     pub async fn subscribe_multiple<T>(&self, streams: &[&str], tx: Sender<T>) -> Result<()>
     where
         T: DeserializeOwned + Send + 'static,
@@ -75,13 +82,12 @@ impl BpxClient {
             config.extensions.permessage_deflate = Some(DeflateConfig::default());
             connect_async_with_config(ws_url, Some(config), false)
         };
-        let (mut ws_stream, _) = connect.await.expect("Error connecting to WebSocket");
+        let (mut ws_stream, _) = connect.await?;
         ws_stream
             .send(Message::Text(Utf8Bytes::from(
                 subscribe_message.to_string(),
             )))
-            .await
-            .expect("Error subscribing to WebSocket");
+            .await?;
 
         tracing::debug!("Subscribed to {streams:#?} streams...");
 
