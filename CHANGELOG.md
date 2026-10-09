@@ -1,4 +1,9 @@
-## [0.22.0] - 2026-09-14
+## [0.23.0] - 2026-09-29
+
+### 🚀 Features
+
+- RFQ parameter additions and resting RFQs ([#128](https://github.com/backpack-exchange/bpx-api-client/issues/128))
+## [0.22.0] - 2026-09-15
 
 ### 🚀 Features
 
