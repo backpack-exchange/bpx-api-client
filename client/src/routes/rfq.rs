@@ -45,7 +45,7 @@ impl BpxClient {
     pub async fn submit_rfq(&self, payload: RequestForQuotePayload) -> Result<RequestForQuote> {
         let endpoint = self.base_url.join(API_RFQ)?;
         let res = self.post(endpoint, payload).await?;
-        res.json().await.map_err(Into::into)
+        Self::deserialize_json(res).await
     }
 
     /// Cancels an RFQ. A bound resting RFQ is only marked (`cancel_requested_at`)
@@ -56,7 +56,7 @@ impl BpxClient {
     ) -> Result<RequestForQuote> {
         let endpoint = self.base_url.join(API_RFQ_CANCEL)?;
         let res = self.post(endpoint, payload).await?;
-        res.json().await.map_err(Into::into)
+        Self::deserialize_json(res).await
     }
 
     pub async fn refresh_rfq(
@@ -65,19 +65,19 @@ impl BpxClient {
     ) -> Result<RequestForQuote> {
         let endpoint = self.base_url.join(API_RFQ_REFRESH)?;
         let res = self.post(endpoint, payload).await?;
-        res.json().await.map_err(Into::into)
+        Self::deserialize_json(res).await
     }
 
     pub async fn accept_quote(&self, payload: QuoteAcceptPayload) -> Result<RequestForQuote> {
         let endpoint = self.base_url.join(API_RFQ_ACCEPT)?;
         let res = self.post(endpoint, payload).await?;
-        res.json().await.map_err(Into::into)
+        Self::deserialize_json(res).await
     }
 
     pub async fn submit_quote(&self, payload: QuotePayload) -> Result<Quote> {
         let endpoint = self.base_url.join(API_RFQ_QUOTE)?;
         let res = self.post(endpoint, payload).await?;
-        res.json().await.map_err(Into::into)
+        Self::deserialize_json(res).await
     }
 
     #[cfg(feature = "ws")]

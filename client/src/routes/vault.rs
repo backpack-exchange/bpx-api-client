@@ -25,7 +25,7 @@ impl BpxClient {
     pub async fn get_vaults(&self) -> Result<Vec<Vault>> {
         let url = self.base_url.join(API_VAULTS)?;
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::deserialize_json(res).await
     }
 
     /// Mints vault tokens by depositing an asset into a vault.
@@ -59,7 +59,7 @@ impl BpxClient {
         let mut url = self.base_url.join(API_VAULTS_HISTORY)?;
         url.set_query(Some(&query_string));
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::deserialize_json(res).await
     }
 
     /// Fetches vault mint history (authenticated).
@@ -69,7 +69,7 @@ impl BpxClient {
         let mut url = self.base_url.join(API_VAULT_MINTS_HISTORY)?;
         url.set_query(Some(&query_string));
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::deserialize_json(res).await
     }
 
     /// Fetches vault redeem history (authenticated).
@@ -82,6 +82,6 @@ impl BpxClient {
         let mut url = self.base_url.join(API_VAULT_REDEEMS_HISTORY)?;
         url.set_query(Some(&query_string));
         let res = self.get(url).await?;
-        res.json().await.map_err(Into::into)
+        Self::deserialize_json(res).await
     }
 }

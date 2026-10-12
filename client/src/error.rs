@@ -20,6 +20,20 @@ pub enum Error {
         message: Box<str>,
     },
 
+    /// Response body could not be deserialized into the expected type.
+    ///
+    /// Carries the full response body so callers can inspect what the API
+    /// actually returned. `Display` shows a truncated preview of the body.
+    #[error(
+        "Failed to deserialize API response: {source}; body: {}",
+        body_preview(body)
+    )]
+    Deserialize {
+        #[source]
+        source: serde_json::Error,
+        body: Box<str>,
+    },
+
     /// Invalid HTTP header value.
     #[error(transparent)]
     InvalidHeaderValue(#[from] reqwest::header::InvalidHeaderValue),
@@ -60,5 +74,39 @@ pub enum Error {
 impl From<url::ParseError> for Error {
     fn from(e: url::ParseError) -> Self {
         Error::UrlParseError(e.to_string().into_boxed_str())
+    }
+}
+
+/// Maximum number of bytes of a response body included in error messages.
+const BODY_PREVIEW_LEN: usize = 2000;
+
+/// Truncates `body` to at most [`BODY_PREVIEW_LEN`] bytes on a char boundary.
+fn body_preview(body: &str) -> String {
+    if body.len() <= BODY_PREVIEW_LEN {
+        return body.to_string();
+    }
+    let mut end = BODY_PREVIEW_LEN;
+    while !body.is_char_boundary(end) {
+        end -= 1;
+    }
+    format!("{}...[truncated, {} bytes total]", &body[..end], body.len())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn body_preview_does_not_split_multibyte_chars() {
+        // 'é' is 2 bytes; 1999 ASCII bytes + 'é' puts byte 2000 mid-character.
+        let body = format!("{}é{}", "a".repeat(BODY_PREVIEW_LEN - 1), "b".repeat(100));
+        let preview = body_preview(&body);
+        assert!(preview.starts_with(&"a".repeat(BODY_PREVIEW_LEN - 1)));
+        assert!(preview.contains("truncated"));
+    }
+
+    #[test]
+    fn body_preview_passes_short_bodies_through() {
+        assert_eq!(body_preview("{}"), "{}");
     }
 }
