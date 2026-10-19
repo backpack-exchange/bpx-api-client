@@ -7,7 +7,6 @@ use crate::margin::MarginFunction;
 pub struct FuturePosition {
     pub break_even_price: String,
     pub cumulative_funding_payment: String,
-    pub cumulative_interest: String,
     pub entry_price: String,
     pub est_liquidation_price: String,
     pub imf: String,
