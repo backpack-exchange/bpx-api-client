@@ -1,7 +1,6 @@
 use bpx_api_types::rfq::{
     OpenRfqsQuery, Quote, QuoteAcceptPayload, QuotePayload, RequestForQuote,
-    RequestForQuoteCancelPayload, RequestForQuotePayload, RequestForQuoteRefreshPayload,
-    RfqWithQuotes,
+    RequestForQuoteCancelPayload, RequestForQuotePayload, RfqWithQuotes,
 };
 
 #[cfg(feature = "ws")]
@@ -20,8 +19,6 @@ pub const API_RFQS: &str = "/api/v1/rfqs";
 pub const API_RFQ_QUOTE: &str = "/api/v1/rfq/quote";
 #[doc(hidden)]
 pub const API_RFQ_CANCEL: &str = "/api/v1/rfq/cancel";
-#[doc(hidden)]
-pub const API_RFQ_REFRESH: &str = "/api/v1/rfq/refresh";
 #[doc(hidden)]
 pub const API_RFQ_ACCEPT: &str = "/api/v1/rfq/accept";
 
@@ -55,15 +52,6 @@ impl BpxClient {
         payload: RequestForQuoteCancelPayload,
     ) -> Result<RequestForQuote> {
         let endpoint = self.base_url.join(API_RFQ_CANCEL)?;
-        let res = self.post(endpoint, payload).await?;
-        res.json().await.map_err(Into::into)
-    }
-
-    pub async fn refresh_rfq(
-        &self,
-        payload: RequestForQuoteRefreshPayload,
-    ) -> Result<RequestForQuote> {
-        let endpoint = self.base_url.join(API_RFQ_REFRESH)?;
         let res = self.post(endpoint, payload).await?;
         res.json().await.map_err(Into::into)
     }

@@ -71,12 +71,6 @@ pub struct RequestForQuoteCancelPayload {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct RequestForQuoteRefreshPayload {
-    pub rfq_id: String,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct QuoteAcceptPayload {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rfq_id: Option<String>,
@@ -146,40 +140,6 @@ pub enum RequestForQuoteUpdate {
         executed_quantity: Option<Decimal>,
         #[serde(rename = "Z", default, skip_serializing_if = "Option::is_none")]
         executed_quote_quantity: Option<Decimal>,
-    },
-    RfqRefreshed {
-        #[serde(rename = "E")]
-        event_time: i64,
-        #[serde(rename = "R")]
-        rfq_id: u64,
-        #[serde(rename = "C", skip_serializing_if = "Option::is_none")]
-        client_id: Option<u32>,
-        #[serde(rename = "s")]
-        symbol: String,
-        #[serde(rename = "S")]
-        side: Side,
-        #[serde(rename = "q", skip_serializing_if = "Option::is_none")]
-        quantity: Option<Decimal>,
-        #[serde(rename = "Q", skip_serializing_if = "Option::is_none")]
-        quote_quantity: Option<Decimal>,
-        #[serde(rename = "p", default, skip_serializing_if = "Option::is_none")]
-        price: Option<Decimal>,
-        #[serde(rename = "w")]
-        submission_time: i64,
-        #[serde(rename = "W")]
-        expiry_time: i64,
-        #[serde(rename = "O", default, skip_serializing_if = "Option::is_none")]
-        order_expiry_time: Option<i64>,
-        #[serde(rename = "z", default, skip_serializing_if = "Option::is_none")]
-        executed_quantity: Option<Decimal>,
-        #[serde(rename = "Z", default, skip_serializing_if = "Option::is_none")]
-        executed_quote_quantity: Option<Decimal>,
-        #[serde(rename = "X")]
-        order_status: OrderStatus,
-        #[serde(rename = "T")]
-        timestamp: i64,
-        #[serde(rename = "o", default)]
-        system_order_type: Option<SystemOrderType>,
     },
     RfqAccepted {
         #[serde(rename = "E")]
