@@ -3,6 +3,8 @@
 //! Defines a custom `Error` type and a `Result` type alias to encapsulate
 //! various errors that can occur during API interactions.
 
+// Modified to expose WebSocket setup failures through Result.
+
 /// A type alias for `Result` using the custom `Error` type.
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -52,6 +54,11 @@ pub enum Error {
     #[error(transparent)]
     Utf8(#[from] std::str::Utf8Error),
 
+    /// Error connecting to a WebSocket or sending a subscription.
+    #[cfg(feature = "ws")]
+    #[error(transparent)]
+    WebSocket(Box<tokio_tungstenite::tungstenite::Error>),
+
     /// Invalid URL format.
     #[error("Invalid URL: {0}")]
     UrlParseError(Box<str>),
@@ -60,5 +67,12 @@ pub enum Error {
 impl From<url::ParseError> for Error {
     fn from(e: url::ParseError) -> Self {
         Error::UrlParseError(e.to_string().into_boxed_str())
+    }
+}
+
+#[cfg(feature = "ws")]
+impl From<tokio_tungstenite::tungstenite::Error> for Error {
+    fn from(error: tokio_tungstenite::tungstenite::Error) -> Self {
+        Self::WebSocket(Box::new(error))
     }
 }
