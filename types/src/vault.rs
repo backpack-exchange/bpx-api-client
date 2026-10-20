@@ -1,6 +1,8 @@
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
+use serde_with::{DeserializeFromStr, SerializeDisplay};
+use strum::{Display, EnumString};
 
 /// Public vault information.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -162,11 +164,17 @@ pub struct VaultRedeemHistoryParams {
     pub offset: Option<u64>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(
+    Debug, Display, Clone, EnumString, PartialEq, Eq, Hash, SerializeDisplay, DeserializeFromStr,
+)]
+#[non_exhaustive]
 pub enum VaultRedeemStatus {
     Requested,
     Redeemed,
     Cancelled,
+    /// A status this client version does not know. Carries the wire string.
+    #[strum(default)]
+    Unknown(String),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -182,4 +190,19 @@ pub struct VaultRedeem {
     pub nav: Option<Decimal>,
     pub reason: Option<String>,
     pub timestamp: i64,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_support::assert_wire;
+
+    #[test]
+    fn vault_redeem_status_wire() {
+        assert_wire(&VaultRedeemStatus::Requested, "Requested");
+        assert_wire(
+            &VaultRedeemStatus::Unknown("SomeFutureStatus".into()),
+            "SomeFutureStatus",
+        );
+    }
 }

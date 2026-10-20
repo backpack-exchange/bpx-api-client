@@ -2,13 +2,20 @@ use std::{fmt, str::FromStr};
 
 use rust_decimal::{Decimal, prelude::FromPrimitive};
 use serde::{Deserialize, Deserializer, Serialize, de::Visitor};
+use serde_with::{DeserializeFromStr, SerializeDisplay};
 use strum::{Display, EnumString};
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(
+    Debug, Display, Clone, EnumString, PartialEq, Eq, Hash, SerializeDisplay, DeserializeFromStr,
+)]
+#[non_exhaustive]
 pub enum TriggerBy {
     LastPrice,
     MarkPrice,
     IndexPrice,
+    /// A value this client version does not know. Carries the wire string.
+    #[strum(default)]
+    Unknown(String),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -198,10 +205,19 @@ pub enum SelfTradePrevention {
 }
 
 #[derive(
-    Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash,
+    Debug,
+    Display,
+    Clone,
+    Default,
+    EnumString,
+    PartialEq,
+    Eq,
+    Hash,
+    SerializeDisplay,
+    DeserializeFromStr,
 )]
 #[strum(serialize_all = "PascalCase")]
-#[serde(rename_all = "PascalCase")]
+#[non_exhaustive]
 pub enum OrderStatus {
     Cancelled,
     Expired,
@@ -211,13 +227,27 @@ pub enum OrderStatus {
     PartiallyFilled,
     Triggered,
     TriggerPending,
+    /// The trigger order failed to trigger.
+    TriggerFailed,
+    /// A status this client version does not know. Carries the wire string.
+    #[strum(default)]
+    Unknown(String),
 }
 
 #[derive(
-    Debug, Display, Clone, Copy, Serialize, Deserialize, Default, EnumString, PartialEq, Eq, Hash,
+    Debug,
+    Display,
+    Clone,
+    Default,
+    EnumString,
+    PartialEq,
+    Eq,
+    Hash,
+    SerializeDisplay,
+    DeserializeFromStr,
 )]
 #[strum(serialize_all = "PascalCase")]
-#[serde(rename_all = "PascalCase")]
+#[non_exhaustive]
 pub enum SystemOrderType {
     #[default]
     LiquidatePositionOnBook,
@@ -226,6 +256,9 @@ pub enum SystemOrderType {
     CollateralConversion,
     FutureExpiry,
     OrderBookClosed,
+    /// A value this client version does not know. Carries the wire string.
+    #[strum(default)]
+    Unknown(String),
 }
 
 #[derive(
@@ -319,8 +352,11 @@ pub struct CancelOpenOrdersPayload {
     pub symbol: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[derive(
+    Debug, Display, Clone, EnumString, PartialEq, Eq, Hash, SerializeDisplay, DeserializeFromStr,
+)]
+#[strum(serialize_all = "camelCase")]
+#[non_exhaustive]
 pub enum OrderUpdateType {
     OrderAccepted,
     OrderCancelled,
@@ -329,6 +365,9 @@ pub enum OrderUpdateType {
     OrderModified,
     TriggerPlaced,
     TriggerFailed,
+    /// An event type this client version does not know. Carries the wire string.
+    #[strum(default)]
+    Unknown(String),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -483,8 +522,49 @@ pub enum BatchOrderResponse {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_support::assert_wire;
     use rust_decimal_macros::dec;
     use serde_json::json;
+
+    #[test]
+    fn trigger_by_wire() {
+        assert_wire(&TriggerBy::LastPrice, "LastPrice");
+        assert_wire(
+            &TriggerBy::Unknown("SomeFuturePrice".into()),
+            "SomeFuturePrice",
+        );
+    }
+
+    #[test]
+    fn order_status_wire() {
+        assert_wire(&OrderStatus::PartiallyFilled, "PartiallyFilled");
+        assert_wire(&OrderStatus::TriggerFailed, "TriggerFailed");
+        assert_wire(
+            &OrderStatus::Unknown("SomeFutureStatus".into()),
+            "SomeFutureStatus",
+        );
+    }
+
+    #[test]
+    fn system_order_type_wire() {
+        assert_wire(
+            &SystemOrderType::LiquidatePositionOnAdl,
+            "LiquidatePositionOnAdl",
+        );
+        assert_wire(
+            &SystemOrderType::Unknown("SomeFutureType".into()),
+            "SomeFutureType",
+        );
+    }
+
+    #[test]
+    fn order_update_type_wire() {
+        assert_wire(&OrderUpdateType::TriggerPlaced, "triggerPlaced");
+        assert_wire(
+            &OrderUpdateType::Unknown("someFutureEvent".into()),
+            "someFutureEvent",
+        );
+    }
 
     #[test]
     fn both_forms_round_trip() {
@@ -527,6 +607,30 @@ mod tests {
         let trigger_by_index = TriggerBy::IndexPrice;
         let trigger_by_index_str = serde_json::to_string(&trigger_by_index).unwrap();
         assert_eq!(trigger_by_index_str, "\"IndexPrice\"");
+    }
+
+    #[test]
+    fn test_order_update_trigger_failed_and_unknown() {
+        let data = r#"
+        {"E":1748288167010366,"O":"USER","P":"178.05","Q":"0","R":"InsufficientMargin","S":"Ask","T":1748288167009460,"V":"RejectTaker","X":"TriggerFailed","Y":"20.03","Z":"0","e":"triggerFailed","f":"GTC","i":"114575813313101824","o":"LIMIT","p":"178.15","q":"0","r":false,"s":"SOL_USDC","t":null,"z":"0"}
+        "#;
+        let order_update: OrderUpdate = serde_json::from_str(data).unwrap();
+        assert_eq!(order_update.event_type, OrderUpdateType::TriggerFailed);
+        assert_eq!(order_update.order_status, OrderStatus::TriggerFailed);
+
+        // An event type and status this client does not know still parse, keeping the wire value.
+        let data = r#"
+        {"E":1748288615134547,"O":"USER","S":"Ask","T":1748288615133255,"V":"RejectTaker","X":"SomeFutureStatus","Z":"0","e":"someFutureEvent","f":"GTC","i":"114575842681290753","o":"LIMIT","q":"20.03","s":"SOL_USDC","z":"0"}
+        "#;
+        let order_update: OrderUpdate = serde_json::from_str(data).unwrap();
+        assert_eq!(
+            order_update.event_type,
+            OrderUpdateType::Unknown("someFutureEvent".into())
+        );
+        assert_eq!(
+            order_update.order_status,
+            OrderStatus::Unknown("SomeFutureStatus".into())
+        );
     }
 
     #[test]

@@ -1,5 +1,6 @@
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
+use serde_with::{DeserializeFromStr, SerializeDisplay};
 use strum::{Display, EnumString};
 
 use crate::Blockchain;
@@ -35,27 +36,89 @@ pub struct Deposit {
     pub created_at: chrono::NaiveDateTime,
 }
 
-#[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, EnumString, PartialEq, Eq, Hash)]
+#[derive(
+    Debug, Display, Clone, EnumString, PartialEq, Eq, Hash, SerializeDisplay, DeserializeFromStr,
+)]
 #[strum(serialize_all = "camelCase")]
-#[serde(rename_all = "camelCase")]
+#[non_exhaustive]
 pub enum DepositSource {
     Administrator,
-    Solana,
-    Ethereum,
+    // Blockchains.
+    #[strum(serialize = "0G")]
+    ZeroG,
+    Aptos,
+    Arbitrum,
+    Avalanche,
+    Base,
+    Berachain,
     Bitcoin,
-    Nuvei,
-    #[serde(other)]
-    Unknown,
+    BitcoinCash,
+    Bsc,
+    Cardano,
+    Dogecoin,
+    Eclipse,
+    Ethereum,
+    Fogo,
+    #[strum(serialize = "hyperEVM")]
+    HyperEVM,
+    Hyperliquid,
+    Linea,
+    Litecoin,
+    Monad,
+    Near,
+    Polygon,
+    Optimism,
+    Plasma,
+    Robinhood,
+    Sei,
+    Stable,
+    Sui,
+    Solana,
+    Story,
+    Tempo,
+    Tron,
+    #[strum(serialize = "xRP")]
+    XRP,
+    Zcash,
+    // Payment processors.
+    EqualsMoney,
+    Banxa,
+    Moonpay,
+    Onramper,
+    // Internal transfer.
+    Internal,
+    /// A source this client version does not know. Carries the wire string.
+    #[strum(default)]
+    Unknown(String),
 }
 
-#[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, EnumString, PartialEq, Eq, Hash)]
+#[derive(
+    Debug, Display, Clone, EnumString, PartialEq, Eq, Hash, SerializeDisplay, DeserializeFromStr,
+)]
 #[strum(serialize_all = "camelCase")]
-#[serde(rename_all = "camelCase")]
+#[non_exhaustive]
 pub enum DepositStatus {
+    /// Waiting for confirmation, compliance or processing.
     Pending,
+    /// Confirmed deposit.
     Confirmed,
-    #[serde(other)]
-    Unknown,
+    /// Cancelled deposit.
+    Cancelled,
+    /// Declined payment. Fiat deposits only.
+    Declined,
+    /// Payment expired. Fiat deposits only.
+    Expired,
+    /// Payment initiated.
+    Initiated,
+    /// Payment refunded.
+    Refunded,
+    /// Ownership verification required.
+    OwnershipVerificationRequired,
+    /// Sender verification required.
+    SenderVerificationRequired,
+    /// A status this client version does not know. Carries the wire string.
+    #[strum(default)]
+    Unknown(String),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -102,16 +165,23 @@ pub struct Withdrawal {
     pub created_at: chrono::NaiveDateTime,
 }
 
-#[derive(Debug, Display, Clone, Copy, Serialize, Deserialize, EnumString, PartialEq, Eq, Hash)]
+#[derive(
+    Debug, Display, Clone, EnumString, PartialEq, Eq, Hash, SerializeDisplay, DeserializeFromStr,
+)]
 #[strum(serialize_all = "camelCase")]
-#[serde(rename_all = "camelCase")]
+#[non_exhaustive]
 pub enum WithdrawalStatus {
+    /// Waiting for compliance, signing, confirmation or processing.
     Pending,
+    /// Confirmed withdrawal.
     Confirmed,
-    Verifying,
+    /// Voided by administrators.
     Void,
-    #[serde(other)]
-    Unknown,
+    /// Ownership verification required.
+    OwnershipVerificationRequired,
+    /// A status this client version does not know. Carries the wire string.
+    #[strum(default)]
+    Unknown(String),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -144,4 +214,58 @@ pub struct CollateralItem {
     pub open_order_quantity: Decimal,
     pub lend_quantity: Decimal,
     pub available_quantity: Decimal,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_support::assert_wire;
+
+    #[test]
+    fn deposit_source_wire() {
+        assert_wire(&DepositSource::Administrator, "administrator");
+        assert_wire(&DepositSource::ZeroG, "0G");
+        assert_wire(&DepositSource::HyperEVM, "hyperEVM");
+        assert_wire(&DepositSource::XRP, "xRP");
+        assert_wire(&DepositSource::BitcoinCash, "bitcoinCash");
+        assert_wire(&DepositSource::EqualsMoney, "equalsMoney");
+        assert_wire(&DepositSource::Banxa, "banxa");
+        assert_wire(&DepositSource::Moonpay, "moonpay");
+        assert_wire(&DepositSource::Onramper, "onramper");
+        assert_wire(&DepositSource::Internal, "internal");
+        assert_wire(
+            &DepositSource::Unknown("someFutureSource".into()),
+            "someFutureSource",
+        );
+    }
+
+    #[test]
+    fn deposit_status_wire() {
+        assert_wire(&DepositStatus::Confirmed, "confirmed");
+        assert_wire(
+            &DepositStatus::OwnershipVerificationRequired,
+            "ownershipVerificationRequired",
+        );
+        assert_wire(
+            &DepositStatus::SenderVerificationRequired,
+            "senderVerificationRequired",
+        );
+        assert_wire(
+            &DepositStatus::Unknown("someFutureStatus".into()),
+            "someFutureStatus",
+        );
+    }
+
+    #[test]
+    fn withdrawal_status_wire() {
+        assert_wire(&WithdrawalStatus::Void, "void");
+        assert_wire(
+            &WithdrawalStatus::OwnershipVerificationRequired,
+            "ownershipVerificationRequired",
+        );
+        assert_wire(
+            &WithdrawalStatus::Unknown("someFutureStatus".into()),
+            "someFutureStatus",
+        );
+    }
 }
