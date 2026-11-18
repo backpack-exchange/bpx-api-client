@@ -18,6 +18,8 @@ on:
 
 jobs:
   release:
+    # The backpack-ci environment holds the CI app key. It gives the key only to this job on an accepted ref.
+    environment: backpack-ci
     runs-on: ubuntu-latest-64
     permissions:
       contents: write  # Required for pushing commits and tags
